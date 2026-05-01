@@ -1,44 +1,85 @@
 # Filter
+Filters allow code to run before or after request processing stages in ASP.NET Core.
+```
+👉 Used for:
 
-## Filter types
+Authorization
+Logging
+Caching
+Error handling
 
-Each filter type is executed at a different stage in the filter pipeline:
+👉 Helps avoid duplicate code (cross-cutting concerns).
+```
 
-1. Authorization filters:
+## 🔄 How Filters Work
+- Run inside MVC pipeline (after action is selected)
+- Called Filter Pipeline
+```
+Request → Middleware → Routing → Filters → Action → Response
+```
 
-- Run first.
-- Determine whether the user is authorized for the request.
-- Short-circuit the pipeline if the request is not authorized.
+## 🧩 Filter Types (Execution Order)
 
-2. Resource filters:
+- Each filter type is executed at a different stage in the filter pipeline:
 
-- Run after authorization.
-- OnResourceExecuting runs code before the rest of the filter pipeline. For example, OnResourceExecuting runs code before model binding.
-- OnResourceExecuted runs code after the rest of the pipeline has completed.
+- 1. Authorization Filter
+  - Runs first
+  - Checks if user is allowed
+  - Can stop request if unauthorized
+- 2. Resource Filter
+  - Runs after authorization
+  - Executes:
+    - Before model binding
+    - After full pipeline
+  - Used for caching / performance
+- 3. Action Filter
+  - Runs before & after action method
+  - Can:
+    - Modify inputs
+    - Modify outputs
+- 4. Exception Filter
+  - Runs only when exception occurs
+  - Handles unhandled errors globally
+- 5. Result Filter
+  - Runs before & after result execution
+  - Runs only if action succeeds
+  - Used for response formatting
 
-3. Action filters:
 
-- Run immediately before and after an action method is called.
-- Can change the arguments passed into an action.
-- Can change the result returned from the action.
-- Are not supported in Razor Pages.
+### 📍 Where to Apply Filters
 
-4. Endpoint filters:
+- 1. Global
+```
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<GlobalFilter>();
+});
+```
+- 2. Controller Level
+```
+[MyFilter]
+public class HomeController : Controller
+{
+}
+```
+- 3. Action Level
+```
+[MyFilter]
+public IActionResult Index()
+{
+    return View();
+}
+```
 
-- Run immediately before and after an action method is called.
-- Can change the arguments passed into an action.
-- Can change the result returned from the action.
-- Are not supported in Razor Pages.
-- Can be invoked on both actions and route handler-based endpoints.
+### ⚡ Key Points
+- Filters run after routing, before action execution
+- Multiple filters → execution order based on scope
+- Can short-circuit request (stop pipeline early)
 
-5. Exception filters apply global policies to unhandled exceptions that occur before the response body has been written to.
-
-6. Result filters:
-
-- Run immediately before and after the execution of action results.
-- Run only when the action method executes successfully.
-- Are useful for logic that must surround view or formatter execution
-
+## 🧠 One-Line Summary
+```
+👉 Filters = Run logic before/after controller execution to handle common concerns
+```
 ## References
 
 - [https://learn.microsoft.com/en-us/aspnet/core/mvc/controllers/filters](https://learn.microsoft.com/en-us/aspnet/core/mvc/controllers/filters)
