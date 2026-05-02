@@ -1,0 +1,418 @@
+{
+  "name": "src",
+  "path": "src",
+  "isDirectory": true,
+  "children": [
+    {
+      "name": "API",
+      "path": "src/API",
+      "isDirectory": true,
+      "children": [
+        {
+          "name": "API.md",
+          "path": "src/API/API.md",
+          "isDirectory": false
+        }
+      ]
+    },
+    {
+      "name": "AWS",
+      "path": "src/AWS",
+      "isDirectory": true,
+      "children": [
+        {
+          "name": "apiGateway.md",
+          "path": "src/AWS/apiGateway.md",
+          "isDirectory": false
+        },
+        {
+          "name": "aws.md",
+          "path": "src/AWS/aws.md",
+          "isDirectory": false
+        },
+        {
+          "name": "ec2.md",
+          "path": "src/AWS/ec2.md",
+          "isDirectory": false
+        },
+        {
+          "name": "lambda.md",
+          "path": "src/AWS/lambda.md",
+          "isDirectory": false
+        },
+        {
+          "name": "vpc.md",
+          "path": "src/AWS/vpc.md",
+          "isDirectory": false
+        }
+      ]
+    },
+    {
+      "name": "Azure",
+      "path": "src/Azure",
+      "isDirectory": true,
+      "children": [
+        {
+          "name": "Certification",
+          "path": "src/Azure/Certification",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "az-204",
+              "path": "src/Azure/Certification/az-204",
+              "isDirectory": true,
+              "children": [
+                {
+                  "name": "app-service.md",
+                  "path": "src/Azure/Certification/az-204/app-service.md",
+                  "isDirectory": false
+                },
+                {
+                  "name": "function.md",
+                  "path": "src/Azure/Certification/az-204/function.md",
+                  "isDirectory": false
+                }
+              ]
+            },
+            {
+              "name": "AZ-204.md",
+              "path": "src/Azure/Certification/AZ-204.md",
+              "isDirectory": false
+            }
+          ]
+        },
+        {
+          "name": "Power Platform",
+          "path": "src/Azure/Power Platform",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "power-automate.md",
+              "path": "src/Azure/Power Platform/power-automate.md",
+              "isDirectory": false
+            },
+            {
+              "name": "power-platform-cli.md",
+              "path": "src/Azure/Power Platform/power-platform-cli.md",
+              "isDirectory": false
+            },
+            {
+              "name": "readme.md",
+              "path": "src/Azure/Power Platform/readme.md",
+              "isDirectory": false
+            }
+          ]
+        },
+        {
+          "name": "Azure-DevOps.md",
+          "path": "src/Azure/Azure-DevOps.md",
+          "isDirectory": false
+        },
+        {
+          "name": "azure.md",
+          "path": "src/Azure/azure.md",
+          "isDirectory": false
+        }
+      ]
+    },
+    {
+      "name": "Containerization",
+      "path": "src/Containerization",
+      "isDirectory": true,
+      "children": [
+        {
+          "name": "Docker",
+          "path": "src/Containerization/Docker",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "docker.md",
+              "path": "src/Containerization/Docker/docker.md",
+              "isDirectory": false
+            }
+          ]
+        },
+        {
+          "name": "Helm",
+          "path": "src/Containerization/Helm",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "command.helm.md",
+              "path": "src/Containerization/Helm/command.helm.md",
+              "isDirectory": false
+            },
+            {
+              "name": "helm.md",
+              "path": "src/Containerization/Helm/helm.md",
+              "isDirectory": false
+            }
+          ]
+        },
+        {
+          "name": "K8",
+          "path": "src/Containerization/K8",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "Azure",
+              "path": "src/Containerization/K8/Azure",
+              "isDirectory": true,
+              "children": [
+                {
+                  "name": "cluster.azure.k8.md",
+                  "path": "src/Containerization/K8/Azure/cluster.azure.k8.md",
+                  "isDirectory": false
+                },
+                {
+                  "name": "ingress.azure.k8.md",
+                  "path": "src/Containerization/K8/Azure/ingress.azure.k8.md",
+                  "isDirectory": false
+                }
+              ]
+            },
+            {
+              "name": "aws.k8.md",
+              "path": "src/Containerization/K8/aws.k8.md",
+              "isDirectory": false
+            },
+            {
+              "name": "azure.k8.md",
+              "path": "src/Containerization/K8/azure.k8.md",
+              "isDirectory": false
+            },
+            {
+              "name": "k8.md",
+              "path": "src/Containerization/K8/k8.md",
+              "isDirectory": false
+            }
+          ]
+        },
+        {
+          "name": "Monitor",
+          "path": "src/Containerization/Monitor",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "datadog.monitor.md",
+              "path": "src/Containerization/Monitor/datadog.monitor.md",
+              "isDirectory": false
+            },
+            {
+              "name": "monitor.md",
+              "path": "src/Containerization/Monitor/monitor.md",
+              "isDirectory": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CSharp",
+      "path": "src/CSharp",
+      "isDirectory": true,
+      "children": [
+        {
+          "name": "Dotnet",
+          "path": "src/CSharp/Dotnet",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "dotnet-cli.md",
+              "path": "src/CSharp/Dotnet/dotnet-cli.md",
+              "isDirectory": false
+            },
+            {
+              "name": "dotnet-nuget.md",
+              "path": "src/CSharp/Dotnet/dotnet-nuget.md",
+              "isDirectory": false
+            },
+            {
+              "name": "dotnet-sonar.md",
+              "path": "src/CSharp/Dotnet/dotnet-sonar.md",
+              "isDirectory": false
+            },
+            {
+              "name": "dotnet.md",
+              "path": "src/CSharp/Dotnet/dotnet.md",
+              "isDirectory": false
+            }
+          ]
+        },
+        {
+          "name": "Filters",
+          "path": "src/CSharp/Filters",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "Implementation",
+              "path": "src/CSharp/Filters/Implementation",
+              "isDirectory": true,
+              "children": [
+                {
+                  "name": "filter.implementation.md",
+                  "path": "src/CSharp/Filters/Implementation/filter.implementation.md",
+                  "isDirectory": false
+                }
+              ]
+            },
+            {
+              "name": "action.filter.md",
+              "path": "src/CSharp/Filters/action.filter.md",
+              "isDirectory": false
+            },
+            {
+              "name": "authorization.filter.md",
+              "path": "src/CSharp/Filters/authorization.filter.md",
+              "isDirectory": false
+            },
+            {
+              "name": "endpoint.fIlter.md",
+              "path": "src/CSharp/Filters/endpoint.fIlter.md",
+              "isDirectory": false
+            },
+            {
+              "name": "exception.filter.md",
+              "path": "src/CSharp/Filters/exception.filter.md",
+              "isDirectory": false
+            },
+            {
+              "name": "filter.md",
+              "path": "src/CSharp/Filters/filter.md",
+              "isDirectory": false
+            },
+            {
+              "name": "resource.filter.md",
+              "path": "src/CSharp/Filters/resource.filter.md",
+              "isDirectory": false
+            },
+            {
+              "name": "result.filter.md",
+              "path": "src/CSharp/Filters/result.filter.md",
+              "isDirectory": false
+            }
+          ]
+        },
+        {
+          "name": "csharp-delegate.md",
+          "path": "src/CSharp/csharp-delegate.md",
+          "isDirectory": false
+        },
+        {
+          "name": "csharp-old.md",
+          "path": "src/CSharp/csharp-old.md",
+          "isDirectory": false
+        },
+        {
+          "name": "csharp-solid.md",
+          "path": "src/CSharp/csharp-solid.md",
+          "isDirectory": false
+        },
+        {
+          "name": "csharp.md",
+          "path": "src/CSharp/csharp.md",
+          "isDirectory": false
+        },
+        {
+          "name": "ef.md",
+          "path": "src/CSharp/ef.md",
+          "isDirectory": false
+        },
+        {
+          "name": "OOP.md",
+          "path": "src/CSharp/OOP.md",
+          "isDirectory": false
+        },
+        {
+          "name": "security-and-cryptography.md",
+          "path": "src/CSharp/security-and-cryptography.md",
+          "isDirectory": false
+        },
+        {
+          "name": "tips.md",
+          "path": "src/CSharp/tips.md",
+          "isDirectory": false
+        }
+      ]
+    },
+    {
+      "name": "Extensions",
+      "path": "src/Extensions",
+      "isDirectory": true,
+      "children": [
+        {
+          "name": "MicrosoftTeam",
+          "path": "src/Extensions/MicrosoftTeam",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "Assets",
+              "path": "src/Extensions/MicrosoftTeam/Assets",
+              "isDirectory": true,
+              "children": [
+                {
+                  "name": "readme.md",
+                  "path": "src/Extensions/MicrosoftTeam/Assets/readme.md",
+                  "isDirectory": false
+                }
+              ]
+            },
+            {
+              "name": "readme.md",
+              "path": "src/Extensions/MicrosoftTeam/readme.md",
+              "isDirectory": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GOF",
+      "path": "src/GOF",
+      "isDirectory": true,
+      "children": [
+        {
+          "name": "GOF.md",
+          "path": "src/GOF/GOF.md",
+          "isDirectory": false
+        }
+      ]
+    },
+    {
+      "name": "Introduction",
+      "path": "src/Introduction",
+      "isDirectory": true,
+      "children": [
+        {
+          "name": "introduction.md",
+          "path": "src/Introduction/introduction.md",
+          "isDirectory": false
+        }
+      ]
+    },
+    {
+      "name": "Networking",
+      "path": "src/Networking",
+      "isDirectory": true,
+      "children": [
+        {
+          "name": "network.md",
+          "path": "src/Networking/network.md",
+          "isDirectory": false
+        }
+      ]
+    },
+    {
+      "name": "SQL",
+      "path": "src/SQL",
+      "isDirectory": true,
+      "children": [
+        {
+          "name": "sql.md",
+          "path": "src/SQL/sql.md",
+          "isDirectory": false
+        }
+      ]
+    }
+  ]
+}
