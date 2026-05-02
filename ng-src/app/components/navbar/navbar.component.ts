@@ -43,6 +43,12 @@ import { FileNode } from '../../models/file-node.model';
                 <i class="fas fa-folder me-1"></i>{{ node.name }}
               </a>
               <ul class="dropdown-menu" [class.show]="openDropdown === node.name">
+                <li>
+                  <a class="dropdown-item fw-semibold" href="#" (click)="navigateToFolder($event, node)">
+                    <i class="fas fa-folder-open me-2"></i>Browse {{ node.name }}
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider my-1"></li>
                 <li *ngFor="let child of node.children">
                   <a class="dropdown-item" href="#" (click)="navigateToFile($event, child)">
                     <i class="fas me-2"
@@ -85,12 +91,22 @@ export class NavbarComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  navigateToFolder(e: Event, node: FileNode): void {
+    e.preventDefault();
+    this.openDropdown = null;
+    this.navCollapsed = true;
+    this.cdr.markForCheck();
+    this.router.navigate(['/folder'], { queryParams: { path: node.path } });
+  }
+
   navigateToFile(e: Event, node: FileNode): void {
     e.preventDefault();
     this.openDropdown = null;
     this.navCollapsed = true;
     this.cdr.markForCheck();
-    if (!node.isDirectory) {
+    if (node.isDirectory) {
+      this.router.navigate(['/folder'], { queryParams: { path: node.path } });
+    } else {
       this.router.navigate(['/file'], { queryParams: { path: node.path } });
     }
   }

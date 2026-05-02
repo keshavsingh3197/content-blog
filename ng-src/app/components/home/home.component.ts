@@ -121,22 +121,8 @@ export class HomeComponent implements OnInit {
   navigateToTopic(topic: TopicCard): void {
     const topicNode = this.nodes.find(n => n.name === topic.folderName);
     if (topicNode) {
-      const firstFile = this.findFirstFile(topicNode);
-      if (firstFile) {
-        this.router.navigate(['/file'], { queryParams: { path: firstFile.path } });
-      }
+      this.router.navigate(['/folder'], { queryParams: { path: topicNode.path } });
     }
-  }
-
-  private findFirstFile(node: FileNode): FileNode | null {
-    if (!node.isDirectory) return node;
-    if (node.children) {
-      for (const child of node.children) {
-        const f = this.findFirstFile(child);
-        if (f) return f;
-      }
-    }
-    return null;
   }
 
   onFileSelected(node: FileNode): void {

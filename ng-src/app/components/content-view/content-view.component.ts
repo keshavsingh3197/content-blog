@@ -117,6 +117,7 @@ export class ContentViewComponent implements OnInit, OnDestroy {
   activeTocId = '';
   showBackToTop = false;
   tocOpen = false;
+  currentPath = '';
 
   private destroy$ = new Subject<void>();
   private scrollHandler = () => {
@@ -143,6 +144,7 @@ export class ContentViewComponent implements OnInit, OnDestroy {
         this.content = '';
         this.toc = [];
         this.tocOpen = false;
+        this.currentPath = path;
         this.buildBreadcrumbs(path);
         this.fileName = path.split('/').pop() || path;
         window.scrollTo({ top: 0, behavior: 'instant' });
@@ -151,8 +153,9 @@ export class ContentViewComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: (text) => {
-        this.content = text;
-        this.wordCount = text.split(/\s+/).filter(Boolean).length;
+        const rewritten = this.contentService.rewriteImagePaths(text, this.currentPath);
+        this.content = rewritten;
+        this.wordCount = rewritten.split(/\s+/).filter(Boolean).length;
         this.readingTime = Math.ceil(this.wordCount / 200);
         this.loading = false;
         this.cdr.markForCheck();
