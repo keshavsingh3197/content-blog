@@ -210,6 +210,9 @@ const Utils = {
     }
 };
 
+// Expose Utils globally for use by footer.js and other modules
+window.Utils = Utils;
+
 // Theme Management
 const ThemeManager = {
     init() {
@@ -329,15 +332,9 @@ const ScrollManager = {
         if (scrollToTopBtn) {
             window.addEventListener('scroll', () => {
                 if (window.pageYOffset > 300) {
-                    scrollToTopBtn.style.display = 'block';
-                    scrollToTopBtn.style.opacity = '1';
+                    scrollToTopBtn.classList.add('visible');
                 } else {
-                    scrollToTopBtn.style.opacity = '0';
-                    setTimeout(() => {
-                        if (window.pageYOffset <= 300) {
-                            scrollToTopBtn.style.display = 'none';
-                        }
-                    }, 300);
+                    scrollToTopBtn.classList.remove('visible');
                 }
             });
             
@@ -375,20 +372,15 @@ const ScrollManager = {
 // Breadcrumb Manager
 const BreadcrumbManager = {
     init() {
-        console.log('BreadcrumbManager init called');
         this.breadcrumbEl = document.getElementById('breadcrumb');
-        console.log('Breadcrumb element found:', !!this.breadcrumbEl);
         
         // Add click handler to existing home breadcrumb
         if (this.breadcrumbEl) {
             // Set up delegation for all breadcrumb links
             this.breadcrumbEl.addEventListener('click', (e) => {
-                console.log('Breadcrumb clicked:', e.target, e.target.tagName);
                 if (e.target.tagName === 'A') {
                     e.preventDefault();
-                    console.log('Breadcrumb link clicked:', e.target.textContent.trim());
                     if (e.target.textContent.trim() === 'Home' || e.target.getAttribute('aria-label') === 'Home') {
-                        console.log('Home breadcrumb clicked - showing home page');
                         showHomePage();
                         BreadcrumbManager.update([]);
                     }
@@ -398,10 +390,8 @@ const BreadcrumbManager = {
             // Also set up the initial home breadcrumb if it exists
             const homeLink = this.breadcrumbEl.querySelector('a[aria-label="Home"]');
             if (homeLink) {
-                console.log('Found existing home link, adding direct handler');
                 homeLink.addEventListener('click', (e) => {
                     e.preventDefault();
-                    console.log('Direct home link clicked');
                     showHomePage();
                     BreadcrumbManager.update([]);
                 });
@@ -423,7 +413,6 @@ const BreadcrumbManager = {
         // Add click handler to the new home link
         homeLink.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log('Home breadcrumb clicked from update');
             showHomePage();
             this.update([]);
         });
@@ -476,8 +465,26 @@ async function loadFile(filePath) {
 
         const htmlContent = marked.parse(markdown);
         const contentEl = document.getElementById('content');
+
+        // Calculate reading time
+        const wordCount = markdown.replace(/```[\s\S]*?```/g, '').replace(/[#*`[\]()!]/g, '').split(/\s+/).filter(Boolean).length;
+        const readingMinutes = Math.max(1, Math.round(wordCount / 200));
+        const fileName = filePath.split('/').pop().replace('.md', '');
         
-        contentEl.innerHTML = `<div class="card-body"><div class="markdown-content">${htmlContent}</div></div>`;
+        contentEl.innerHTML = `
+            <div class="content-meta-bar">
+                <div class="meta-left">
+                    <span><i class="fas fa-file-alt me-1"></i>${fileName}</span>
+                </div>
+                <div class="meta-right">
+                    <span class="reading-time-badge">
+                        <i class="fas fa-clock"></i>${readingMinutes} min read
+                    </span>
+                    <span class="text-muted" style="font-size:0.8rem">${wordCount.toLocaleString()} words</span>
+                </div>
+            </div>
+            <div class="card-body"><div class="markdown-content">${htmlContent}</div></div>
+        `;
 
         // Add enhanced code block functionality
         addEnhancedCodeActions();
@@ -509,6 +516,8 @@ async function loadFile(filePath) {
         
         // Add animation
         Utils.slideInUp(contentEl);
+        // Scroll to top of content
+        contentEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         
     } catch (error) {
         console.error('Error loading file:', error);
@@ -547,29 +556,29 @@ function addEnhancedCodeActions() {
         const language = codeEl ? Array.from(codeEl.classList)
             .find(cls => cls.startsWith('language-'))?.replace('language-', '') || 'text' : 'text';
 
-        // Title with language info
+        // macOS-style dots + title
+        const dotsEl = document.createElement('div');
+        dotsEl.className = 'code-mac-dots';
+        dotsEl.innerHTML = `<span class="dot-red"></span><span class="dot-yellow"></span><span class="dot-green"></span>`;
+
         const title = document.createElement('div');
         title.className = 'code-block-title';
-        title.innerHTML = `
-            <i class="fas fa-code me-2"></i>
-            <span>Code Block ${index + 1}</span>
-            <span class="badge bg-secondary ms-2">${language.toUpperCase()}</span>
-        `;
+        title.innerHTML = `<span class="badge bg-secondary">${language.toUpperCase()}</span>`;
 
         // Enhanced actions
         const actions = document.createElement('div');
         actions.className = 'code-actions';
         actions.innerHTML = `
-            <button class="btn btn-outline-primary btn-sm copy-btn" title="Copy to clipboard" aria-label="Copy code to clipboard">
+            <button class="btn btn-sm copy-btn" title="Copy to clipboard" aria-label="Copy code to clipboard">
                 <i class="fas fa-copy"></i>
             </button>
-            <button class="btn btn-outline-success btn-sm download-btn" title="Download as file" aria-label="Download code as file">
+            <button class="btn btn-sm download-btn" title="Download as file" aria-label="Download code as file">
                 <i class="fas fa-download"></i>
             </button>
-            <button class="btn btn-outline-info btn-sm view-raw-btn" title="View in new window" aria-label="View code in new window">
+            <button class="btn btn-sm view-raw-btn" title="View in new window" aria-label="View code in new window">
                 <i class="fas fa-external-link-alt"></i>
             </button>
-            <button class="btn btn-outline-secondary btn-sm collapse-btn" title="Collapse/Expand" aria-label="Toggle code visibility">
+            <button class="btn btn-sm collapse-btn" title="Collapse/Expand" aria-label="Toggle code visibility">
                 <i class="fas fa-compress"></i>
             </button>
         `;
@@ -675,6 +684,7 @@ function addEnhancedCodeActions() {
         });
 
         // Assemble the code block
+        header.appendChild(dotsEl);
         header.appendChild(title);
         header.appendChild(actions);
         wrapper.appendChild(header);
@@ -689,56 +699,27 @@ const SearchManager = {
     init() {
         // Add a small delay to ensure DOM is fully ready
         setTimeout(() => {
-            console.log('SearchManager init called (delayed)');
             this.searchInput = document.getElementById('search-input');
             this.searchResults = document.getElementById('search-results');
             this.clearBtn = document.getElementById('clear-search');
             
-            console.log('Search elements found:', {
-                searchInput: !!this.searchInput,
-                searchResults: !!this.searchResults,
-                clearBtn: !!this.clearBtn
-            });
-            
             if (this.searchInput) {
-                console.log('Adding search input listeners');
-                
-                // Add direct input listener without debounce first for testing
-                this.searchInput.addEventListener('input', (e) => {
-                    console.log('Direct search input event:', e.target.value);
-                });
-                
                 // Add debounced listener
                 this.searchInput.addEventListener('input', 
                     Utils.debounce((e) => {
-                        console.log('Debounced search input event:', e.target.value);
                         this.performSearch(e.target.value);
                     }, 300)
                 );
                 
                 this.searchInput.addEventListener('keydown', (e) => {
-                    console.log('Search keydown:', e.key, e.target.value);
                     if (e.key === 'Enter' && this.searchInput.value.trim()) {
                         this.performSearch(this.searchInput.value);
                     }
                 });
-                
-                // Add focus/blur listeners for debugging
-                this.searchInput.addEventListener('focus', () => {
-                    console.log('Search input focused');
-                });
-                
-                this.searchInput.addEventListener('blur', () => {
-                    console.log('Search input blurred');
-                });
-                
-            } else {
-                console.error('Search input not found!');
             }
             
             if (this.clearBtn) {
                 this.clearBtn.addEventListener('click', () => {
-                    console.log('Clear search clicked');
                     this.searchInput.value = '';
                     this.clearResults();
                 });
@@ -984,14 +965,12 @@ function createTreeNode(item) {
     } else {
         li.addEventListener('click', (e) => {
             e.stopPropagation();
-            console.log('File clicked:', item.name, item.path);
             loadFile(item.path);
         });
         
         li.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                console.log('File activated via keyboard:', item.name, item.path);
                 loadFile(item.path);
             }
         });
@@ -1064,6 +1043,169 @@ function addEnhancedGlobalActions() {
     container.appendChild(downloadBtn);
 }
 
+// ========================================
+// READING PROGRESS BAR
+// ========================================
+
+const ReadingProgress = {
+    progressBar: null,
+    scrollHandler: null,
+
+    init() {
+        this.progressBar = document.getElementById('reading-progress');
+    },
+
+    show() {
+        if (!this.progressBar) this.init();
+        if (!this.progressBar) return;
+        this.progressBar.style.display = 'block';
+        this.progressBar.style.width = '0%';
+        if (!this.scrollHandler) {
+            this.scrollHandler = () => this.update();
+            window.addEventListener('scroll', this.scrollHandler, { passive: true });
+        }
+        this.update();
+    },
+
+    hide() {
+        if (this.progressBar) {
+            this.progressBar.style.display = 'none';
+            this.progressBar.style.width = '0%';
+        }
+        if (this.scrollHandler) {
+            window.removeEventListener('scroll', this.scrollHandler);
+            this.scrollHandler = null;
+        }
+    },
+
+    update() {
+        if (!this.progressBar) return;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const percent = docHeight > 0 ? Math.min(100, (scrollTop / docHeight) * 100) : 0;
+        this.progressBar.style.width = percent + '%';
+    }
+};
+
+// ========================================
+// TOPIC CARD CONFIG
+// ========================================
+
+const TOPIC_CONFIG = {
+    CSharp:          { icon: 'fas fa-hashtag',       gradient: 'linear-gradient(135deg,#6a11cb 0%,#2575fc 100%)', label: 'C#' },
+    Azure:           { icon: 'fas fa-cloud',          gradient: 'linear-gradient(135deg,#0072c6 0%,#00b4f0 100%)', label: 'Azure' },
+    AWS:             { icon: 'fab fa-aws',             gradient: 'linear-gradient(135deg,#ff9900 0%,#ff6600 100%)', label: 'AWS' },
+    Containerization:{ icon: 'fab fa-docker',          gradient: 'linear-gradient(135deg,#0db7ed 0%,#066da5 100%)', label: 'Docker & K8s' },
+    SQL:             { icon: 'fas fa-database',        gradient: 'linear-gradient(135deg,#11998e 0%,#38ef7d 100%)', label: 'SQL' },
+    GOF:             { icon: 'fas fa-sitemap',         gradient: 'linear-gradient(135deg,#f953c6 0%,#b91d73 100%)', label: 'Design Patterns' },
+    Networking:      { icon: 'fas fa-network-wired',   gradient: 'linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)', label: 'Networking' },
+    Extensions:      { icon: 'fas fa-puzzle-piece',    gradient: 'linear-gradient(135deg,#f7971e 0%,#ffd200 100%)', label: 'VS Code Ext.' },
+};
+
+function countFiles(node) {
+    if (!node.isDirectory) return 1;
+    return (node.children || []).reduce((sum, child) => sum + countFiles(child), 0);
+}
+
+function renderTopicCards(structure) {
+    const cardsContainer = document.getElementById('cards-container');
+    if (!cardsContainer) return;
+
+    const topLevelDirs = (structure.children || []).filter(c => c.isDirectory);
+    const totalFiles = (structure.children || []).reduce((sum, c) => sum + countFiles(c), 0);
+    const topicCount = topLevelDirs.length;
+
+    // Hero section
+    const hero = document.createElement('div');
+    hero.className = 'col-12 mb-2';
+    hero.innerHTML = `
+        <div class="home-hero slide-in-up">
+            <h1><i class="fas fa-code me-3"></i>Content Blog</h1>
+            <p>Comprehensive programming tutorials on C#, Azure, AWS, Docker, Kubernetes, and modern development practices.</p>
+            <div class="home-stats">
+                <div class="home-stat">
+                    <span class="stat-number">${totalFiles}</span>
+                    <span class="stat-label">Articles</span>
+                </div>
+                <div class="home-stat">
+                    <span class="stat-number">${topicCount}</span>
+                    <span class="stat-label">Topics</span>
+                </div>
+                <div class="home-stat">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Free</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Topic cards section
+    const cardsSection = document.createElement('div');
+    cardsSection.className = 'col-12';
+
+    const heading = document.createElement('div');
+    heading.className = 'section-heading';
+    heading.innerHTML = '<i class="fas fa-th-large text-primary"></i>Browse Topics';
+    cardsSection.appendChild(heading);
+
+    const grid = document.createElement('div');
+    grid.className = 'topic-cards-grid stagger-children';
+
+    topLevelDirs.forEach(dir => {
+        const cfg = TOPIC_CONFIG[dir.name] || {
+            icon: 'fas fa-folder',
+            gradient: 'linear-gradient(135deg,#667eea 0%,#764ba2 100%)',
+            label: dir.name
+        };
+        const fileCount = countFiles(dir);
+
+        const card = document.createElement('div');
+        card.className = 'topic-card';
+        card.style.background = cfg.gradient;
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', `Browse ${cfg.label} - ${fileCount} article${fileCount !== 1 ? 's' : ''}`);
+        card.innerHTML = `
+            <i class="${cfg.icon}"></i>
+            <span class="topic-name">${cfg.label}</span>
+            <span class="topic-count">${fileCount} article${fileCount !== 1 ? 's' : ''}</span>
+        `;
+
+        const activate = () => {
+            // Expand the tree view node for this folder
+            const treeView = document.getElementById('tree-view-container');
+            if (treeView) {
+                treeView.style.display = 'block';
+                treeView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                // Find and expand the matching folder node
+                const folderNodes = treeView.querySelectorAll('.folder');
+                folderNodes.forEach(node => {
+                    const span = node.querySelector('span');
+                    if (span && span.textContent.trim() === dir.name && !node.classList.contains('expanded')) {
+                        node.click();
+                    }
+                });
+            }
+        };
+
+        card.addEventListener('click', activate);
+        card.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+        });
+
+        grid.appendChild(card);
+    });
+
+    cardsSection.appendChild(grid);
+
+    cardsContainer.innerHTML = '';
+    cardsContainer.appendChild(hero);
+    cardsContainer.appendChild(cardsSection);
+    cardsContainer.className = 'row mt-2';
+    Utils.fadeIn(cardsContainer);
+}
+
 // View Management
 function showContentView() {
     const content = document.getElementById('content');
@@ -1079,137 +1221,60 @@ function showContentView() {
     if (searchResults) searchResults.style.display = 'none';
     if (treeView) treeView.style.display = 'none';
     if (globalButtons) globalButtons.style.display = 'flex';
+
+    ReadingProgress.show();
 }
 
 function showHomePage() {
-    document.querySelector('.search-bar').style.display = 'block';
-    document.getElementById('search-results').style.display = 'none';
-    document.getElementById('tree-view-container').style.display = 'block';
-    document.getElementById('content').style.display = 'none';
-    document.querySelector('.global-buttons').style.display = 'none';
-    
+    const searchBar = safeQuerySelector('.search-bar');
+    const searchResults = document.getElementById('search-results');
+    const treeView = document.getElementById('tree-view-container');
+    const content = document.getElementById('content');
+    const globalButtons = safeQuerySelector('.global-buttons');
+    const cardsContainer = document.getElementById('cards-container');
+
+    if (searchBar) searchBar.style.display = 'block';
+    if (searchResults) searchResults.style.display = 'none';
+    if (treeView) treeView.style.display = 'block';
+    if (content) content.style.display = 'none';
+    if (globalButtons) globalButtons.style.display = 'none';
+    if (cardsContainer) cardsContainer.style.display = 'flex';
+
+    ReadingProgress.hide();
+
     // Clear breadcrumb
     BreadcrumbManager.update([]);
-    
-    // Update content area with welcome message
-    const contentEl = document.getElementById('content');
-    contentEl.innerHTML = `
-        <div class="card-body text-center py-5">
-            <i class="fas fa-file-alt fa-4x text-muted mb-4"></i>
-            <h3 class="text-muted mb-3">Welcome to Content Blog</h3>
-            <p class="text-muted lead">Explore programming tutorials and guides</p>
-            <p class="text-muted">Use the search bar above or browse the file structure to get started.</p>
-        </div>
-    `;
+
+    // Render topic cards if structure is cached
+    if (window._cachedStructure) {
+        renderTopicCards(window._cachedStructure);
+    }
 }
 
 // Initialize the application
 function initializeApp() {
-    console.log('Starting application initialization...');
-    
     // Always ensure loading is shown at start
     Utils.showLoading();
     
     // Set a fallback timeout to hide loading spinner
     const fallbackTimeout = setTimeout(() => {
-        console.warn('Initialization taking too long, hiding loading spinner');
         Utils.hideLoading();
     }, 10000); // 10 seconds fallback
     
     // Initialize all managers first
     try {
-        console.log('Initializing managers...');
         ThemeManager.init();
         AccessibilityManager.init();
         ScrollManager.init();
         BreadcrumbManager.init();
         SearchManager.init();
-        console.log('Managers initialized successfully');
-        
-        // Add a simple test to check if click events work
-        console.log('Testing click event functionality...');
-        const testBtn = document.createElement('button');
-        testBtn.textContent = 'Test Click';
-        testBtn.style.position = 'fixed';
-        testBtn.style.top = '10px';
-        testBtn.style.right = '10px';
-        testBtn.style.zIndex = '9999';
-        testBtn.style.background = 'green';
-        testBtn.style.color = 'white';
-        testBtn.style.border = 'none';
-        testBtn.style.padding = '5px 10px';
-        testBtn.style.borderRadius = '3px';
-        testBtn.addEventListener('click', () => {
-            console.log('Test button clicked! Click events work.');
-            testBtn.textContent = 'Working!';
-            setTimeout(() => {
-                testBtn.remove();
-                console.log('Test button removed - functionality verified');
-            }, 2000);
-        });
-        document.body.appendChild(testBtn);
-        console.log('Test button added');
-        
-        // Auto-remove test button after 10 seconds if not clicked
-        setTimeout(() => {
-            if (testBtn.parentNode) {
-                testBtn.remove();
-                console.log('Test button auto-removed');
-            }
-        }, 10000);
+        ReadingProgress.init();
         
         // Initialize structure updater if available
         if (window.StructureUpdater && typeof window.structureUpdater === 'undefined') {
             window.structureUpdater = new window.StructureUpdater();
-            console.log('✅ Structure updater initialized');
-            
-            // Add manual refresh button for testing
-            const refreshBtn = document.createElement('button');
-            refreshBtn.textContent = '🔄 Refresh';
-            refreshBtn.style.position = 'fixed';
-            refreshBtn.style.top = '50px';
-            refreshBtn.style.right = '10px';
-            refreshBtn.style.zIndex = '9999';
-            refreshBtn.style.background = '#007bff';
-            refreshBtn.style.color = 'white';
-            refreshBtn.style.border = 'none';
-            refreshBtn.style.padding = '5px 10px';
-            refreshBtn.style.borderRadius = '3px';
-            refreshBtn.style.cursor = 'pointer';
-            refreshBtn.title = 'Manually check for structure changes';
-            
-            refreshBtn.addEventListener('click', async () => {
-                refreshBtn.textContent = '🔄 Checking...';
-                refreshBtn.disabled = true;
-                
-                const hasChanged = await window.structureUpdater.forceCheck();
-                
-                refreshBtn.textContent = hasChanged ? '✅ Updated!' : '✅ No changes';
-                setTimeout(() => {
-                    refreshBtn.textContent = '🔄 Refresh';
-                    refreshBtn.disabled = false;
-                }, 2000);
-            });
-            
-            document.body.appendChild(refreshBtn);
-            
-            // Auto-remove refresh button after 30 seconds
-            setTimeout(() => {
-                if (refreshBtn.parentNode) {
-                    refreshBtn.remove();
-                    console.log('Refresh button auto-removed');
-                }
-            }, 30000);
         }
         
-        // Debug: Check what elements exist on the page
-        console.log('=== Element Debug Info ===');
-        console.log('search-input:', document.getElementById('search-input'));
-        console.log('search-results:', document.getElementById('search-results'));
-        console.log('clear-search:', document.getElementById('clear-search'));
-        console.log('breadcrumb:', document.getElementById('breadcrumb'));
-        console.log('tree-view-container:', document.getElementById('tree-view-container'));
-        console.log('==========================')
         
     } catch (error) {
         console.error('Failed to initialize managers:', error);
@@ -1221,9 +1286,9 @@ function initializeApp() {
     // Fetch and render structure
     fetchStructure()
         .then(structure => {
-            console.log('Structure fetched:', structure);
             if (structure) {
                 try {
+                    window._cachedStructure = structure;
                     renderNavbar(structure);
                     createEnhancedTreeView(structure, document.getElementById('tree-view-container'));
                     addEnhancedGlobalActions();
@@ -1233,12 +1298,11 @@ function initializeApp() {
                     if (navBrand) {
                         navBrand.addEventListener('click', (e) => {
                             e.preventDefault();
-                            console.log('Navbar brand clicked - navigating to home');
                             try {
                                 showHomePage();
                                 BreadcrumbManager.update([]);
-                            } catch (error) {
-                                console.error('Error navigating to home:', error);
+                            } catch (err) {
+                                console.error('Error navigating to home:', err);
                             }
                         });
                     }
@@ -1250,16 +1314,8 @@ function initializeApp() {
                     if (window.hljs) {
                         hljs.highlightAll();
                     }
-                    
-                    console.log('Application initialized successfully');
-                    if (window.Utils && window.Utils.showToast) {
-                        window.Utils.showToast('Application loaded successfully!', 'success');
-                    }
                 } catch (error) {
                     console.error('Error during app initialization:', error);
-                    if (window.Utils && window.Utils.showToast) {
-                        window.Utils.showToast('Some features may not work properly', 'warning');
-                    }
                 }
             } else {
                 throw new Error('No structure data received');
@@ -1272,7 +1328,6 @@ function initializeApp() {
             }
         })
         .finally(() => {
-            console.log('Cleaning up initialization...');
             clearTimeout(fallbackTimeout);
             Utils.hideLoading();
         });
@@ -1284,7 +1339,6 @@ if (document.readyState === 'loading') {
     // Also add a backup timeout in case DOMContentLoaded doesn't fire
     setTimeout(() => {
         if (AppState.isLoading) {
-            console.log('Backup initialization triggered');
             initializeApp();
         }
     }, 2000);
@@ -1297,7 +1351,6 @@ if (document.readyState === 'loading') {
 setTimeout(() => {
     const spinner = document.getElementById('loading-spinner');
     if (spinner && spinner.style.display !== 'none') {
-        console.warn('Emergency fallback: hiding persistent loading spinner');
         spinner.style.display = 'none';
         
         // Show error message
