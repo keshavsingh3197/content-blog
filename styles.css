@@ -1438,6 +1438,7 @@ pre {
 ======================================== */
 
 .markdown-content h1 {
+    color: var(--accent-primary); /* fallback for browsers without background-clip: text support */
     background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

@@ -466,8 +466,11 @@ async function loadFile(filePath) {
         const htmlContent = marked.parse(markdown);
         const contentEl = document.getElementById('content');
 
-        // Calculate reading time
-        const wordCount = markdown.replace(/```[\s\S]*?```/g, '').replace(/[#*`[\]()!]/g, '').split(/\s+/).filter(Boolean).length;
+        // Calculate reading time (approx. 200 words/minute)
+        const markdownWithoutCodeBlocks = markdown.replace(/```[\s\S]*?```/g, '');
+        const cleanedText = markdownWithoutCodeBlocks.replace(/[#*`[\]()!]/g, '');
+        const words = cleanedText.split(/\s+/).filter(Boolean);
+        const wordCount = words.length;
         const readingMinutes = Math.max(1, Math.round(wordCount / 200));
         const fileName = filePath.split('/').pop().replace('.md', '');
         
@@ -1347,7 +1350,10 @@ if (document.readyState === 'loading') {
     initializeApp();
 }
 
-// Emergency fallback - hide loading spinner after 5 seconds no matter what
+// Emergency fallback - hide loading spinner after 5 seconds no matter what.
+// Direct style manipulation is intentional here: this code runs as an absolute
+// last resort when the normal application init has failed, so no class-based
+// abstractions can be relied upon.
 setTimeout(() => {
     const spinner = document.getElementById('loading-spinner');
     if (spinner && spinner.style.display !== 'none') {
