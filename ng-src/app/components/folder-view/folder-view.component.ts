@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil, switchMap } from 'rxjs/operators';
+import { takeUntil, switchMap, map } from 'rxjs/operators';
 import { ContentService } from '../../services/content.service';
 import { FileNode } from '../../models/file-node.model';
 import { BreadcrumbComponent, BreadcrumbItem } from '../breadcrumb/breadcrumb.component';
@@ -104,10 +104,11 @@ export class FolderViewComponent implements OnInit, OnDestroy {
       switchMap(params => {
         const path = params['path'] || '';
         this.buildBreadcrumbs(path);
-        return this.contentService.getStructure();
+        return this.contentService.getStructure().pipe(
+          map(nodes => ({ path, nodes }))
+        );
       })
-    ).subscribe(nodes => {
-      const path = this.route.snapshot.queryParams['path'] || '';
+    ).subscribe(({ path, nodes }) => {
       this.folderNode = path ? this.contentService.findNodeByPath(path, nodes) : null;
       if (!this.folderNode && !path) {
         // Show root
