@@ -1,13 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
+import { tap, catchError, map, shareReplay } from 'rxjs/operators';
 import { FileNode } from '../models/file-node.model';
 
 @Injectable({ providedIn: 'root' })
 export class ContentService {
   private structureSubject = new BehaviorSubject<FileNode[]>([]);
   structure$ = this.structureSubject.asObservable();
+
+  /** In-memory cache: path → shared Observable<string> */
+  private fileCache = new Map<string, Observable<string>>();
 
   constructor(private http: HttpClient) {}
 
@@ -23,7 +26,14 @@ export class ContentService {
   }
 
   getFile(path: string): Observable<string> {
-    return this.http.get(path, { responseType: 'text' });
+    if (!this.fileCache.has(path)) {
+      const req$ = this.http.get(path, { responseType: 'text' }).pipe(
+        shareReplay(1),
+        catchError(() => of(''))
+      );
+      this.fileCache.set(path, req$);
+    }
+    return this.fileCache.get(path)!;
   }
 
   searchFiles(query: string, nodes: FileNode[]): FileNode[] {

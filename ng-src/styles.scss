@@ -26,8 +26,8 @@
   --bg-primary: #1a1a1a;
   --bg-secondary: #2d2d2d;
   --bg-tertiary: #404040;
-  --text-primary: #ffffff;
-  --text-secondary: #e0e0e0;
+  --text-primary: #f0f0f0;
+  --text-secondary: #adb5bd;
   --border-color: #404040;
   --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3);
   --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.4);
@@ -608,6 +608,170 @@ body {
   color: var(--text-secondary);
 }
 
+/* ── Skeleton Loader ──────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position: 800px 0; }
+}
+
+.skeleton-header,
+.skeleton-line {
+  border-radius: var(--border-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary) 25%,
+    var(--bg-secondary) 50%,
+    var(--bg-tertiary) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+.content-skeleton {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  margin-bottom: 2rem;
+
+  .skeleton-header {
+    height: 2.5rem;
+    width: 60%;
+    margin-bottom: 1.5rem;
+  }
+
+  .skeleton-line {
+    height: 1rem;
+    margin-bottom: 0.75rem;
+
+    &.w-75  { width: 75%; }
+    &.w-100 { width: 100%; }
+    &.w-90  { width: 90%; }
+    &.w-60  { width: 60%; }
+    &.w-80  { width: 80%; }
+  }
+}
+
+/* ── Content Layout (TOC + Article) ──────────────────── */
+.content-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (min-width: 1100px) {
+    grid-template-columns: 1fr 260px;
+  }
+}
+
+.content-main {
+  min-width: 0; // prevent overflow in grid
+}
+
+/* ── Table of Contents ────────────────────────────────── */
+.toc-sidebar {
+  order: 2;
+
+  @media (min-width: 1100px) {
+    order: 2;
+    position: sticky;
+    top: calc(var(--navbar-height) + 1rem);
+    max-height: calc(100vh - var(--navbar-height) - 2rem);
+    overflow-y: auto;
+  }
+
+  @media (max-width: 1099px) {
+    display: none;
+  }
+}
+
+.toc-panel {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.toc-title {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.toc-nav {
+  padding: 0.5rem 0;
+}
+
+.toc-link {
+  display: block;
+  padding: 0.3rem 1rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  border-left: 2px solid transparent;
+  transition: var(--transition-fast);
+  word-break: break-word;
+
+  &:hover {
+    color: var(--accent-primary);
+    background: var(--bg-secondary);
+    border-left-color: var(--accent-primary);
+  }
+
+  &.toc-active {
+    color: var(--accent-primary);
+    border-left-color: var(--accent-primary);
+    background: var(--bg-secondary);
+    font-weight: 500;
+  }
+
+  &.toc-h1 { padding-left: 1rem; font-weight: 600; }
+  &.toc-h2 { padding-left: 1.5rem; }
+  &.toc-h3 { padding-left: 2.25rem; font-size: 0.76rem; }
+}
+
+/* ── Back to Top ──────────────────────────────────────── */
+.back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 1.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 9000;
+
+  &.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  &:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+  }
+}
+
 /* ── Footer ───────────────────────────────────────────── */
 .site-footer {
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
@@ -714,6 +878,10 @@ body {
 
   .markdown-body {
     padding: 1.25rem;
+
+    pre {
+      font-size: 0.8rem;
+    }
   }
 
   .markdown-body h1 {
@@ -726,6 +894,24 @@ body {
 
   .markdown-body h3 {
     font-size: 1.25rem;
+  }
+
+  // Make search results fill the screen width on small screens
+  .search-container .search-results {
+    position: fixed;
+    top: var(--navbar-height);
+    left: 0;
+    right: 0;
+    border-radius: 0;
+    max-height: 55vh;
+    z-index: 2000;
+    border-left: none;
+    border-right: none;
+  }
+
+  .back-to-top {
+    bottom: 1.25rem;
+    right: 1rem;
   }
 }
 
