@@ -63,4 +63,35 @@ export class ContentService {
     countRecursive(nodes);
     return count;
   }
+
+  findNodeByPath(path: string, nodes: FileNode[]): FileNode | null {
+    for (const node of nodes) {
+      if (node.path === path) return node;
+      if (node.children) {
+        const found = this.findNodeByPath(path, node.children);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  /** Rewrite relative image paths in markdown so they resolve correctly when
+   *  the markdown file lives at `filePath` (e.g. "src/API/API.md"). */
+  rewriteImagePaths(markdown: string, filePath: string): string {
+    const baseDir = filePath.substring(0, filePath.lastIndexOf('/'));
+    return markdown.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match, alt, src: string) => {
+      if (src.startsWith('http') || src.startsWith('data:') || src.startsWith('//')) {
+        return `![${alt}](${src})`;
+      }
+      if (src.startsWith('./')) {
+        return `![${alt}](${baseDir}/${src.slice(2)})`;
+      }
+      if (src.startsWith('/')) {
+        // Absolute path missing the 'src/' prefix (e.g. /CSharp/Asset/...)
+        return `![${alt}](src${src})`;
+      }
+      // Plain relative path without leading './'
+      return `![${alt}](${baseDir}/${src})`;
+    });
+  }
 }

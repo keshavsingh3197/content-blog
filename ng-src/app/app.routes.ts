@@ -9,5 +9,9 @@ export const routes: Routes = [
     path: 'file',
     loadComponent: () => import('./components/content-view/content-view.component').then(m => m.ContentViewComponent)
   },
+  {
+    path: 'folder',
+    loadComponent: () => import('./components/folder-view/folder-view.component').then(m => m.FolderViewComponent)
+  },
   { path: '**', redirectTo: '' }
 ];
