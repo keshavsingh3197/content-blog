@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { FileNode } from '../../models/file-node.model';
 @Component({
   selector: 'app-search',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
     <div class="search-container">
@@ -57,7 +58,11 @@ export class SearchComponent implements OnInit {
   private nodes: FileNode[] = [];
   private querySubject = new Subject<string>();
 
-  constructor(private contentService: ContentService, private router: Router) {}
+  constructor(
+    private contentService: ContentService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.contentService.getStructure().subscribe(nodes => {
@@ -66,6 +71,7 @@ export class SearchComponent implements OnInit {
     this.querySubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(q => {
       this.results = q ? this.contentService.searchFiles(q, this.nodes) : [];
       this.searched = !!q;
+      this.cdr.markForCheck();
     });
   }
 
@@ -77,6 +83,7 @@ export class SearchComponent implements OnInit {
     this.query = '';
     this.results = [];
     this.searched = false;
+    this.cdr.markForCheck();
   }
 
   openFile(node: FileNode): void {

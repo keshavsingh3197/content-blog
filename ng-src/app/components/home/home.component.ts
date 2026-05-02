@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ContentService } from '../../services/content.service';
@@ -17,6 +17,7 @@ interface TopicCard {
 @Component({
   selector: 'app-home',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FileTreeComponent, SearchComponent],
   template: `
     <section class="hero-section">
@@ -107,12 +108,13 @@ export class HomeComponent implements OnInit {
     { name: 'VS Code Ext.',   icon: 'fa-puzzle-piece',    color: 'linear-gradient(135deg,#f7971e,#ffd200)', description: 'Extensions',             folderName: 'Extensions' },
   ];
 
-  constructor(private contentService: ContentService, private router: Router) {}
+  constructor(private contentService: ContentService, private router: Router, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.contentService.getStructure().subscribe(nodes => {
       this.nodes = nodes;
       this.fileCount = this.contentService.countFiles(nodes);
+      this.cdr.markForCheck();
     });
   }
 

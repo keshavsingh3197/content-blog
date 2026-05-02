@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule],
   template: `
     <footer class="site-footer">
@@ -65,7 +66,7 @@ import { RouterModule } from '@angular/router';
           <div class="row align-items-center py-3">
             <div class="col-md-6 text-center text-md-start">
               <p class="mb-0 text-white-65">
-                &copy; 2024
+                &copy; {{ currentYear }}
                 <a href="https://www.keshavsingh.net" class="text-white text-decoration-none fw-medium">Keshav Singh</a>.
                 All rights reserved.
               </p>
@@ -81,4 +82,6 @@ import { RouterModule } from '@angular/router';
     </footer>
   `
 })
-export class FooterComponent {}
+export class FooterComponent {
+  readonly currentYear = new Date().getFullYear();
+}

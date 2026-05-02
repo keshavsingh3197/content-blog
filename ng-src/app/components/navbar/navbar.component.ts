@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ContentService } from '../../services/content.service';
@@ -8,6 +8,7 @@ import { FileNode } from '../../models/file-node.model';
 @Component({
   selector: 'app-navbar',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule],
   template: `
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
@@ -66,12 +67,14 @@ export class NavbarComponent implements OnInit {
   constructor(
     public themeService: ThemeService,
     private contentService: ContentService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.contentService.getStructure().subscribe(nodes => {
       this.topNodes = nodes.filter(n => n.isDirectory);
+      this.cdr.markForCheck();
     });
   }
 
@@ -79,12 +82,14 @@ export class NavbarComponent implements OnInit {
     e.preventDefault();
     e.stopPropagation();
     this.openDropdown = this.openDropdown === name ? null : name;
+    this.cdr.markForCheck();
   }
 
   navigateToFile(e: Event, node: FileNode): void {
     e.preventDefault();
     this.openDropdown = null;
     this.navCollapsed = true;
+    this.cdr.markForCheck();
     if (!node.isDirectory) {
       this.router.navigate(['/file'], { queryParams: { path: node.path } });
     }
@@ -92,6 +97,9 @@ export class NavbarComponent implements OnInit {
 
   @HostListener('document:click')
   closeDropdown(): void {
-    this.openDropdown = null;
+    if (this.openDropdown !== null) {
+      this.openDropdown = null;
+      this.cdr.markForCheck();
+    }
   }
 }
