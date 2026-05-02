@@ -737,7 +737,54 @@ body {
   &.toc-h3 { padding-left: 2.25rem; font-size: 0.76rem; }
 }
 
-/* ── Back to Top ──────────────────────────────────────── */
+/* ── Mobile TOC ───────────────────────────────────────── */
+.mobile-toc {
+  display: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+
+  @media (max-width: 1099px) {
+    display: block;
+  }
+}
+
+.mobile-toc-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border: none;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: var(--transition-fast);
+
+  &:hover {
+    background: var(--bg-tertiary);
+  }
+}
+
+.mobile-toc-nav {
+  max-height: 0;
+  overflow: hidden;
+  background: var(--bg-primary);
+  transition: max-height 0.3s ease;
+
+  &.open {
+    max-height: 400px;
+    overflow-y: auto;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+
 .back-to-top {
   position: fixed;
   bottom: 2rem;

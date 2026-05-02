@@ -1,9 +1,13 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './components/home/home.component';
-import { ContentViewComponent } from './components/content-view/content-view.component';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'file', component: ContentViewComponent },
+  {
+    path: '',
+    loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'file',
+    loadComponent: () => import('./components/content-view/content-view.component').then(m => m.ContentViewComponent)
+  },
   { path: '**', redirectTo: '' }
 ];

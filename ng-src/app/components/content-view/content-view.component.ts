@@ -41,6 +41,24 @@ export interface TocItem {
       </div>
 
       <div class="content-layout" *ngIf="!loading && !error">
+        <!-- Mobile TOC (collapsible, shown only on small screens) -->
+        <div class="mobile-toc" *ngIf="toc.length > 1">
+          <button class="mobile-toc-toggle" (click)="tocOpen = !tocOpen" [attr.aria-expanded]="tocOpen">
+            <i class="fas fa-list me-2"></i>Table of Contents
+            <i class="fas ms-auto" [class.fa-chevron-down]="!tocOpen" [class.fa-chevron-up]="tocOpen"></i>
+          </button>
+          <nav class="mobile-toc-nav" [class.open]="tocOpen">
+            <a
+              *ngFor="let item of toc"
+              [href]="'#' + item.id"
+              class="toc-link"
+              [class.toc-h1]="item.level === 1"
+              [class.toc-h2]="item.level === 2"
+              [class.toc-h3]="item.level === 3"
+              (click)="scrollToHeading($event, item.id); tocOpen = false"
+            >{{ item.text }}</a>
+          </nav>
+        </div>
         <!-- TOC sidebar (desktop) -->
         <aside class="toc-sidebar" *ngIf="toc.length > 1">
           <div class="toc-panel">
@@ -98,6 +116,7 @@ export class ContentViewComponent implements OnInit, OnDestroy {
   toc: TocItem[] = [];
   activeTocId = '';
   showBackToTop = false;
+  tocOpen = false;
 
   private destroy$ = new Subject<void>();
   private scrollHandler = () => {
@@ -123,9 +142,10 @@ export class ContentViewComponent implements OnInit, OnDestroy {
         this.error = '';
         this.content = '';
         this.toc = [];
+        this.tocOpen = false;
         this.buildBreadcrumbs(path);
         this.fileName = path.split('/').pop() || path;
-        window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+        window.scrollTo({ top: 0, behavior: 'instant' });
         this.cdr.markForCheck();
         return this.contentService.getFile(path);
       })

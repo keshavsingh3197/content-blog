@@ -28,8 +28,8 @@ export class ContentService {
   getFile(path: string): Observable<string> {
     if (!this.fileCache.has(path)) {
       const req$ = this.http.get(path, { responseType: 'text' }).pipe(
-        shareReplay(1),
-        catchError(() => of(''))
+        tap({ error: () => this.fileCache.delete(path) }),
+        shareReplay(1)
       );
       this.fileCache.set(path, req$);
     }
