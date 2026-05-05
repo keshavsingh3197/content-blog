@@ -1,43 +1,5 @@
 # C_Sharp
 
-1. [CSharp](#csharp)
-2. [Operator](#operator)
-3. [Filters](#filters)
-   - [Authorization Filter](#authorization-filter)
-   - [Resource Filter](#resource-filter)
-   - [Action Filter](#action-filter)
-   - [Result Filter](#result-filter)
-   - [Exception Filter](#exception-filter)
-   - [A filter can be added to the pipeline at one of three scopes](#a-filter-can-be-added-to-the-pipeline-at-one-of-three-scopes)
-   - [We can apply our filter to the controller class or action method using one of the following](#we-can-apply-our-filter-to-the-controller-class-or-action-method-using-one-of-the-following)
-     - [ServiceFilterAttribute](#servicefilterattribute)
-     - [TypeFilterAttribute](#typefilterattribute)
-     - [IFilterFactory implemented on attribute](#ifilterfactory-implemented-on-attribute)
-4. [Ref and Out](#ref-and-out)
-5. [Boxing and Unboxing](#boxing-and-unboxing)
-   - [Boxing](#boxing)
-   - [Unboxing](#unboxing)
-6. [DI (Dependency Injection)](#di)
-   - [There are three types of DIs](#there-are-three-types-of-dis)
-   - [There are 3 types of lifetimes supported by ASP.NET Core for the dependency injection](#there-are-3-types-of-lifetimes-supported-by-aspnet-core-for-the-dependency-injection)
-   - [Injecting service with different lifetimes into another](#injecting-service-with-different-lifetimes-into-another)
-7. [What are the features of C#?](#what-are-the-features-of-c)
-8. [What is Asynchronous and synchronous with example](#what-is-asynchronous-and-synchronous-with-example)
-9. [Delegates and Events](#delegates-and-events)
-10. [Method signature](#method-signature)
-11. [Comments](#comments)
-12. [Indexer](#indexer)
-    - [Overload Indexer](#overload-indexer)
-    - [C# Indexer Overview](#c-indexer-overview)
-13. [Diff b/w const, static and readonly](#diff-bw-const-static-and-readonly)
-14. [Lazy Loading](#lazy-loading)
-15. [Concurrency & Parallelism](#concurrency--parallelism)
-16. [Diff b/w Interface and Abstract class](#diff-bw-interface-and-abstract-class)
-17. [Diff b/w list and arrayList](#diff-bw-list-and-arraylist)
-18. [Diff b/w IEnumerable, ICollection and IList](#ienumerable-icollection-and-ilist)
-19. [Diff b/w Dynamic, Object and Reflection](#dynamic-object-and-reflection-diff)
-20. [Diff b/w MetData and Manifest](#diff-bw-metadata-and-manifest)
-
 ## Operator
 
 ---
@@ -669,20 +631,6 @@ class ParallelismExample
 ```
 
 ## Diff b/w Interface and Abstract class
-
-| Feature                   | Interface                                              | Abstract Class                                        |
-|---------------------------|--------------------------------------------------------|-------------------------------------------------------|
-| Instantiation             | Cannot be instantiated.                                | Cannot be instantiated.                               |
-| Implementation            | Cannot have any implementation, only method signatures. | Can have both abstract methods and concrete methods.   |
-| Fields                    | Cannot have fields.                                    | Can have fields.                                      |
-| Constructors/Destructors  | Cannot have constructors or destructors.               | Can have constructors and destructors.                |
-| Access Modifiers          | Members are implicitly public.                         | Members can have various access modifiers.            |
-| Inheritance                | A class can implement multiple interfaces.            | A class can inherit from only one abstract class.     |
-| Default Behavior          | Cannot provide default behavior.                       | Can provide default behavior.                         |
-| Property Definitions      | Can define properties, but not their accessors.       | Can define properties with accessors.                 |
-| Multiple Inheritance      | Supports multiple inheritance (a class can implement multiple interfaces). | Does not support multiple inheritance (a class can inherit only one abstract class). |
-| Versioning                | Adding new members to an interface breaks existing implementers. | New methods can be added as abstract or virtual, allowing subclasses to optionally override them. |
-| Purpose                   | Defines a contract that implementing classes must follow. | Serves as a base class to define common behavior and provide a common structure. |
 
 ✅ Interface vs Abstract Class (Updated)
 | Feature                   | Interface                                              | Abstract Class                                        |
