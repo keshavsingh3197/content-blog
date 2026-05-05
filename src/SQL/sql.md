@@ -108,33 +108,266 @@ DEALLOCATE employee_cursor;
 </details>
 
 ## What is an SQL statement? Give some examples
+- An SQL statement is simply a command you write to **talk to a database**.
+- It tells the database what to **do with data** — like get it, add it, update it, or delete it.
+- In one line:
+> SQL statement = instruction to manage data in a database
 
-- Also known as an SQL command.
-- It's a string of characters interpreted by the SQL engine as a legal command and executed accordingly.
-- Some examples of SQL statements are SELECT, CREATE, DELETE, DROP, REVOKE, and so on.
+<details>
+    <summary>Example</summary>
+
+    🔹 Common Types with Examples
+    Get data (READ)
+    SELECT * FROM Employees;
+
+    👉 Fetch all records from Employees table
+
+    Insert data (CREATE)
+    INSERT INTO Employees (Name, Age) VALUES ('Keshav', 25);
+
+    👉 Add new record
+
+    Update data
+    UPDATE Employees SET Age = 26 WHERE Name = 'Keshav';
+
+    👉 Modify existing data
+
+    Delete data
+    DELETE FROM Employees WHERE Name = 'Keshav';
+
+    👉 Remove data
+    
+</details>
+
 
 ## What types of SQL commands (or SQL subsets) do you know?
 
-1. `Data Definition Language (DDL)` – to define and modify the structure of a database.
-    - CREATE, ALTER TABLE, DROP, TRUNCATE, and ADD COLUMN
-2. `Data Manipulation Language (DML)` – to access, manipulate, and modify data in a database.
-    - UPDATE, DELETE, and INSERT
-3. `Data Control Language (DCL)` – to control user access to the data in the database and give or revoke privileges to a specific user or a group of users.
-    - GRANT and REVOKE
-4. `Transaction Control Language (TCL)` – to control transactions in a database.
-    - COMMIT, SET TRANSACTION, ROLLBACK, and SAVEPOINT
-5. `Data Query Language (DQL)` – to perform queries on the data in a database to retrieve the necessary information from it.
-    - SELECT
+- SQL Commands are the different types of instructions used to interact with a database.
+- Instead of memorizing randomly, understand them in 5 simple categories 👇
 
-## What is an index?
+### 🔹 1. DQL (Data Query Language)
 
-`A special data structure related to a database table and used for storing its important parts and enabling faster data search and retrieval. Indexes are especially efficient for large databases, where they significantly enhance query performance.`
+👉 Used to fetch/read data
 
-## What types of indexes do you know?
+```sql
+SELECT * FROM Employees;
+```
 
-- Unique index – doesn't allow duplicates in a table column and hence helps maintain data integrity.
-- Clustered index – defines the physical order of records of a database table and performs data searching based on the key values. A table can have only one clustered index.
-- Non-clustered index – keeps the order of the table records that doesn't match the physical order of the actual data on the disk. It means that the data is stored in one place and a non-clustered index – in another one. A table can have multiple non-clustered indexes.
+✔ Only command: SELECT
+
+### 🔹 2. DML (Data Manipulation Language)
+
+👉 Used to change data inside table
+
+```sql
+INSERT INTO Employees VALUES (1, 'Keshav');
+UPDATE Employees SET Name = 'Ram' WHERE Id = 1;
+DELETE FROM Employees WHERE Id = 1;
+```
+
+✔ Commands:
+
+- INSERT
+- UPDATE
+- DELETE
+
+### 🔹 3. DDL (Data Definition Language)
+
+👉 Used to create or change structure (tables, schema)
+
+```sql
+CREATE TABLE Employees (Id INT, Name VARCHAR(50));
+ALTER TABLE Employees ADD Age INT;
+DROP TABLE Employees;
+```
+✔ Commands:
+
+- CREATE
+- ALTER
+- DROP
+- TRUNCATE
+- ADD COLUMN
+
+### 🔹 4. TCL (Transaction Control Language)
+
+👉 Used to control transactions (save or undo changes)
+
+```sql
+COMMIT;
+ROLLBACK;
+SAVEPOINT A;
+SET TRANSACTION
+```
+
+✔ Commands:
+
+- COMMIT
+- ROLLBACK
+- SAVEPOINT
+- SET TRANSACTION
+
+### 🔹 5. DCL (Data Control Language)
+
+👉 Used to control permissions
+
+```sql
+GRANT SELECT ON Employees TO User1;
+REVOKE SELECT ON Employees FROM User1;
+```
+
+✔ Commands:
+
+- GRANT
+- REVOKE
+
+### 🔥 Simple Memory Trick
+- DQL → Read
+- DML → Change Data
+- DDL → Structure
+- TCL → Save/Undo
+- DCL → Permissions
+
+✔ Final Understanding
+### 👉 SQL Commands = ways to
+
+- Read data
+- Modify data
+- Create tables
+- Control transactions
+- Manage access
+
+---
+
+## INDEX
+
+- An index in SQL is used to make data retrieval faster.
+- Indexes are especially efficient for large databases, where they significantly enhance query performance.
+
+### 🔹 Simple idea
+
+Think of a book 📘
+- 👉 Without index → you scan every page
+- 👉 With index → you jump directly to the page
+
+Same in database:
+- 👉 Index helps database find data quickly without scanning full table
+
+### 🔹 Definition
+    - Index = a data structure that improves the speed of SELECT queries
+
+### 🔹 Example
+    - CREATE INDEX idx_name ON Employees(Name);
+    - 👉 Now searching by Name becomes faster:
+    - SELECT * FROM Employees WHERE Name = 'Keshav';
+
+### 🔹 Types of Index
+
+- 1. **Primary Index**
+    - Automatically created on PRIMARY KEY
+    - Unique + not null
+
+- 2. **Unique Index**
+    - CREATE UNIQUE INDEX idx_email ON Employees(Email);
+    - 👉 No duplicate values allowed
+
+- 3. **Composite Index**
+    - CREATE INDEX idx_name_age ON Employees(Name, Age);
+    - 👉 Works on multiple columns
+
+- 4. **Clustered Index**
+    - Sorts actual table data
+    - Only one per table
+
+- 5. Non-Clustered Index
+    - Separate structure
+    - Can have many
+
+- 🔹 Advantages
+    - ✔ Faster search (SELECT)
+    - ✔ Improves performance on large data
+
+- 🔹 Disadvantages
+    - ❌ Slower INSERT, UPDATE, DELETE
+    - ❌ Takes extra storage
+
+- 🔹 When to use
+    -  👉 Use index when:
+        - Column used in WHERE
+        - Used in JOIN
+        - Used in ORDER BY
+- 🔥 Key Point
+    - 👉 **Index speeds up read, but slows down write**
+
+### 
+
+<details>
+    <summary>DIFF B/W CLustered and Non-CLustered Index</summary>
+
+    🔹 1. Clustered Index
+        👉 It stores actual table data in sorted order
+        👉 The table itself becomes the index
+        Example
+            CREATE CLUSTERED INDEX idx_id ON Employees(Id);
+            👉 Data will be physically stored like:
+            
+            Id | Name
+            1  | A
+            2  | B
+            3  | C
+        ✔ Only ONE clustered index per table
+        ✔ Fast for range queries (BETWEEN, ORDER BY)
+
+    🔹 2. Non-Clustered Index
+        👉 It stores index separately, not actual data
+        👉 Contains:
+            Indexed column
+            Pointer to actual row
+        Example
+            CREATE NONCLUSTERED INDEX idx_name ON Employees(Name);
+        👉 Internally like:
+
+            Name   → Pointer
+            A      → Row1
+            B      → Row2
+
+        ✔ Can have multiple indexes
+        ✔ Extra lookup needed to fetch full data
+
+    🔥 Key Differences (Simple Table)
+        Feature	                 Clustered Index	            Non-Clustered Index
+        Data storage	      Actual data sorted	         Separate structure
+        Number allowed	      Only 1	                     Multiple
+        Speed	              Faster for range queries	     Faster for specific lookups
+        Storage	              No extra (data itself)	     Extra storage needed
+        Lookup	              Direct	                     Needs pointer (extra step)
+
+    🔹 Real-Life Example
+        Table: Employees
+            Id | Name | Salary
+        Case 1: Clustered on Id
+            CREATE CLUSTERED INDEX idx_id ON Employees(Id);
+            
+            👉 Data physically sorted by Id
+            👉 Fast:
+
+            SELECT * FROM Employees WHERE Id BETWEEN 1 AND 100;
+
+        Case 2: Non-Clustered on Name
+            CREATE NONCLUSTERED INDEX idx_name ON Employees(Name);
+
+            👉 Good for:
+                SELECT * FROM Employees WHERE Name = 'Keshav';
+                👉 First finds in index → then goes to actual row
+
+    🔹 Easy Memory Trick
+        👉 Clustered = Data itself arranged
+        👉 Non-Clustered = Shortcut (pointer)
+
+    🔥 Final Understanding
+        Clustered = how data is stored
+        Non-clustered = how data is searched
+    
+</details>
 
 ## `TRUNCATE`, `DELETE`, and `DROP` command diffs
 
