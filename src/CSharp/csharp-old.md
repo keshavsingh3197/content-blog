@@ -684,6 +684,83 @@ class ParallelismExample
 | Versioning                | Adding new members to an interface breaks existing implementers. | New methods can be added as abstract or virtual, allowing subclasses to optionally override them. |
 | Purpose                   | Defines a contract that implementing classes must follow. | Serves as a base class to define common behavior and provide a common structure. |
 
+✅ Interface vs Abstract Class (Updated)
+| Feature                   | Interface                                              | Abstract Class                                        |
+|---------------------------|--------------------------------------------------------|-------------------------------------------------------|
+| Instantiation             |	❌ Cannot be instantiated	                            | ❌ Cannot be instantiated |
+| Implementation	          | ✅ Can have default method implementations (since C# 8)  | ✅ Can have abstract + concrete methods |
+| Fields	                   | ❌ Cannot have instance fields (only static fields allowed) | ✅ Can have fields |
+| Constructors              | ❌ No constructors	                                       | ✅ Can have constructors |
+| Access Modifiers	       | ✅ Supports public, private, protected, internal (since newer C# versions) |	✅ Full support |
+| Methods	                | ✅ Can have static, default, private methods	       | ✅ All types supported |
+| Properties	             | ✅ Can have properties with implementation now        | ✅ Fully supported |
+| Multiple Inheritance	    | ✅ A class can implement multiple interfaces	       | ❌ Only single inheritance |
+| Default Behavior	       | ✅ YES (default methods added in C# 8)	             | ✅ YES |
+| Static Members	          | ✅ Allowed (since C# 8+)	                            | ✅ Allowed |
+| Versioning	             | ✅ Improved with default implementations (no longer always breaking)	| ✅ Flexible |
+| Purpose	                | Define capability/contract + optional shared behavior	| Provide base class with shared state + behavior |
+
+
+
+<details>
+   <summary> 🚨 What Changed (Important Fixes) </summary>
+
+      Your old table had these outdated points:
+      
+      ❌ “Interface cannot have implementation” →
+      ✔️ Now it CAN (default methods)
+      
+      ❌ “Cannot provide default behavior” →
+      ✔️ Now it CAN
+      
+      ❌ “Members are implicitly public only” →
+      ✔️ Now supports private, protected, etc.
+      
+      ❌ “Adding new members breaks implementation” →
+      ✔️ Not always true anymore (thanks to default methods)
+      
+      💡 Simple Understanding (Interview Ready)
+      Interface = “What to do” (Contract + optional default logic now)
+      Abstract Class = “What + How + Shared State”
+      
+      🔥 When to Use What
+      Use Interface when:
+      You need multiple inheritance
+      You define capabilities (e.g., ILogger, IDisposable)
+      No shared state required
+      
+      👉 Example:
+      
+      public interface ILogger
+      {
+          void Log(string message);
+      
+          void LogError(string message)
+          {
+              Console.WriteLine($"Error: {message}");
+          }
+      }
+      Use Abstract Class when:
+      You need shared fields/state
+      You want base logic + extensibility
+      
+      👉 Example:
+      
+      public abstract class Animal
+      {
+          public string Name;
+      
+          public void Eat() => Console.WriteLine("Eating...");
+      
+          public abstract void Sound();
+      }
+      ⚡ Key Interview One-Liner
+      
+      “Earlier interfaces were pure contracts, but in modern C# they can also contain implementation. However, abstract classes are still used when shared state or constructors are needed.”   
+      
+</details>
+
+
 ## Diff b/w list and arrayList
 
 | Feature                 | `List<T>`                        | `ArrayList`                       |
@@ -699,6 +776,8 @@ class ParallelismExample
 | Capacity Management     | Automatically resizes. Has a `Capacity` property to manage the underlying array size. | Automatically resizes. Has a `Capacity` property to manage the underlying array size. |
 | Sorting                 | Provides a `Sort` method that works with `IComparer<T>` or Comparison<T> delegates. | Provides a `Sort` method that requires an `IComparer` implementation. |
 | Thread-Safety           | Not thread-safe (like most collection classes). Use `Concurrent` collections for thread-safe operations. | Not thread-safe. |
+| Modern Usage | ✅ Recommended | ❌ Deprecated / Legacy (avoid using) |
+| Interoperability | Works well with LINQ and modern frameworks | Limited support in modern .NET |
 
 ## IEnumerable, ICollection and IList
 
