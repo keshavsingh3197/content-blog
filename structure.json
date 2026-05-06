@@ -12,6 +12,11 @@
           "name": "API.md",
           "path": "src/API/API.md",
           "isDirectory": false
+        },
+        {
+          "name": "scalling.md",
+          "path": "src/API/scalling.md",
+          "isDirectory": false
         }
       ]
     },
@@ -104,8 +109,18 @@
           ]
         },
         {
+          "name": "azure-basic.md",
+          "path": "src/Azure/azure-basic.md",
+          "isDirectory": false
+        },
+        {
           "name": "Azure-DevOps.md",
           "path": "src/Azure/Azure-DevOps.md",
+          "isDirectory": false
+        },
+        {
+          "name": "Azure-service-bus.md",
+          "path": "src/Azure/Azure-service-bus.md",
           "isDirectory": false
         },
         {
@@ -407,6 +422,11 @@
       "path": "src/SQL",
       "isDirectory": true,
       "children": [
+        {
+          "name": "migration.md",
+          "path": "src/SQL/migration.md",
+          "isDirectory": false
+        },
         {
           "name": "sql.md",
           "path": "src/SQL/sql.md",
