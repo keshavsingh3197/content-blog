@@ -25,6 +25,13 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Regenerate structure.json
+        run: python3 generate_structure.py
+
       - run: npm ci --legacy-peer-deps
 
       - run: npx ng build --base-href /
