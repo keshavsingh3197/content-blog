@@ -1,5 +1,8 @@
 # Azure
 
+## Azure Resource Manager [ARM]
+ - It is the **main control layer (brain)** in Azure that creates, manages, and organizes all resources like VMs, databases, storage, etc
+
 ## Azure region
 - 👉 A Region is a geographical area containing one or more data centers.
 
@@ -67,3 +70,39 @@
 
 
 ![Diff](./Assets/region-az.png)
+
+
+## Azure Cloud Hosting model
+
+![Model](./Assets/az-service-model.png)
+
+- IaaS
+    - you rent hardware, manage everything above it (VMs, disks, networking)
+- PaaS
+    - you bring code and data, Azure runs the platform (App Service, AKS, Azure SQL)
+- SaaS
+    - you just use the app (Microsoft 365, Azure DevOps)
+- FaaS
+    - subset of PaaS — write one function, pay per run, zero idle cost (Azure Functions)
+
+<details>
+<summary>Trick to remember </summary>
+
+```
+pps   Don't   Run   My   OS  —   Virtuous   Servers   Store   Networks
+Each word = one layer, top to bottom. Click any layer to see details.
+```
+
+| Word | Layer |
+| ---- | ----- |
+| Apps | Applications |
+| Don't | Data |
+| Run | Runtime |
+| My | Middleware |
+| OS | Operating system |
+| Virtuous | Virtualisation |
+| Servers | Servers |
+| Store | Storage | 
+| Networks | Networking |
+
+</details>
