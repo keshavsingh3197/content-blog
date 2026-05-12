@@ -4,7 +4,7 @@
 - 👉 A Region is a geographical area containing one or more data centers.
 
 <details>
-<summary>Example regions:<summary>
+<summary>Example regions:</summary>
 
         East US
         West Europe
@@ -30,7 +30,7 @@
     - Networking
 
 <details>
-<summary>Example:<summary>
+<summary>Example:</summary>
 
         Region: Central India
         Zone 1
@@ -64,3 +64,6 @@
     - Secondary: South India
     - ✔ Survive region outage
     - ✔ Geo-redundancy
+
+
+![Diff](./Assets/region-az.png)
