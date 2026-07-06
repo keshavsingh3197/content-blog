@@ -22,7 +22,7 @@
     "bootstrap": "^5.3.3",
     "@popperjs/core": "^2.11.8",
     "ngx-markdown": "21.2.0",
-    "marked": "^12.0.0"
+    "marked": "^17.0.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^21.2.9",

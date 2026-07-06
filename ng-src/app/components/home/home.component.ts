@@ -23,12 +23,16 @@ interface TopicCard {
     <section class="hero-section">
       <div class="container">
         <div class="row align-items-center">
-          <div class="col-lg-8">
+          <div class="col-lg-7">
+            <span class="hero-eyebrow">
+              <i class="fas fa-bolt"></i> Engineering Knowledge Base
+            </span>
             <h1 class="hero-title">
-              <i class="fas fa-code me-3"></i>Content Blog
+              Deep-dive guides for<br />modern developers
             </h1>
             <p class="hero-subtitle">
-              Comprehensive programming tutorials on C#, Azure, AWS, Docker, Kubernetes and more.
+              Hands-on notes and tutorials on C#/.NET, Azure, AWS, Docker, Kubernetes,
+              design patterns and more — curated and kept current.
             </p>
             <div class="hero-stats">
               <div class="stat-item">
@@ -40,12 +44,12 @@ interface TopicCard {
                 <span class="stat-label">Topics</span>
               </div>
               <div class="stat-item">
-                <span class="stat-number">100%</span>
-                <span class="stat-label">Free</span>
+                <span class="stat-number">Free</span>
+                <span class="stat-label">Forever</span>
               </div>
             </div>
           </div>
-          <div class="col-lg-4 mt-4 mt-lg-0">
+          <div class="col-lg-5 mt-4 mt-lg-0">
             <app-search></app-search>
           </div>
         </div>
@@ -56,17 +60,18 @@ interface TopicCard {
       <div class="row mb-4">
         <div class="col-12 mb-3">
           <h2 class="section-heading">
-            <i class="fas fa-layer-group me-2 text-primary"></i>Browse Topics
+            <i class="fas fa-layer-group me-2"></i>Browse Topics
           </h2>
         </div>
         <div class="col-6 col-md-4 col-lg-3 mb-3" *ngFor="let topic of topics">
           <button
             class="topic-card w-100"
-            [style.background]="topic.color"
             (click)="navigateToTopic(topic)"
             [attr.aria-label]="'Browse ' + topic.name"
           >
-            <i class="fas text-white topic-icon" [ngClass]="topic.icon"></i>
+            <span class="topic-icon-chip" [style.background]="topic.color">
+              <i class="fas topic-icon" [ngClass]="topic.icon"></i>
+            </span>
             <div class="topic-title">{{ topic.name }}</div>
             <div class="topic-count">{{ topic.description }}</div>
           </button>

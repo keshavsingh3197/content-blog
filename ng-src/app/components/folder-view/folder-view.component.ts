@@ -35,17 +35,18 @@ const FOLDER_COLORS: string[] = [
         <!-- Sub-folders -->
         <div *ngIf="subFolders.length > 0" class="mb-4">
           <h2 class="section-heading mb-3">
-            <i class="fas fa-folder-open me-2 text-primary"></i>{{ folderNode.name }}
+            <i class="fas fa-folder-open me-2"></i>{{ folderNode.name }}
           </h2>
           <div class="row">
             <div class="col-6 col-md-4 col-lg-3 mb-3" *ngFor="let folder of subFolders; let i = index">
               <button
                 class="topic-card w-100"
-                [style.background]="folderColor(i)"
                 (click)="openFolder(folder)"
                 [attr.aria-label]="'Browse ' + folder.name"
               >
-                <i class="fas fa-folder text-white topic-icon"></i>
+                <span class="topic-icon-chip" [style.background]="folderColor(i)">
+                  <i class="fas fa-folder topic-icon"></i>
+                </span>
                 <div class="topic-title">{{ folder.name }}</div>
                 <div class="topic-count">{{ childFileCount(folder) }} files</div>
               </button>
