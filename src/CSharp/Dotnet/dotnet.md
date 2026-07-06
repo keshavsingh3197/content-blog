@@ -1,99 +1,89 @@
-# Common uses of .NET Core
+# .NET Overview
+
+> .NET is a free, open-source, cross-platform developer platform from Microsoft for building modern applications. Since **.NET 5** the "Core" branding was dropped and the product line was unified into a single **.NET** that ships once a year. The current release is **.NET 10** (LTS, released November 2025), which is supported for three years and ships with **C# 14**.
 >
-> .NET Core is a popular open-source cross-platform framework developed by Microsoft for building modern applications. Here are some of the common uses of .NET Core:
+> The older, Windows-only **.NET Framework 4.8.x** is still supported for existing apps but is no longer receiving new features — all new development targets modern .NET.
 
-- **Web Development**: .NET Core is widely used for building web applications, including web APIs, web services, and web applications. With its modular architecture, it allows developers to create scalable and high-performance web applications.
+## Common uses of .NET
 
-- **Desktop Application Development**: .NET Core can be used for building desktop applications, such as Windows Forms and WPF applications. It provides a rich set of libraries and tools that simplify desktop application development.
+- **Web development** — Build web APIs, real-time apps and full-stack web UIs with **ASP.NET Core** (MVC, Razor Pages, Minimal APIs) and **Blazor** (server, WebAssembly, or hybrid).
 
-- **Mobile App Development**: .NET Core can be used for building mobile apps using Xamarin, a cross-platform mobile app development framework. Xamarin allows developers to build native iOS and Android apps using C# and .NET Core.
+- **Cloud-native & microservices** — Build containerized microservices and serverless apps that run on Azure, AWS, or Google Cloud. **.NET Aspire** provides an opinionated stack for orchestrating, observing and deploying distributed apps.
 
-- **Cloud Native Development**: .NET Core is widely used for building cloud-native applications that can run on popular cloud platforms such as Azure, AWS, and Google Cloud. It provides tools and libraries for building microservices, containers, and serverless applications.
+- **Desktop development** — Build cross-platform desktop apps with **.NET MAUI** or **Blazor Hybrid**, and Windows desktop apps with **WPF** and **Windows Forms**.
 
-- **Gaming Development**: .NET Core can also be used for building games using Unity, a popular game engine. Unity supports C# and .NET Core, making it a popular choice for game development.
+- **Mobile app development** — Build native iOS and Android apps with **.NET MAUI**, the successor to Xamarin (Xamarin reached end of support in May 2024).
 
-- **Machine Learning**: .NET Core can be used for building machine learning applications using ML.NET, a machine learning framework for .NET. ML.NET provides a set of libraries and tools for building custom machine learning models using C# and .NET Core.
+- **Machine learning & AI** — Use **ML.NET** for custom models and the **Microsoft.Extensions.AI** libraries / **Semantic Kernel** to integrate LLMs and AI services into .NET apps.
 
-> With its modular architecture and cross-platform capabilities, it is a versatile framework that can be used for a wide range of applications.
+- **Game development** — Build games with **Unity** or **Godot**, both of which use C#.
 
-## Modular Architecture
+- **Cross-platform tooling & CLIs** — Ship command-line tools and, in .NET 10, run single-file, project-less C# apps directly with `dotnet run app.cs`.
 
-    Modular architecture, also known as modular design, is an architectural style that emphasizes the separation of 
-    a system into independent, self-contained modules or components. In a modular architecture, each module is 
-    designed to perform a specific function or task, and can be combined with other modules to create a larger system.
-
-    The main goal of modular architecture is to improve system maintainability, scalability, and flexibility by 
-    breaking down a complex system into smaller, more manageable parts. Each module can be developed and tested 
-    independently, and can be replaced or updated without affecting the rest of the system.
-
-    In a modular architecture, the modules communicate with each other through well-defined interfaces, which specify 
-    how data and information are exchanged between the modules. This helps to reduce coupling between modules, and 
-    allows for easier integration and testing.
----
-
-## Characteristics of .NET Core
->
-> .NET Core is a popular open-source cross-platform framework developed by Microsoft for building modern applications. Here are some of the important characteristics of .NET Core:
-
-    1. Cross-Platform: .NET Core is designed to work on multiple platforms, including Windows, macOS, and Linux.
-                       This makes it easier to build and deploy applications across different environments.
-
-    2. Open-Source: .NET Core is open-source and free to use, which means developers can access the source code, 
-                    contribute to the project, and customize the framework to meet their specific needs.
-
-    3. Modular: .NET Core has a modular architecture, which means that it is composed of smaller, independent 
-                 components that can be used separately or combined to create larger applications. 
-                 This makes it easier to develop and maintain complex applications.
-
-    4. High Performance: .NET Core is designed for high performance, with features such as just-in-time (JIT) 
-            compilation and efficient memory management. It also includes support for asynchronous programming, 
-            which allows developers to build highly responsive and scalable applications.
-
-    5. Security: .NET Core includes built-in security features, such as data encryption, authentication, 
-                 and authorization, to help protect applications and data from attacks.
-
-    6. Developer Productivity: .NET Core includes a rich set of libraries and tools that simplify application 
-           development, including Visual Studio, Visual Studio Code, and the .NET Core CLI. 
-           It also supports multiple programming languages, including C#, F#, and Visual Basic.
-
-> Overall, these characteristics make .NET Core a popular choice for building modern, high-performance applications that can run on different platforms and devices.
+> With its unified, modular architecture and cross-platform runtime, .NET is a versatile platform that spans the web, cloud, desktop, mobile, AI and gaming.
 
 ---
 
-## What is ASP.NET Core
+## Modular architecture
 
-    1. ASP.NET Core is a popular open-source web framework developed by Microsoft for building modern web applications.
-    2. It released in 2016, is a redesign of ASP.NET also it is modular and leaner then ASP.NET.
-    3. It is a cross-platform, high-performance framework that is designed to work on Windows, macOS, and Linux.
-    4. ASP stands for Active Server Pages, used for building web pages.
-    5. ASP.NET Core works with both the .NET framework and the .NET Core framework.
-    6. It merges ASP.NET Model-View-Controller (MVC), ASP.NET Web Pages, and ASP.NET API in one application framework.
+Modular architecture (a.k.a. modular design) emphasizes splitting a system into independent, self-contained components. Each module performs a specific task and can be combined with others to form a larger system.
+
+The main goal is to improve maintainability, scalability and flexibility by breaking a complex system into smaller, manageable parts. Each module can be developed, tested and deployed independently, and replaced or updated without affecting the rest of the system.
+
+Modules communicate through well-defined interfaces that specify how data is exchanged. This reduces coupling and makes integration and testing easier. In .NET this shows up as small, composable NuGet packages and the `Microsoft.Extensions.*` libraries (dependency injection, configuration, logging, hosting).
+
+---
+
+## Characteristics of .NET
+
+1. **Cross-platform** — Runs on Windows, macOS and Linux (x64, Arm64), plus WebAssembly and mobile, so the same code base deploys across environments.
+
+2. **Open-source** — Developed in the open under the .NET Foundation. The source is on GitHub and the community contributes actively.
+
+3. **Unified & modular** — One platform (`net10.0`) targets many app types. Functionality is delivered as small, independent NuGet packages you compose as needed.
+
+4. **High performance** — Tiered JIT compilation, an efficient generational garbage collector, `Span<T>`/`Memory<T>` for low-allocation code, and **Native AOT** for fast startup and small, self-contained binaries. First-class `async`/`await` enables highly scalable, responsive apps.
+
+5. **Security** — Built-in support for authentication/authorization, data protection and cryptography, including expanded post-quantum cryptography (ML-DSA, ML-KEM) in .NET 10.
+
+6. **Developer productivity** — A rich CLI (`dotnet`), first-class tooling in Visual Studio 2026, VS Code (C# Dev Kit) and JetBrains Rider, hot reload, and multiple languages (C#, F#, Visual Basic).
+
+> Together these traits make .NET a popular choice for building modern, high-performance applications across platforms and devices.
+
+---
+
+## What is ASP.NET Core?
+
+1. **ASP.NET Core** is Microsoft's open-source, high-performance web framework for building modern web apps and services. (The name keeps the "Core" suffix — it is **not** shortened to "ASP.NET".)
+2. First released in 2016 as a ground-up redesign of the classic ASP.NET, it is modular, leaner and cross-platform (Windows, macOS, Linux).
+3. It unifies MVC, Razor Pages, Web API and Blazor into a single request pipeline, and runs on modern .NET (the current release is **ASP.NET Core 10.0**).
 
 > ASP.NET Core provides a wide range of features and tools for building web applications, including:
 
-    1. MVC Framework: ASP.NET Core includes a powerful Model-View-Controller (MVC) framework, 
-                     which provides a flexible and scalable approach to building web applications.
+1. **Middleware pipeline** — HTTP requests and responses flow through configurable middleware components you can add or remove to customize behavior.
 
-    2. Middleware: ASP.NET Core uses middleware components to handle HTTP requests and responses. 
-                  Middleware components can be added or removed as needed, which allows developers 
-                  to customize the behavior of the application.
+2. **Built-in dependency injection** — A first-class DI container simplifies managing dependencies and writing testable code.
 
-    3. Dependency Injection: ASP.NET Core includes a built-in dependency injection container, 
-                which simplifies the management of dependencies and makes it easier to write testable code.
+3. **Minimal APIs** — Define HTTP endpoints with minimal ceremony (`app.MapGet(...)`), ideal for microservices and small services.
 
-    4. Tag Helpers: ASP.NET Core includes tag helpers, which are a type of server-side control that 
-          can be used to generate HTML elements. Tag helpers simplify the creation of dynamic HTML content 
-          and improve the readability of the code.
+4. **MVC & Razor Pages** — A flexible Model-View-Controller framework and page-focused Razor Pages model for server-rendered UIs, with Tag Helpers and Razor views.
 
-    5. Razor Views: ASP.NET Core includes Razor views, which are a type of template that allows 
-                developers to create HTML views using C# code.
+5. **Blazor** — Build interactive web UIs in C# instead of JavaScript, running on the server, on WebAssembly, or in a hybrid/auto render mode.
 
-    6. Web API: ASP.NET Core provides a built-in framework for building RESTful Web APIs,
-           which allows developers to create web services that can be consumed by other applications.
+6. **Web APIs & OpenAPI** — Build RESTful services with built-in OpenAPI document generation.
 
-    7. Authentication and Authorization: ASP.NET Core includes built-in support for authentication and 
-          authorization, which allows developers to secure their web applications and control access to resources.
+7. **Authentication & authorization** — Built-in support for JWT bearer tokens, OAuth/OpenID Connect and ASP.NET Core Identity (including passkey/WebAuthn support added in .NET 10).
 
-> Overall, ASP.NET Core is a versatile web framework that provides developers with a wide range of features and tools for building modern web applications.
+> Overall, ASP.NET Core is a versatile web framework that gives developers a broad set of features and tools for building modern web applications and APIs.
 
 ---
+
+## Version reference
+
+| Release | Type | Shipped | Language |
+| --- | --- | --- | --- |
+| .NET 10 | LTS | Nov 2025 | C# 14 |
+| .NET 9  | STS | Nov 2024 | C# 13 |
+| .NET 8  | LTS | Nov 2023 | C# 12 |
+
+> **STS** (Standard Term Support) releases are supported for 18 months; **LTS** (Long Term Support) releases for 3 years. Prefer LTS releases for production unless you need a newer feature.

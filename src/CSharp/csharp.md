@@ -1,9 +1,12 @@
 # C SHARP INTERVIEW QUESTIONS
 
-1️⃣ .NET Core & Framework
+> Targeting **.NET 10 / C# 14**. For a walkthrough of the newest language features, see [modern-csharp.md](modern-csharp.md).
 
-✅ What are the differences between .NET Core and .NET Framework?
-✅ Explain dependency injection in .NET Core.
+1️⃣ .NET Platform
+
+✅ What is the difference between modern .NET (.NET 5–10) and the legacy .NET Framework?
+✅ What is the difference between LTS and STS releases, and why prefer LTS?
+✅ Explain dependency injection in .NET.
 ✅ How does middleware work in ASP.NET Core?
 ✅ What is the difference between IConfiguration and IOptions<T>?
 
@@ -62,3 +65,13 @@
 ✅ What are the best practices for handling sensitive data?
 ✅ How do you set up CI/CD for a .NET application using GitHub Actions?
 ✅ Explain JWT and OAuth authentication in ASP.NET Core.
+
+🔟 Modern C# (12–14) Language Features
+
+✅ What are primary constructors, and how do they differ between classes and records?
+✅ What are collection expressions and the spread element (`..`)?
+✅ What does the `field` keyword do in a property accessor (C# 14)?
+✅ What are extension members / extension blocks (C# 14)?
+✅ What is null-conditional assignment (`customer?.Order = ...`) (C# 14)?
+✅ When would you use `record`, `record struct`, and `readonly struct`?
+✅ What are `required` members and `init`-only setters?

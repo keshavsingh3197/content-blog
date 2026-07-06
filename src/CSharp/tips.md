@@ -1,5 +1,7 @@
 # Tips
 
+> Examples target **C# 14 / .NET 10**. For a tour of the newest language features (extension members, the `field` keyword, collection expressions, primary constructors, and more), see [modern-csharp.md](modern-csharp.md).
+
 ## Pattern Matching
 
 ```c#
@@ -27,7 +29,7 @@ public class PatternMatchings
     /// </summary>
     public void TypePattern()
     {
-        object obj = "Hello, .NET 8!.(TypePattern)";
+        object obj = "Hello, .NET 10!.(TypePattern)";
         if (obj is string message)
         {
             Console.WriteLine(message);

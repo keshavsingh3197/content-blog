@@ -103,6 +103,7 @@ export class HomeComponent implements OnInit {
   fileCount = 0;
 
   topics: TopicCard[] = [
+    { name: 'Interview Prep',  icon: 'fa-user-graduate',  color: 'linear-gradient(135deg,#6366f1,#a855f7)', description: 'Senior/architect track', folderName: 'Interview-Prep' },
     { name: 'C# Programming', icon: 'fa-code',           color: 'linear-gradient(135deg,#667eea,#764ba2)', description: 'Language & patterns', folderName: 'CSharp' },
     { name: 'Azure Cloud',    icon: 'fa-cloud',           color: 'linear-gradient(135deg,#0072c6,#00b4f0)', description: 'Cloud services',        folderName: 'Azure' },
     { name: 'AWS',            icon: 'fa-amazon',          color: 'linear-gradient(135deg,#ff9900,#ff6600)', description: 'Amazon Web Services',    folderName: 'AWS' },

@@ -19,8 +19,8 @@
     - Resource-Based Authorization
 
 ```c#
-// A .NET 9 application with Azure AD B2C integration, demonstrating role-based,
-// claims-based, policy-based, and resource-based authorization using the latest features.
+// A .NET 10 application with Microsoft Entra ID / Azure AD B2C integration, demonstrating
+// role-based, claims-based, policy-based, and resource-based authorization.
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -99,12 +99,13 @@ public class Resource
 }
 
 /*
-Additional Features in .NET 9:
-1. **AddMicrosoftIdentityWebApi:** Simplifies Azure AD B2C configuration by using Microsoft.Identity.Web.
-2. **Middleware Enhancements:** Utilize minimal APIs and enhanced authorization filters.
-3. **Enhanced Security Features:** Improved support for OpenID Connect and Microsoft.Identity.Client.
-4. **Telemetry:** Integrate OpenTelemetry for monitoring Azure AD B2C authentication flows.
-5. **Blazor Integration:** Use Blazor for SPA with Azure AD B2C authentication.
+Additional Features in .NET 10:
+1. **AddMicrosoftIdentityWebApi:** Simplifies Microsoft Entra ID / Azure AD B2C configuration via Microsoft.Identity.Web.
+2. **Passkeys / WebAuthn:** ASP.NET Core Identity now supports passwordless passkey sign-in.
+3. **Middleware & Minimal APIs:** Minimal APIs with enhanced authorization filters and validation.
+4. **Post-quantum cryptography:** Expanded ML-DSA / ML-KEM support in System.Security.Cryptography.
+5. **Telemetry:** Integrate OpenTelemetry for monitoring authentication flows.
+6. **Blazor Integration:** Use Blazor (server, WebAssembly, or Auto) with Entra ID authentication.
 */
 
 ```

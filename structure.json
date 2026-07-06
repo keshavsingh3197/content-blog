@@ -334,6 +334,11 @@
           "isDirectory": false
         },
         {
+          "name": "modern-csharp.md",
+          "path": "src/CSharp/modern-csharp.md",
+          "isDirectory": false
+        },
+        {
           "name": "OOP.md",
           "path": "src/CSharp/OOP.md",
           "isDirectory": false
@@ -391,6 +396,31 @@
           "path": "src/GOF/GOF.md",
           "isDirectory": false
         }
+      ]
+    },
+    {
+      "name": "Interview-Prep",
+      "path": "src/Interview-Prep",
+      "isDirectory": true,
+      "children": [
+        { "name": "01-language-fundamentals.md", "path": "src/Interview-Prep/01-language-fundamentals.md", "isDirectory": false },
+        { "name": "02-collections-and-data-structures.md", "path": "src/Interview-Prep/02-collections-and-data-structures.md", "isDirectory": false },
+        { "name": "03-solid-and-design-principles.md", "path": "src/Interview-Prep/03-solid-and-design-principles.md", "isDirectory": false },
+        { "name": "04-design-patterns-gof.md", "path": "src/Interview-Prep/04-design-patterns-gof.md", "isDirectory": false },
+        { "name": "05-concurrency-and-multithreading.md", "path": "src/Interview-Prep/05-concurrency-and-multithreading.md", "isDirectory": false },
+        { "name": "06-memory-gc-and-profiling.md", "path": "src/Interview-Prep/06-memory-gc-and-profiling.md", "isDirectory": false },
+        { "name": "07-databases-and-orm.md", "path": "src/Interview-Prep/07-databases-and-orm.md", "isDirectory": false },
+        { "name": "08-rest-and-api-design.md", "path": "src/Interview-Prep/08-rest-and-api-design.md", "isDirectory": false },
+        { "name": "09-messaging-and-eventing.md", "path": "src/Interview-Prep/09-messaging-and-eventing.md", "isDirectory": false },
+        { "name": "10-microservices-patterns.md", "path": "src/Interview-Prep/10-microservices-patterns.md", "isDirectory": false },
+        { "name": "11-api-security.md", "path": "src/Interview-Prep/11-api-security.md", "isDirectory": false },
+        { "name": "12-cloud-architecture.md", "path": "src/Interview-Prep/12-cloud-architecture.md", "isDirectory": false },
+        { "name": "13-testing-and-quality.md", "path": "src/Interview-Prep/13-testing-and-quality.md", "isDirectory": false },
+        { "name": "14-devops-and-cicd.md", "path": "src/Interview-Prep/14-devops-and-cicd.md", "isDirectory": false },
+        { "name": "15-observability-and-monitoring.md", "path": "src/Interview-Prep/15-observability-and-monitoring.md", "isDirectory": false },
+        { "name": "16-web-and-frontend.md", "path": "src/Interview-Prep/16-web-and-frontend.md", "isDirectory": false },
+        { "name": "17-architecture-and-nfrs.md", "path": "src/Interview-Prep/17-architecture-and-nfrs.md", "isDirectory": false },
+        { "name": "readme.md", "path": "src/Interview-Prep/readme.md", "isDirectory": false }
       ]
     },
     {

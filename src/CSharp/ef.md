@@ -1,14 +1,13 @@
 # EF
 
-- Entity Framework Core is an open-source object-relational mapping (ORM) framework for .NET that enables developers to work with databases using .NET objects, eliminating the need for most of the data-access code that developers typically need to write.
+- Entity Framework Core (EF Core) is Microsoft's open-source, cross-platform object-relational mapping (ORM) framework for .NET. It lets you work with a database using .NET objects, eliminating most of the boilerplate data-access code. EF Core ships in step with .NET — the current release is **EF Core 10**.
 
-## 2. What are the different approaches in Entity Framework?
+## 2. What are the different approaches in EF Core?
 
-> There are three approaches in Entity Framework:
+> EF Core supports **two** workflows (the legacy EDMX-based *Model-First* / "visual designer" approach from EF6 does **not** exist in EF Core):
 
-- Database-First: Starts with an existing database, and EF generates the model based on the database schema.
-- Model-First: Starts with creating a visual model, and EF generates both the database schema and the code based on the model.
-- Code-First: Starts with writing code to define the model, and EF generates the database schema based on the model.
+- **Code-First**: You define the model in C# classes and a `DbContext`; EF Core generates and evolves the database schema through **migrations**. This is the most common approach.
+- **Database-First**: You start from an existing database and **scaffold** (reverse-engineer) the entity classes and `DbContext` with `dotnet ef dbcontext scaffold`.
 
 ## 3. What are migrations in EF Core, and how do you use them?
 
@@ -113,7 +112,7 @@ IQueryable<Product> products = context.Products
                                       .Where(p => p.Price > 100);
 
 var filteredProducts = products.Where(p => p.Name.StartsWith("B"))
-                               .ToList(); // Database query happens her
+                               .ToList(); // Database query happens here
 ```
 
 > In this example, no data is retrieved from the database until `ToList()` is called. At that point, both the price and name filters are translated into SQL and executed by the database. This can be more efficient, especially when working with large datasets, as only the filtered data is loaded into memory.
@@ -224,7 +223,7 @@ using (var context = new MyDbContext())
 ```
 
 > In the code above, when a concurrency conflict is detected, you have the option to handle it as you see fit. The example demonstrates how the client's changes can "win" by overriding the values in the database with the values from the client. Alternatively, you could refresh the values from the database or implement some logic to merge the changes.
-=>
+
 > Concurrency handling in EF Core ensures that data integrity is maintained even when multiple users or processes attempt to modify data concurrently. By using concurrency tokens, you can prevent the last-in-wins scenario and handle conflicts according to the needs of your application.
 
 ### How many way we can handle the concurrency issue
