@@ -1,6 +1,33 @@
 # C_Sharp
 
-## Operator
+> Core C# / ASP.NET Core interview notes, refreshed for **.NET 10 / C# 14**.
+> For the newest language features see [modern-csharp.md](modern-csharp.md); for pattern-matching see [tips.md](tips.md).
+
+## Operators
+
+- **Operator overloading** — a type can define how built-in operators behave for it. In C# 14 you can also define **user-defined compound operators** (`+=`, `-=`) and `++`/`--` directly.
+
+```c#
+public readonly record struct Money(decimal Amount)
+{
+    public static Money operator +(Money a, Money b) => new(a.Amount + b.Amount);
+    public static bool operator >(Money a, Money b) => a.Amount > b.Amount;
+    public static bool operator <(Money a, Money b) => a.Amount < b.Amount;
+}
+```
+
+- **Common operators worth knowing**
+
+| Operator | Meaning |
+| --- | --- |
+| `??` / `??=` | Null-coalescing / null-coalescing assignment |
+| `?.` / `?[]` | Null-conditional access (LHS assignment allowed in C# 14) |
+| `?:` | Ternary conditional |
+| `is` / `as` | Pattern test / safe cast |
+| `=>` | Lambda / expression-bodied member |
+| `nameof(x)` | Compile-time name (supports unbound generics in C# 14) |
+| `^` / `..` | Index-from-end / range (`arr[^1]`, `arr[1..3]`) |
+| `..` | Spread element in collection expressions (`[..a, b]`) |
 
 ---
 
@@ -8,19 +35,36 @@
 
 > Filters allow us to run custom code before or after executing the action method. They provide ways to do common repetitive tasks on our action method. The filters are invoked on certain stages in the request processing pipeline.
 
-- Authorization FIlter
+- Authorization Filter
 - Resource Filter
 - Action Filter
 - Result Filter
 - Exception Filter
 
+> **Endpoint filters** (`IEndpointFilter`) are the equivalent for **Minimal APIs** — added with `app.MapGet(...).AddEndpointFilter<T>()`.
+
 ### A filter can be added to the pipeline at one of three scopes
 
 - by action method,
 - by controller class or
-- globally (which be applied to all the controller and actions).
+- globally (which is applied to all controllers and actions).
 
-> We need to register filters in to the MvcOption.Filters collection within ConfigureServices method.
+> In modern .NET (minimal hosting, no `Startup.cs`), register global filters in `Program.cs` when adding controllers:
+
+```c#
+// Program.cs
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<MyGlobalActionFilter>();      // by type (DI-activated)
+    options.Filters.Add(new MyLoggingFilter());       // by instance
+});
+
+var app = builder.Build();
+app.MapControllers();
+app.Run();
+```
 
 ![Filter types overview](https://camo.githubusercontent.com/4711bb74ccf3f761f71bec058afa51a2d7c5aae62b3a7d2ea384b36a04349955/68747470733a2f2f66346e33783663352e737461636b7061746863646e2e636f6d2f61727469636c652f776f726b696e672d776974682d66696c746572732d696e2d6173702d6e65742d636f72652d6d76632f496d616765732f312e706e67)
 
@@ -130,10 +174,12 @@ When the second request arrives the instance of the singleton is reused. The sin
 
 The services with the lower lifetime injected into service with a higher lifetime would change the lower lifetime service to a higher lifetime. This will make debugging the application very difficult and should be avoided at all costs.
 
-Hence, remember the following rules
+This is called a **captive dependency**. Remember the rule:
 
-- Never inject Scoped & Transient services into Singleton service.
-- Never inject Transient services into scoped service
+- **Never inject a shorter-lived service into a longer-lived one** — i.e. don't inject **Scoped** or **Transient** services into a **Singleton** (the short-lived instance gets "captured" and effectively promoted to singleton).
+- Injecting a **Singleton into anything**, or a **Scoped into a Scoped/Transient**, is fine. (Injecting Transient into Scoped is also fine — the concern is only capturing a shorter lifetime in a longer one.)
+- If a Singleton genuinely needs a Scoped service, inject `IServiceScopeFactory` / `IServiceProvider` and create a scope per unit of work instead.
+- ASP.NET Core's DI **scope validation** (on by default in Development) throws if it detects a captive dependency.
 
 > References
 
@@ -234,10 +280,10 @@ public static void Main()
 
 public static string GetDataFromWeb()
 {
-    // This method makes a web request to get some data
-    WebClient client = new WebClient();
-    string result = client.DownloadString("http://example.com");
-    return result;
+    // Blocking call: the thread waits here until the response arrives.
+    // (`WebClient` is legacy/obsolete — prefer `HttpClient`, shown async below.)
+    using HttpClient client = new();
+    return client.GetStringAsync("https://example.com").GetAwaiter().GetResult();
 }
 
 ```
@@ -316,10 +362,8 @@ public class Button
 
     public void Click()
     {
-        if (Clicked != null)
-        {
-            Clicked(this, EventArgs.Empty);
-        }
+        // Null-conditional invoke is the thread-safe, idiomatic way to raise events.
+        Clicked?.Invoke(this, EventArgs.Empty);
     }
 }
 
@@ -544,35 +588,35 @@ In summary:
 Think of real-time business scenario, when you want to create a client object along with client order list, now in general you probably will have order list property in client object, so when a new instance of client object is created, the order list also will be loaded at the same time. If the order list is long, that will take longer the execution time, when you may not need those data while accessing other client class property, which can be avoided by using lazy class, you can load the data only when the data is required.
 ```
 
+- In .NET, `Lazy<T>` gives you thread-safe, on-demand initialization: the factory delegate runs **only the first time** `.Value` is read, and the result is cached.
+
 ```c#
-public class data
+public class Data
 {
-    public static List<int> GetList1()
+    // ❌ Eager: the list is fully built the moment GetList() is called.
+    public static List<int> GetListEager()
     {
-        List<int> list1 = new List<int>();
-        for (int i = 0; i <= 5000000; i++)
-        {
-                list1.Add(i);
-        }
-        return list1;
+        var list = new List<int>();
+        for (int i = 0; i <= 5_000_000; i++) list.Add(i);
+        return list;
     }
 
-    public static Lazy<List<int>> GetList3()
+    // ✅ Lazy: the expensive work is deferred until someone actually reads .Value.
+    public static Lazy<List<int>> GetListLazy() => new(() =>
     {
-        Lazy<List<int>> list3 = new Lazy<List<int>>();
-        for (int i = 0; i <= 5000000; i++)
-        {
-            list3.Value.Add(i);
-        }
-        return list3;
-    }
+        var list = new List<int>();
+        for (int i = 0; i <= 5_000_000; i++) list.Add(i);
+        return list;
+    });
 }
 
+// Usage: nothing is built here...
+var lazy = Data.GetListLazy();
+// ...the 5M-item list is created only on first access, then cached:
+int count = lazy.Value.Count;
 ```
 
-```text
-You will be surprised to see the execution time; the lazy list took half time to perform than the normal list object.
-```
+> The win from `Lazy<T>` isn't that it runs "faster" — it's that the cost is **avoided entirely** if `.Value` is never accessed, and paid **once** if it is. Use it for expensive objects that may not be needed. `Lazy<T>` is thread-safe by default (`LazyThreadSafetyMode.ExecutionAndPublication`).
 
 ## Concurrency & Parallelism
 
@@ -651,61 +695,49 @@ class ParallelismExample
 
 
 <details>
-   <summary> 🚨 What Changed (Important Fixes) </summary>
+<summary>🚨 What changed in modern C# (important fixes)</summary>
 
-      Your old table had these outdated points:
-      
-      ❌ “Interface cannot have implementation” →
-      ✔️ Now it CAN (default methods)
-      
-      ❌ “Cannot provide default behavior” →
-      ✔️ Now it CAN
-      
-      ❌ “Members are implicitly public only” →
-      ✔️ Now supports private, protected, etc.
-      
-      ❌ “Adding new members breaks implementation” →
-      ✔️ Not always true anymore (thanks to default methods)
-      
-      💡 Simple Understanding (Interview Ready)
-      Interface = “What to do” (Contract + optional default logic now)
-      Abstract Class = “What + How + Shared State”
-      
-      🔥 When to Use What
-      Use Interface when:
-      You need multiple inheritance
-      You define capabilities (e.g., ILogger, IDisposable)
-      No shared state required
-      
-      👉 Example:
-      
-      public interface ILogger
-      {
-          void Log(string message);
-      
-          void LogError(string message)
-          {
-              Console.WriteLine($"Error: {message}");
-          }
-      }
-      Use Abstract Class when:
-      You need shared fields/state
-      You want base logic + extensibility
-      
-      👉 Example:
-      
-      public abstract class Animal
-      {
-          public string Name;
-      
-          public void Eat() => Console.WriteLine("Eating...");
-      
-          public abstract void Sound();
-      }
-      ⚡ Key Interview One-Liner
-      
-      “Earlier interfaces were pure contracts, but in modern C# they can also contain implementation. However, abstract classes are still used when shared state or constructors are needed.”   
-      
+Older comparisons of interface vs abstract class are now partly outdated:
+
+- ❌ "Interface cannot have implementation" → ✔️ It **can** (default interface methods, C# 8).
+- ❌ "Cannot provide default behavior" → ✔️ It **can**.
+- ❌ "Members are implicitly public only" → ✔️ Interfaces now support `private`, `protected`, `static` members.
+- ❌ "Adding a new member always breaks implementers" → ✔️ Not if you give it a **default implementation**.
+- ➕ **Static abstract/virtual members** (C# 11) let interfaces define `static` contracts (operators, factory methods) — the basis of **generic math** (`INumber<T>`).
+
+**Interview-ready summary**
+
+- Interface = *"what to do"* — a contract, plus optional default logic now.
+- Abstract class = *"what + how + shared state"* — base class with fields, constructors and behaviour.
+
+**Use an interface when** you need multiple inheritance, you're defining a capability (`ILogger`, `IDisposable`), or no shared state is required:
+
+```c#
+public interface ILogger
+{
+    void Log(string message);
+
+    // default implementation (C# 8+)
+    void LogError(string message) => Console.WriteLine($"Error: {message}");
+
+    // static abstract member (C# 11) — implementers must provide it
+    static abstract ILogger Create();
+}
+```
+
+**Use an abstract class when** you need shared fields/state, constructors, or base logic plus extensibility:
+
+```c#
+public abstract class Animal
+{
+    public string Name = "";
+    public void Eat() => Console.WriteLine("Eating...");
+    public abstract void Sound();   // subclasses must implement
+}
+```
+
+> One-liner: *"Earlier interfaces were pure contracts; in modern C# they can also carry implementation and static abstract members. Abstract classes are still the choice when you need shared state or constructors."*
+
 </details>
 
 
@@ -801,7 +833,7 @@ Imagine a .NET assembly as a book. The book represents the compiled code, which 
 
 2. The Manifest is like the summary page of the book that contains the book's title, edition, a list of authors, and the ISBN. In terms of an assembly, this includes the assembly's name, version, culture, and other assembly-level information.
 
-Here's a code example to illustrate how you might encounter metadata and manifest information in a .NET Core application.
+Here's a code example to illustrate how you might encounter metadata and manifest information in a modern .NET application.
 
 ```c#
 using System;
