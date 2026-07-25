@@ -120,9 +120,14 @@ environment. The only value the frontend needs is the API's public URL, which is
 
 ### A. Backend → Render
 
-Render builds the container from [server/Blog.Admin.Api/Dockerfile](server/Blog.Admin.Api/Dockerfile)
-(Root Directory = `server/Blog.Admin.Api`). Render terminates TLS and injects `$PORT`; the app
-already binds to it and trusts the proxy headers.
+Render builds the container from [server/Dockerfile](server/Dockerfile). In the service settings:
+
+- **Language:** `Docker`
+- **Branch:** `master`
+- **Root Directory:** `server`  ← the Docker build context
+- **Dockerfile Path:** `server/Dockerfile`
+
+Render terminates TLS and injects `$PORT`; the app already binds to it and trusts the proxy headers.
 
 Add these under **Render → your service → Environment** (never in the repo). .NET maps `:` to a
 double underscore `__`:

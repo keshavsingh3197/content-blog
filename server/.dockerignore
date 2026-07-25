@@ -1,0 +1,7 @@
+# Build context is server/ — ignore build artefacts, local data and secrets.
+Blog.Admin.Api/bin/
+Blog.Admin.Api/obj/
+Blog.Admin.Api/App_Data/
+**/*.user
+appsettings.*.Local.json
+README.md
