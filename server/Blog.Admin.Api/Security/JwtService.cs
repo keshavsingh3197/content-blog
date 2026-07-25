@@ -63,7 +63,10 @@ public sealed class JwtService
     {
         try
         {
-            var principal = new JwtSecurityTokenHandler().ValidateToken(token, new TokenValidationParameters
+            // Keep claim types verbatim ("sub" stays "sub"); the default handler
+            // otherwise remaps sub -> NameIdentifier and the lookup below fails.
+            var handler = new JwtSecurityTokenHandler { MapInboundClaims = false };
+            var principal = handler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidIssuer = _opts.Issuer,
                 ValidAudience = _opts.Audience,

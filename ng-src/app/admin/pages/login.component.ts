@@ -181,7 +181,14 @@ export class LoginComponent {
       next: () => this.success(),
       error: err => {
         this.busy.set(false);
-        this.toast.fromError(err, 'Invalid or expired code.');
+        // A genuinely expired 2FA session: send them back to re-enter the password.
+        if (err?.status === 401) {
+          this.step.set('password');
+          this.code = '';
+          this.toast.error('Your sign-in session expired — please sign in again.');
+        } else {
+          this.toast.fromError(err, 'Invalid or expired code.');
+        }
       },
     });
   }
