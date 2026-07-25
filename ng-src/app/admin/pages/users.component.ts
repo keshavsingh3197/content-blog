@@ -10,7 +10,9 @@ import { Role, UserListItem } from '../admin.models';
 interface EditModel {
   id?: string;
   email: string;
+  username: string;
   displayName: string;
+  phoneNumber: string;
   password: string;
   roles: Role[];
   isActive: boolean;
@@ -39,7 +41,7 @@ interface EditModel {
               <td>
                 <div class="cell-user">
                   <span class="admin-avatar sm">{{ initials(u.displayName) }}</span>
-                  <span><strong>{{ u.displayName }}</strong><small>{{ u.email }}</small></span>
+                  <span><strong>{{ u.displayName }}</strong><small>{{ u.email }}<span *ngIf="u.username" class="muted"> · &#64;{{ u.username }}</span></small></span>
                 </div>
               </td>
               <td><span class="pill" *ngFor="let r of u.roles" [ngClass]="'role-' + r.toLowerCase()">{{ r }}</span></td>
@@ -86,6 +88,16 @@ interface EditModel {
               <input type="email" name="em" [(ngModel)]="model.email" [disabled]="!!model.id"
                      required placeholder="jane@example.com"></div>
           </label>
+          <div class="grid-2">
+            <label class="field"><span>Username <small class="muted">(optional)</small></span>
+              <div class="field-input"><i class="fas fa-at"></i>
+                <input name="un" [(ngModel)]="model.username" placeholder="janedoe"></div>
+            </label>
+            <label class="field"><span>Phone <small class="muted">(for SMS)</small></span>
+              <div class="field-input"><i class="fas fa-mobile-screen"></i>
+                <input name="ph" [(ngModel)]="model.phoneNumber" placeholder="+15551234567"></div>
+            </label>
+          </div>
           <label class="field" *ngIf="!model.id"><span>Temporary password (min 12 chars)</span>
             <div class="field-input"><i class="fas fa-lock"></i>
               <input type="text" name="pw" [(ngModel)]="model.password" minlength="12"
@@ -145,7 +157,10 @@ export class UsersComponent implements OnInit {
   openCreate(): void { this.model = this.blank(); this.editing.set(true); }
 
   openEdit(u: UserListItem): void {
-    this.model = { id: u.id, email: u.email, displayName: u.displayName, password: '', roles: [...u.roles], isActive: u.isActive };
+    this.model = {
+      id: u.id, email: u.email, username: u.username ?? '', displayName: u.displayName,
+      phoneNumber: u.phoneNumber ?? '', password: '', roles: [...u.roles], isActive: u.isActive,
+    };
     this.editing.set(true);
   }
 
@@ -163,14 +178,18 @@ export class UsersComponent implements OnInit {
     const done = () => { this.busy.set(false); this.editing.set(false); this.load(); };
     const fail = (e: any) => { this.busy.set(false); this.toast.fromError(e); };
 
+    const username = this.model.username.trim() || null;
+    const phoneNumber = this.model.phoneNumber.trim() || null;
+
     if (this.model.id) {
       this.api.updateUser(this.model.id, {
-        displayName: this.model.displayName, roles: this.model.roles, isActive: this.model.isActive,
+        username, displayName: this.model.displayName, phoneNumber,
+        roles: this.model.roles, isActive: this.model.isActive,
       }).subscribe({ next: () => { this.toast.success('User updated.'); done(); }, error: fail });
     } else {
       this.api.createUser({
-        email: this.model.email.trim(), displayName: this.model.displayName.trim(),
-        password: this.model.password, roles: this.model.roles,
+        email: this.model.email.trim(), username, displayName: this.model.displayName.trim(),
+        phoneNumber, password: this.model.password, roles: this.model.roles,
       }).subscribe({ next: () => { this.toast.success('User created.'); done(); }, error: fail });
     }
   }
@@ -199,7 +218,7 @@ export class UsersComponent implements OnInit {
   trackId = (_: number, u: UserListItem) => u.id;
 
   private blank(): EditModel {
-    return { email: '', displayName: '', password: '', roles: ['Viewer'], isActive: true };
+    return { email: '', username: '', displayName: '', phoneNumber: '', password: '', roles: ['Viewer'], isActive: true };
   }
 }
 

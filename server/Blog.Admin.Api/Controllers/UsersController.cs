@@ -29,14 +29,15 @@ public sealed class UsersController : ControllerBase
         var user = await _db.Users.Find(u => u.Id == User.GetUserId()).FirstOrDefaultAsync();
         if (user is null) return Unauthorized();
         return Ok(new UserProfile(
-            user.Id, user.Email, user.DisplayName, user.Roles, user.TwoFactorEnabled, user.MustChangePassword));
+            user.Id, user.Email, user.Username, user.DisplayName, user.Roles,
+            user.TwoFactorEnabled, user.MustChangePassword));
     }
 
     [HttpGet]
     [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<IReadOnlyList<UserListItem>>> List()
     {
-        var users = await _db.Users.Find(FilterDefinition<User>.Empty)
+        var users = await _db.Users.Find(u => !u.IsDeleted)
             .SortBy(u => u.Email).ToListAsync();
         return Ok(users.Select(Map).ToList());
     }
@@ -45,7 +46,7 @@ public sealed class UsersController : ControllerBase
     [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<UserListItem>> Get(string id)
     {
-        var user = await _db.Users.Find(u => u.Id == id).FirstOrDefaultAsync();
+        var user = await _db.Users.Find(u => u.Id == id && !u.IsDeleted).FirstOrDefaultAsync();
         return user is null ? NotFound() : Ok(Map(user));
     }
 
@@ -54,16 +55,21 @@ public sealed class UsersController : ControllerBase
     public async Task<ActionResult<UserListItem>> Create(CreateUserRequest request)
     {
         var email = request.Email.Trim().ToLowerInvariant();
+        var username = string.IsNullOrWhiteSpace(request.Username) ? null : request.Username.Trim();
         var roles = NormalizeRoles(request.Roles);
         if (roles is null) return BadRequest(new { error = "One or more roles are invalid." });
 
-        var exists = await _db.Users.Find(u => u.Email == email).AnyAsync();
-        if (exists) return Conflict(new { error = "A user with that email already exists." });
+        if (await _db.Users.Find(u => u.Email == email && !u.IsDeleted).AnyAsync())
+            return Conflict(new { error = "A user with that email already exists." });
+        if (username is not null && await _db.Users.Find(u => u.Username == username && !u.IsDeleted).AnyAsync())
+            return Conflict(new { error = "That username is already taken." });
 
         var user = new User
         {
             Email = email,
+            Username = username,
             DisplayName = request.DisplayName.Trim(),
+            PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim(),
             PasswordHash = _passwords.Hash(request.Password),
             Roles = roles,
             // Admin-created accounts get a temporary password and must set their own
@@ -82,6 +88,19 @@ public sealed class UsersController : ControllerBase
 
         if (request.DisplayName is not null)
             update = update.Set(u => u.DisplayName, request.DisplayName.Trim());
+
+        if (request.Username is not null)
+        {
+            var username = string.IsNullOrWhiteSpace(request.Username) ? null : request.Username.Trim();
+            if (username is not null &&
+                await _db.Users.Find(u => u.Username == username && u.Id != id && !u.IsDeleted).AnyAsync())
+                return Conflict(new { error = "That username is already taken." });
+            update = update.Set(u => u.Username, username);
+        }
+
+        if (request.PhoneNumber is not null)
+            update = update.Set(u => u.PhoneNumber,
+                string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim());
 
         if (request.Roles is not null)
         {
@@ -126,9 +145,14 @@ public sealed class UsersController : ControllerBase
         if (id == User.GetUserId())
             return BadRequest(new { error = "You cannot delete your own account." });
 
-        var result = await _db.Users.DeleteOneAsync(u => u.Id == id);
-        if (result.DeletedCount == 0) return NotFound();
-        await _db.RefreshTokens.DeleteManyAsync(r => r.UserId == id);
+        // Soft delete: keep the record (for audit), mark inactive, and revoke sessions.
+        var result = await _db.Users.UpdateOneAsync(u => u.Id == id && !u.IsDeleted, Builders<User>.Update
+            .Set(u => u.IsDeleted, true)
+            .Set(u => u.IsActive, false)
+            .Set(u => u.UpdatedAt, DateTime.UtcNow));
+        if (result.MatchedCount == 0) return NotFound();
+        await _db.RefreshTokens.UpdateManyAsync(r => r.UserId == id && r.RevokedAt == null,
+            Builders<RefreshToken>.Update.Set(r => r.RevokedAt, DateTime.UtcNow));
         return NoContent();
     }
 
@@ -144,5 +168,6 @@ public sealed class UsersController : ControllerBase
     }
 
     private static UserListItem Map(User u) => new(
-        u.Id, u.Email, u.DisplayName, u.Roles, u.IsActive, u.TwoFactorEnabled, u.LastLoginAt, u.CreatedAt);
+        u.Id, u.Email, u.Username, u.DisplayName, u.PhoneNumber, u.Roles, u.IsActive,
+        u.TwoFactorEnabled, u.LastLoginAt, u.CreatedAt);
 }

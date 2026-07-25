@@ -38,6 +38,15 @@ public sealed class EmailOptions
     public string Password { get; set; } = string.Empty;
 }
 
+public sealed class SmsOptions
+{
+    public const string Section = "Sms";
+    public bool Enabled { get; set; }
+    public string AccountSid { get; set; } = string.Empty; // Twilio-compatible.
+    public string AuthToken { get; set; } = string.Empty;
+    public string FromNumber { get; set; } = string.Empty;
+}
+
 public sealed class SecurityOptions
 {
     public const string Section = "Security";

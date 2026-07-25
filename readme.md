@@ -143,6 +143,7 @@ double underscore `__`:
 | `Seed__AdminEmail` | `you@example.com` |
 | `Seed__AdminPassword` | strong password, **rotate after first login** (mark **secret**) |
 | `Email__Enabled` / `Email__Host` / `Email__Username` / `Email__Password` | optional SMTP for the email OTP fallback |
+| `Sms__Enabled` / `Sms__AccountSid` / `Sms__AuthToken` / `Sms__FromNumber` | optional Twilio-compatible SMS OTP fallback (users need a phone number) |
 
 > **MongoDB Atlas:** create a database user, and under *Network Access* allow Render's egress
 > (simplest: `0.0.0.0/0` while testing, then tighten). Atlas enforces TLS by default.

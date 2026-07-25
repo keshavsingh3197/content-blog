@@ -98,6 +98,9 @@ public sealed class MediaController : ControllerBase
 
         // Neutralise any script embedded in an uploaded SVG if opened directly.
         Response.Headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
+        // Public image meant to be embedded from the (cross-site) frontend, so relax
+        // the global same-site CORP to allow <img> loads from another origin.
+        Response.Headers["Cross-Origin-Resource-Policy"] = "cross-origin";
         return PhysicalFile(fullPath, asset.ContentType);
     }
 

@@ -1,6 +1,7 @@
 using Blog.Admin.Api.Configuration;
 using Blog.Admin.Api.Models;
 using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Blog.Admin.Api.Data;
@@ -39,6 +40,16 @@ public sealed class MongoContext
         Users.Indexes.CreateOne(new CreateIndexModel<User>(
             Builders<User>.IndexKeys.Ascending(u => u.Email),
             new CreateIndexOptions { Unique = true, Name = "ux_user_email" }));
+
+        // Unique username, but only enforced on documents that actually have one.
+        Users.Indexes.CreateOne(new CreateIndexModel<User>(
+            Builders<User>.IndexKeys.Ascending(u => u.Username),
+            new CreateIndexOptions<User>
+            {
+                Unique = true,
+                Name = "ux_user_username",
+                PartialFilterExpression = Builders<User>.Filter.Type(u => u.Username!, BsonType.String),
+            }));
 
         Content.Indexes.CreateOne(new CreateIndexModel<ContentTopic>(
             Builders<ContentTopic>.IndexKeys.Ascending(c => c.Folder).Ascending(c => c.Slug),

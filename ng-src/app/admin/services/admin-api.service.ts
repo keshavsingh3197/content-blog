@@ -15,10 +15,16 @@ export class AdminApiService {
   listUsers(): Observable<UserListItem[]> {
     return this.http.get<UserListItem[]>(`${this.base}/users`);
   }
-  createUser(body: { email: string; displayName: string; password: string; roles: Role[] }) {
+  createUser(body: {
+    email: string; username?: string | null; displayName: string;
+    phoneNumber?: string | null; password: string; roles: Role[];
+  }) {
     return this.http.post<UserListItem>(`${this.base}/users`, body);
   }
-  updateUser(id: string, body: { displayName?: string; roles?: Role[]; isActive?: boolean }) {
+  updateUser(id: string, body: {
+    username?: string | null; displayName?: string; phoneNumber?: string | null;
+    roles?: Role[]; isActive?: boolean;
+  }) {
     return this.http.put<UserListItem>(`${this.base}/users/${id}`, body);
   }
   resetPassword(id: string, newPassword: string) {

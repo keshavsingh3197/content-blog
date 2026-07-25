@@ -27,6 +27,7 @@ public static class AuditEvents
     public const string TwoFactorSuccess = "2fa.success";
     public const string TwoFactorFailed = "2fa.failed";
     public const string TwoFactorEmailSent = "2fa.email.sent";
+    public const string TwoFactorSmsSent = "2fa.sms.sent";
     public const string TwoFactorEnrolled = "2fa.enrolled";
     public const string TwoFactorDisabled = "2fa.disabled";
     public const string BackupCodeUsed = "2fa.backup_code.used";

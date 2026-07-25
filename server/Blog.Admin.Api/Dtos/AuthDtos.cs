@@ -5,7 +5,8 @@ namespace Blog.Admin.Api.Dtos;
 // Input is validated at this trust boundary before any processing.
 
 public sealed record LoginRequest(
-    [Required, EmailAddress, MaxLength(256)] string Email,
+    // Accepts an email OR a username, so no EmailAddress constraint here.
+    [Required, MaxLength(256)] string Email,
     [Required, MaxLength(256)] string Password);
 
 /// <summary>Returned after the password step. When TwoFactorRequired, no access token is issued yet.</summary>
@@ -13,6 +14,7 @@ public sealed record LoginResponse(
     bool TwoFactorRequired,
     string? TwoFactorToken,
     bool EmailFallbackAvailable,
+    bool SmsFallbackAvailable,
     AuthTokens? Tokens);
 
 public sealed record AuthTokens(
@@ -21,7 +23,7 @@ public sealed record AuthTokens(
     string RefreshToken,
     UserProfile User);
 
-public enum TwoFactorMethod { Totp, Email, BackupCode }
+public enum TwoFactorMethod { Totp, Email, BackupCode, Sms }
 
 public sealed record TwoFactorVerifyRequest(
     [Required] string TwoFactorToken,
@@ -29,6 +31,8 @@ public sealed record TwoFactorVerifyRequest(
     TwoFactorMethod Method = TwoFactorMethod.Totp);
 
 public sealed record SendEmailOtpRequest([Required] string TwoFactorToken);
+
+public sealed record SendSmsOtpRequest([Required] string TwoFactorToken);
 
 public sealed record RefreshRequest([Required] string RefreshToken);
 
@@ -53,6 +57,7 @@ public sealed record ChangePasswordRequest(
 public sealed record UserProfile(
     string Id,
     string Email,
+    string? Username,
     string DisplayName,
     IReadOnlyList<string> Roles,
     bool TwoFactorEnabled,

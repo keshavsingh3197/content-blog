@@ -24,13 +24,14 @@ public sealed class AuthService
     private readonly DataProtector _protector;
     private readonly JwtService _jwt;
     private readonly IEmailSender _email;
+    private readonly ISmsSender _sms;
     private readonly AuditLogger _audit;
     private readonly SecurityOptions _security;
     private readonly JwtOptions _jwtOptions;
 
     public AuthService(
         MongoContext db, PasswordHasher passwords, TotpService totp, DataProtector protector,
-        JwtService jwt, IEmailSender email, AuditLogger audit,
+        JwtService jwt, IEmailSender email, ISmsSender sms, AuditLogger audit,
         IOptions<SecurityOptions> security, IOptions<JwtOptions> jwtOptions)
     {
         _db = db;
@@ -39,6 +40,7 @@ public sealed class AuthService
         _protector = protector;
         _jwt = jwt;
         _email = email;
+        _sms = sms;
         _audit = audit;
         _security = security.Value;
         _jwtOptions = jwtOptions.Value;
@@ -48,8 +50,12 @@ public sealed class AuthService
 
     public async Task<LoginResponse> LoginAsync(LoginRequest req)
     {
-        var email = req.Email.Trim().ToLowerInvariant();
-        var user = await _db.Users.Find(u => u.Email == email).FirstOrDefaultAsync();
+        var identifier = req.Email.Trim();
+        var email = identifier.ToLowerInvariant();
+        // Accept either the email (lower-cased) or the username.
+        var user = await _db.Users
+            .Find(u => (u.Email == email || u.Username == identifier) && !u.IsDeleted)
+            .FirstOrDefaultAsync();
 
         // Uniform failure for unknown user / bad password / inactive: no account enumeration.
         if (user is null || !user.IsActive)
@@ -77,11 +83,16 @@ public sealed class AuthService
         await _audit.LogAsync(AuditEvents.LoginPasswordSuccess, true, email, user.Id);
 
         if (!user.TwoFactorEnabled)
-            return new LoginResponse(false, null, false, await IssueTokensAsync(user));
+            return new LoginResponse(false, null, false, false, await IssueTokensAsync(user));
 
         // 2FA required — issue a short-lived step token; do not issue access yet.
         var twoFactorToken = _jwt.CreateTwoFactorToken(user);
-        return new LoginResponse(true, twoFactorToken, EmailFallbackAvailable: true, Tokens: null);
+        return new LoginResponse(
+            TwoFactorRequired: true,
+            TwoFactorToken: twoFactorToken,
+            EmailFallbackAvailable: true,
+            SmsFallbackAvailable: !string.IsNullOrWhiteSpace(user.PhoneNumber),
+            Tokens: null);
     }
 
     // ---- Step 2: two-factor ----
@@ -93,7 +104,9 @@ public sealed class AuthService
         var ok = req.Method switch
         {
             TwoFactorMethod.Totp => VerifyTotp(user, req.Code),
+            // Email and SMS both verify against the same delivered-OTP slot.
             TwoFactorMethod.Email => await VerifyEmailOtpAsync(user, req.Code),
+            TwoFactorMethod.Sms => await VerifyEmailOtpAsync(user, req.Code),
             TwoFactorMethod.BackupCode => await VerifyBackupCodeAsync(user, req.Code),
             _ => false,
         };
@@ -121,6 +134,22 @@ public sealed class AuthService
 
         await _email.SendOtpAsync(user.Email, code);
         await _audit.LogAsync(AuditEvents.TwoFactorEmailSent, true, user.Email, user.Id);
+    }
+
+    public async Task SendSmsOtpAsync(SendSmsOtpRequest req)
+    {
+        var user = await RequireTwoFactorUserAsync(req.TwoFactorToken);
+        if (string.IsNullOrWhiteSpace(user.PhoneNumber)) return; // No number on file; don't reveal.
+
+        var code = TokenHasher.NewNumericOtp(6);
+        var update = Builders<User>.Update
+            .Set(u => u.EmailOtpHash, TokenHasher.Hash(code))
+            .Set(u => u.EmailOtpExpiresAt, DateTime.UtcNow.AddMinutes(_security.EmailOtpMinutes))
+            .Set(u => u.EmailOtpAttempts, 0);
+        await _db.Users.UpdateOneAsync(u => u.Id == user.Id, update);
+
+        await _sms.SendOtpAsync(user.PhoneNumber!, code);
+        await _audit.LogAsync(AuditEvents.TwoFactorSmsSent, true, user.Email, user.Id);
     }
 
     private bool VerifyTotp(User user, string code)
@@ -283,7 +312,8 @@ public sealed class AuthService
             Builders<User>.Update.Set(u => u.LastLoginAt, DateTime.UtcNow));
 
         var profile = new UserProfile(
-            user.Id, user.Email, user.DisplayName, user.Roles, user.TwoFactorEnabled, user.MustChangePassword);
+            user.Id, user.Email, user.Username, user.DisplayName, user.Roles,
+            user.TwoFactorEnabled, user.MustChangePassword);
         return new AuthTokens(access, accessExpires, refresh, profile);
     }
 
@@ -306,7 +336,7 @@ public sealed class AuthService
     private async Task<User> GetActiveUserAsync(string userId)
     {
         var user = await _db.Users.Find(u => u.Id == userId).FirstOrDefaultAsync();
-        if (user is null || !user.IsActive) throw new AuthException("Account unavailable.");
+        if (user is null || !user.IsActive || user.IsDeleted) throw new AuthException("Account unavailable.");
         return user;
     }
 

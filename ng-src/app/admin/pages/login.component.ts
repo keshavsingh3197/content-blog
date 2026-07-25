@@ -39,9 +39,9 @@ import { TwoFactorMethod } from '../admin.models';
           <p class="auth-sub">Sign in to continue to the console.</p>
 
           <label class="field">
-            <span>Email</span>
-            <div class="field-input"><i class="fas fa-envelope"></i>
-              <input type="email" name="email" [(ngModel)]="email" autocomplete="username"
+            <span>Email or username</span>
+            <div class="field-input"><i class="fas fa-user"></i>
+              <input type="text" name="email" [(ngModel)]="email" autocomplete="username"
                      placeholder="you@example.com" required autofocus>
             </div>
           </label>
@@ -79,6 +79,9 @@ import { TwoFactorMethod } from '../admin.models';
             <button type="button" [class.active]="method() === 'Email'" (click)="setMethod('Email')">
               <i class="fas fa-envelope"></i> Email
             </button>
+            <button type="button" *ngIf="smsAvailable()" [class.active]="method() === 'Sms'" (click)="setMethod('Sms')">
+              <i class="fas fa-comment-sms"></i> SMS
+            </button>
             <button type="button" [class.active]="method() === 'BackupCode'" (click)="setMethod('BackupCode')">
               <i class="fas fa-key"></i> Backup
             </button>
@@ -96,6 +99,9 @@ import { TwoFactorMethod } from '../admin.models';
 
           <button *ngIf="method() === 'Email'" type="button" class="link-btn" (click)="sendEmail()" [disabled]="busy()">
             <i class="fas fa-paper-plane"></i> Send a code to my email
+          </button>
+          <button *ngIf="method() === 'Sms'" type="button" class="link-btn" (click)="sendSms()" [disabled]="busy()">
+            <i class="fas fa-paper-plane"></i> Text a code to my phone
           </button>
 
           <button class="btn-primary block" type="submit" [disabled]="busy()">
@@ -129,6 +135,7 @@ export class LoginComponent {
 
   step = signal<'password' | 'twofactor'>('password');
   method = signal<TwoFactorMethod>('Totp');
+  smsAvailable = signal(false);
   busy = signal(false);
   private twoFactorToken = '';
 
@@ -136,6 +143,7 @@ export class LoginComponent {
     switch (this.method()) {
       case 'Totp': return 'Enter the 6-digit code from your authenticator app.';
       case 'Email': return 'We can email you a one-time code as a fallback.';
+      case 'Sms': return 'We can text a one-time code to your phone.';
       case 'BackupCode': return 'Enter one of your saved one-time backup codes.';
     }
   }
@@ -153,6 +161,7 @@ export class LoginComponent {
         this.busy.set(false);
         if (res.twoFactorRequired && res.twoFactorToken) {
           this.twoFactorToken = res.twoFactorToken;
+          this.smsAvailable.set(res.smsFallbackAvailable);
           this.step.set('twofactor');
         } else if (res.tokens) {
           this.success();
@@ -183,6 +192,12 @@ export class LoginComponent {
       next: () => { this.busy.set(false); this.toast.success('If the account exists, a code has been emailed.'); },
       error: () => { this.busy.set(false); this.toast.success('If the account exists, a code has been emailed.'); },
     });
+  }
+
+  sendSms(): void {
+    this.busy.set(true);
+    const done = () => { this.busy.set(false); this.toast.success('If a phone is on file, a code has been sent.'); };
+    this.auth.sendSmsOtp(this.twoFactorToken).subscribe({ next: done, error: done });
   }
 
   backToPassword(): void {

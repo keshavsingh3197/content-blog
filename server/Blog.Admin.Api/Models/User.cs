@@ -11,7 +11,9 @@ public sealed class User
     public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
     public string Email { get; set; } = string.Empty;          // Stored lower-cased, unique.
+    public string? Username { get; set; }                      // Optional, unique login handle.
     public string DisplayName { get; set; } = string.Empty;
+    public string? PhoneNumber { get; set; }                   // E.164, for SMS 2FA.
 
     /// <summary>PBKDF2 hash string (format: iterations.salt.hash). Never the raw password.</summary>
     public string PasswordHash { get; set; } = string.Empty;
@@ -37,6 +39,7 @@ public sealed class User
 
     // ---- Account state / lockout ----
     public bool IsActive { get; set; } = true;
+    public bool IsDeleted { get; set; }                        // Soft delete — kept for audit.
     public int FailedLoginAttempts { get; set; }
     public DateTime? LockoutUntil { get; set; }
     public DateTime? LastLoginAt { get; set; }

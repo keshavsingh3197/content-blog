@@ -22,6 +22,7 @@ builder.Services.Configure<MongoOptions>(builder.Configuration.GetSection(MongoO
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.Section));
 builder.Services.Configure<EncryptionOptions>(builder.Configuration.GetSection(EncryptionOptions.Section));
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.Section));
+builder.Services.Configure<SmsOptions>(builder.Configuration.GetSection(SmsOptions.Section));
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection(SecurityOptions.Section));
 builder.Services.Configure<MediaOptions>(builder.Configuration.GetSection(MediaOptions.Section));
 builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection(SeedOptions.Section));
@@ -36,6 +37,8 @@ builder.Services.AddSingleton<TotpService>();
 builder.Services.AddSingleton<DataProtector>();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<ISmsSender, TwilioSmsSender>();
 builder.Services.AddScoped<AuditLogger>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AdminSeeder>();

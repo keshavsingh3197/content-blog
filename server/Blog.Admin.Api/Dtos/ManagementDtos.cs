@@ -6,12 +6,16 @@ namespace Blog.Admin.Api.Dtos;
 
 public sealed record CreateUserRequest(
     [Required, EmailAddress, MaxLength(256)] string Email,
+    [MaxLength(60)] string? Username,
     [Required, MaxLength(120)] string DisplayName,
+    [Phone, MaxLength(20)] string? PhoneNumber,
     [Required, MinLength(12), MaxLength(256)] string Password,
     List<string>? Roles);
 
 public sealed record UpdateUserRequest(
+    [MaxLength(60)] string? Username,
     [MaxLength(120)] string? DisplayName,
+    [Phone, MaxLength(20)] string? PhoneNumber,
     List<string>? Roles,
     bool? IsActive);
 
@@ -21,7 +25,9 @@ public sealed record ResetPasswordRequest(
 public sealed record UserListItem(
     string Id,
     string Email,
+    string? Username,
     string DisplayName,
+    string? PhoneNumber,
     IReadOnlyList<string> Roles,
     bool IsActive,
     bool TwoFactorEnabled,

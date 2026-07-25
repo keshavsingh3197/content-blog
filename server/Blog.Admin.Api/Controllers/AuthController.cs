@@ -37,6 +37,16 @@ public sealed class AuthController : ControllerBase
         return Accepted(); // Do not reveal whether the mailbox exists.
     }
 
+    /// <summary>Sends the SMS-fallback OTP for a pending two-factor session.</summary>
+    [HttpPost("2fa/sms/send")]
+    [AllowAnonymous]
+    [EnableRateLimiting("auth")]
+    public async Task<IActionResult> SendSmsOtp(SendSmsOtpRequest request)
+    {
+        await _auth.SendSmsOtpAsync(request);
+        return Accepted(); // Do not reveal whether a phone number is on file.
+    }
+
     /// <summary>Exchanges a valid refresh token for a fresh token pair (rotation).</summary>
     [HttpPost("refresh")]
     [AllowAnonymous]

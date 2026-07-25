@@ -47,6 +47,10 @@ export class AuthService {
     return this.http.post<void>(`${this.base}/auth/2fa/email/send`, { twoFactorToken });
   }
 
+  sendSmsOtp(twoFactorToken: string): Observable<void> {
+    return this.http.post<void>(`${this.base}/auth/2fa/sms/send`, { twoFactorToken });
+  }
+
   // ---- Session ----
 
   private setSession(tokens: AuthTokens): void {

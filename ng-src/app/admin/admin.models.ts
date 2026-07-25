@@ -5,6 +5,7 @@ export type Role = 'Admin' | 'Editor' | 'Viewer';
 export interface UserProfile {
   id: string;
   email: string;
+  username?: string | null;
   displayName: string;
   roles: Role[];
   twoFactorEnabled: boolean;
@@ -22,10 +23,11 @@ export interface LoginResponse {
   twoFactorRequired: boolean;
   twoFactorToken?: string;
   emailFallbackAvailable: boolean;
+  smsFallbackAvailable: boolean;
   tokens?: AuthTokens;
 }
 
-export type TwoFactorMethod = 'Totp' | 'Email' | 'BackupCode';
+export type TwoFactorMethod = 'Totp' | 'Email' | 'BackupCode' | 'Sms';
 
 export interface EnrollStartResponse {
   secret: string;
@@ -36,7 +38,9 @@ export interface EnrollStartResponse {
 export interface UserListItem {
   id: string;
   email: string;
+  username?: string | null;
   displayName: string;
+  phoneNumber?: string | null;
   roles: Role[];
   isActive: boolean;
   twoFactorEnabled: boolean;
