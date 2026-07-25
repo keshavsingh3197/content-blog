@@ -53,6 +53,13 @@ public sealed class TwilioSmsSender : ISmsSender
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic", basic);
 
         var response = await client.SendAsync(request, ct);
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            // Surface Twilio's error detail (e.g. code 21606 "The From phone number is not a
+            // valid, SMS-capable Twilio number") in the logs, but don't crash the request —
+            // the login UI only shows a generic "code sent if a phone is on file" message.
+            var body = await response.Content.ReadAsStringAsync(ct);
+            _logger.LogError("Twilio SMS send failed ({Status}): {Body}", (int)response.StatusCode, body);
+        }
     }
 }
