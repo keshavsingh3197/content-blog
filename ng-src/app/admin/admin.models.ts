@@ -1,0 +1,68 @@
+// Types shared across the admin UI. Mirror the API DTOs.
+
+export type Role = 'Admin' | 'Editor' | 'Viewer';
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  displayName: string;
+  roles: Role[];
+  twoFactorEnabled: boolean;
+}
+
+export interface AuthTokens {
+  accessToken: string;
+  accessTokenExpiresAt: string;
+  refreshToken: string;
+  user: UserProfile;
+}
+
+export interface LoginResponse {
+  twoFactorRequired: boolean;
+  twoFactorToken?: string;
+  emailFallbackAvailable: boolean;
+  tokens?: AuthTokens;
+}
+
+export type TwoFactorMethod = 'Totp' | 'Email' | 'BackupCode';
+
+export interface EnrollStartResponse {
+  secret: string;
+  otpAuthUri: string;
+  qrCodePngDataUrl: string;
+}
+
+export interface UserListItem {
+  id: string;
+  email: string;
+  displayName: string;
+  roles: Role[];
+  isActive: boolean;
+  twoFactorEnabled: boolean;
+  lastLoginAt?: string;
+  createdAt: string;
+}
+
+export interface ContentListItem {
+  id: string;
+  title: string;
+  slug: string;
+  folder: string;
+  tags: string[];
+  order: number;
+  published: boolean;
+  updatedAt: string;
+}
+
+export interface ContentTopic extends ContentListItem {
+  body: string;
+}
+
+export interface MediaListItem {
+  id: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+  url: string;
+  createdAt: string;
+}

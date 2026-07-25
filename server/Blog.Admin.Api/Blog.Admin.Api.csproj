@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Blog.Admin.Api</RootNamespace>
+    <AssemblyName>Blog.Admin.Api</AssemblyName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- MongoDB access: required, the application's database driver. -->
+    <PackageReference Include="MongoDB.Driver" Version="2.28.0" />
+    <!-- JWT bearer validation for OAuth2-style bearer tokens. -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.1.2" />
+    <!-- API documentation for the admin API surface. -->
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
+    <!-- Server-side QR generation for TOTP enrollment. Keeps the shared secret
+         on the server instead of leaking it to a third-party QR service. -->
+    <PackageReference Include="QRCoder" Version="1.6.0" />
+  </ItemGroup>
+
+</Project>

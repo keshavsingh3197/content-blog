@@ -13,5 +13,9 @@ export const routes: Routes = [
     path: 'folder',
     loadComponent: () => import('./components/folder-view/folder-view.component').then(m => m.FolderViewComponent)
   },
+  {
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES)
+  },
   { path: '**', redirectTo: '' }
 ];

@@ -1,0 +1,8 @@
+# Build output
+bin/
+obj/
+# Local runtime data (uploaded media, etc.)
+**/App_Data/
+# Never commit secrets
+appsettings.*.Local.json
+*.user
