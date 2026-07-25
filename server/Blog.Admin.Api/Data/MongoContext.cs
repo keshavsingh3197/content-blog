@@ -14,6 +14,7 @@ public sealed class MongoContext
     public IMongoCollection<MediaAsset> Media { get; }
     public IMongoCollection<LoginAudit> Audit { get; }
     public IMongoCollection<RefreshToken> RefreshTokens { get; }
+    public IMongoCollection<Link> Links { get; }
 
     public MongoContext(IOptions<MongoOptions> options)
     {
@@ -31,6 +32,7 @@ public sealed class MongoContext
         Media = db.GetCollection<MediaAsset>("media");
         Audit = db.GetCollection<LoginAudit>("audit");
         RefreshTokens = db.GetCollection<RefreshToken>("refresh_tokens");
+        Links = db.GetCollection<Link>("links");
 
         EnsureIndexes();
     }
@@ -63,5 +65,9 @@ public sealed class MongoContext
         Audit.Indexes.CreateOne(new CreateIndexModel<LoginAudit>(
             Builders<LoginAudit>.IndexKeys.Descending(a => a.Timestamp),
             new CreateIndexOptions { Name = "ix_audit_ts" }));
+
+        Links.Indexes.CreateOne(new CreateIndexModel<Link>(
+            Builders<Link>.IndexKeys.Ascending(l => l.Category).Ascending(l => l.Order),
+            new CreateIndexOptions { Name = "ix_link_category_order" }));
     }
 }

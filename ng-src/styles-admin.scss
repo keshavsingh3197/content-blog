@@ -365,6 +365,9 @@
   .muted { color: var(--text-muted); }
   .d-block { display: block; }
 }
+.link-ico { display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: var(--radius-xs);
+  background: var(--accent-soft); color: var(--accent); flex-shrink: 0; }
 .cell-user { display: flex; align-items: center; gap: 0.7rem;
   span { display: flex; flex-direction: column; line-height: 1.25;
     strong { font-size: 0.9rem; } small { font-size: 0.76rem; color: var(--text-muted); } } }

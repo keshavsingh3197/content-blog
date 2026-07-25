@@ -71,3 +71,15 @@ export interface MediaListItem {
   url: string;
   createdAt: string;
 }
+
+export interface Link {
+  id: string;
+  title: string;
+  url: string;
+  category?: string | null;
+  description?: string | null;
+  icon?: string | null;
+  order: number;
+  visible: boolean;
+  updatedAt?: string;
+}

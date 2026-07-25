@@ -42,6 +42,11 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/media.component').then(m => m.MediaComponent),
       },
       {
+        path: 'links',
+        canActivate: [onboardingGuard],
+        loadComponent: () => import('./pages/links.component').then(m => m.LinksComponent),
+      },
+      {
         path: 'security',
         loadComponent: () => import('./pages/security.component').then(m => m.SecurityComponent),
       },

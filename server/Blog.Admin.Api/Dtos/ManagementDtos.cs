@@ -64,6 +64,26 @@ public sealed record ContentListItem(
     bool Published,
     DateTime UpdatedAt);
 
+// ---- Links ----
+
+public sealed record CreateLinkRequest(
+    [Required, MaxLength(160)] string Title,
+    [Required, Url, MaxLength(2048)] string Url,
+    [MaxLength(60)] string? Category,
+    [MaxLength(300)] string? Description,
+    [MaxLength(60)] string? Icon,
+    int Order,
+    bool Visible);
+
+public sealed record UpdateLinkRequest(
+    [MaxLength(160)] string? Title,
+    [Url, MaxLength(2048)] string? Url,
+    [MaxLength(60)] string? Category,
+    [MaxLength(300)] string? Description,
+    [MaxLength(60)] string? Icon,
+    int? Order,
+    bool? Visible);
+
 // ---- Media ----
 
 public sealed record MediaListItem(

@@ -94,8 +94,9 @@ export class AdminLayoutComponent {
 
   private links: NavLink[] = [
     { label: 'Dashboard', icon: 'fa-gauge-high', path: '/admin', exact: true },
-    { label: 'Content', icon: 'fa-file-lines', path: '/admin/content', exact: false },
+    { label: 'Content / Docs', icon: 'fa-file-lines', path: '/admin/content', exact: false },
     { label: 'Media', icon: 'fa-images', path: '/admin/media', exact: false },
+    { label: 'Links', icon: 'fa-link', path: '/admin/links', exact: false },
     { label: 'Users & Roles', icon: 'fa-users-gear', path: '/admin/users', exact: false, roles: ['Admin'] },
     { label: 'Security & 2FA', icon: 'fa-lock', path: '/admin/security', exact: false },
   ];
