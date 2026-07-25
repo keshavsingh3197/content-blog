@@ -71,4 +71,13 @@ public sealed class AuthController : ControllerBase
         await _auth.DisableTwoFactorAsync(User.GetUserId(), request.Password);
         return NoContent();
     }
+
+    /// <summary>Self-service password change; clears the "must change" flag.</summary>
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
+    {
+        await _auth.ChangePasswordAsync(User.GetUserId(), request.CurrentPassword, request.NewPassword);
+        return NoContent();
+    }
 }

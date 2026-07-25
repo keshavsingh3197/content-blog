@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
@@ -16,6 +17,11 @@ import { EnrollStartResponse } from '../admin.models';
       <div><h1 class="page-title">Security &amp; 2FA</h1>
         <p class="page-sub">Protect your account with an authenticator app.</p></div>
     </section>
+
+    <div class="setup-banner" *ngIf="!enabled()">
+      <i class="fas fa-triangle-exclamation"></i>
+      <span>Two-factor authentication is required. Set it up below to unlock the rest of the console.</span>
+    </div>
 
     <div class="panel status-panel">
       <div class="status-line" [class.on]="enabled()">
@@ -116,6 +122,7 @@ import { EnrollStartResponse } from '../admin.models';
 export class SecurityComponent {
   private auth = inject(AuthService);
   private toast = inject(ToastService);
+  private router = inject(Router);
 
   enabled = computed(() => !!this.auth.user()?.twoFactorEnabled);
   step = signal(0);
@@ -151,6 +158,8 @@ export class SecurityComponent {
     this.toast.success('Two-factor authentication is now enabled.');
     this.step.set(0);
     this.code = '';
+    // Onboarding complete — head to the dashboard.
+    this.router.navigate(['/admin']);
   }
 
   disable(): void {

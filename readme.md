@@ -188,6 +188,33 @@ double underscore `__`:
 
 ---
 
+## Seeding the admin directly in MongoDB (script)
+
+Besides the built-in `Seed__*` env vars, you can insert an admin **straight into Mongo**
+using your connection string — handy for recovery or first setup:
+
+```bash
+cd server/scripts
+npm install                      # installs the mongodb driver (one time)
+
+# args: <mongodb-uri> <email> <password> [displayName]
+node seed-admin.mjs "mongodb+srv://user:pass@cluster.mongodb.net" admin@keshavsingh.in "a-strong-password" "Keshav Singh"
+```
+
+It writes the password with the exact PBKDF2 scheme the API verifies, creates the user with
+the **Admin** role and **2FA off** (so first login forces authenticator setup), and prints a
+fresh `Jwt__SigningKey` / `Encryption__DataKey` you can paste into Render. If the user already
+exists it won't overwrite the password — it just ensures the Admin role.
+
+## First-login onboarding (temp password + forced 2FA)
+
+- Users you create in the **Users & Roles** page get a **temporary password** and must set their
+  own on first sign-in.
+- Any user **without 2FA** is redirected to **Security & 2FA** and cannot use the rest of the
+  console until an authenticator is enrolled.
+
+---
+
 ## Roles
 
 - **Admin** — full control, including user & role management

@@ -46,9 +46,14 @@ public sealed record EnrollConfirmResponse(IReadOnlyList<string> BackupCodes);
 public sealed record DisableTwoFactorRequest(
     [Required, MaxLength(256)] string Password);
 
+public sealed record ChangePasswordRequest(
+    [Required, MaxLength(256)] string CurrentPassword,
+    [Required, MinLength(12), MaxLength(256)] string NewPassword);
+
 public sealed record UserProfile(
     string Id,
     string Email,
     string DisplayName,
     IReadOnlyList<string> Roles,
-    bool TwoFactorEnabled);
+    bool TwoFactorEnabled,
+    bool MustChangePassword);

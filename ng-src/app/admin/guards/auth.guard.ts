@@ -27,3 +27,19 @@ export const roleGuard = (...roles: Role[]): CanActivateFn => () => {
   const router = inject(Router);
   return auth.hasRole(...roles) ? true : router.createUrlTree(['/admin']);
 };
+
+/**
+ * Onboarding gate for normal pages: a user with a temporary password must change
+ * it first, and a user without 2FA must enrol before doing anything else. The
+ * change-password and security pages are intentionally left ungated so they are
+ * reachable as the redirect targets.
+ */
+export const onboardingGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  const user = auth.user();
+  if (!user) return router.createUrlTree(['/admin/login']);
+  if (user.mustChangePassword) return router.createUrlTree(['/admin/account/password']);
+  if (!user.twoFactorEnabled) return router.createUrlTree(['/admin/security']);
+  return true;
+};

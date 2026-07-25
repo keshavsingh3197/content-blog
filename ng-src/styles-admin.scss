@@ -434,24 +434,35 @@
   input:checked + .switch { background: var(--accent); &::after { transform: translateX(19px); } }
 }
 
-/* ── Modal ────────────────────────────────────────────── */
-.modal-backdrop {
+/* ── Dialog (class names avoid ad-blocker "modal/popup" cosmetic filters) ── */
+.admin-dialog-scrim {
   position: fixed; inset: 0; background: rgba(3, 6, 15, 0.55);
   display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 6000;
   backdrop-filter: blur(3px); animation: admin-fade-up 0.2s ease;
 }
-.modal {
+.admin-dialog {
   background: var(--bg-primary); border: 1px solid var(--border-color);
   border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
   width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto;
 }
-.modal-head {
+.admin-dialog-head {
   display: flex; align-items: center; justify-content: space-between;
   padding: 1.1rem 1.35rem; border-bottom: 1px solid var(--border-color);
   h3 { margin: 0; font-size: 1.1rem; font-weight: 700; }
 }
-.modal-body { padding: 1.35rem; }
-.modal-foot { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.5rem; }
+.admin-dialog-body { padding: 1.35rem; }
+.admin-dialog-foot { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.5rem; }
+
+/* ── Onboarding banner + narrow form panel ────────────── */
+.setup-banner {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.9rem 1.15rem; margin-bottom: 1.25rem;
+  border-radius: var(--radius); font-weight: 600; font-size: 0.9rem;
+  background: rgba(245, 158, 11, 0.12); color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  i { font-size: 1.1rem; }
+}
+.panel.narrow { max-width: 460px; }
 
 /* ── Toasts ───────────────────────────────────────────── */
 .admin-toast-host {

@@ -216,6 +216,18 @@ public sealed class AuthService
         await _audit.LogAsync(AuditEvents.TwoFactorDisabled, true, user.Email, user.Id);
     }
 
+    public async Task ChangePasswordAsync(string userId, string currentPassword, string newPassword)
+    {
+        var user = await GetActiveUserAsync(userId);
+        if (!_passwords.Verify(currentPassword, user.PasswordHash))
+            throw new AuthException("Current password is incorrect.", 400);
+
+        await _db.Users.UpdateOneAsync(u => u.Id == user.Id, Builders<User>.Update
+            .Set(u => u.PasswordHash, _passwords.Hash(newPassword))
+            .Set(u => u.MustChangePassword, false)
+            .Set(u => u.UpdatedAt, DateTime.UtcNow));
+    }
+
     // ---- Tokens ----
 
     public async Task<AuthTokens> RefreshAsync(string refreshToken)
@@ -270,7 +282,8 @@ public sealed class AuthService
         await _db.Users.UpdateOneAsync(u => u.Id == user.Id,
             Builders<User>.Update.Set(u => u.LastLoginAt, DateTime.UtcNow));
 
-        var profile = new UserProfile(user.Id, user.Email, user.DisplayName, user.Roles, user.TwoFactorEnabled);
+        var profile = new UserProfile(
+            user.Id, user.Email, user.DisplayName, user.Roles, user.TwoFactorEnabled, user.MustChangePassword);
         return new AuthTokens(access, accessExpires, refresh, profile);
     }
 

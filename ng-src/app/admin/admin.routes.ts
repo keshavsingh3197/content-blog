@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, roleGuard } from './guards/auth.guard';
+import { authGuard, onboardingGuard, roleGuard } from './guards/auth.guard';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -13,34 +13,41 @@ export const ADMIN_ROUTES: Routes = [
     children: [
       {
         path: '',
+        canActivate: [onboardingGuard],
         loadComponent: () => import('./pages/dashboard.component').then(m => m.DashboardComponent),
       },
       {
         path: 'users',
-        canActivate: [roleGuard('Admin')],
+        canActivate: [onboardingGuard, roleGuard('Admin')],
         loadComponent: () => import('./pages/users.component').then(m => m.UsersComponent),
       },
       {
         path: 'content',
+        canActivate: [onboardingGuard],
         loadComponent: () => import('./pages/content-list.component').then(m => m.ContentListComponent),
       },
       {
         path: 'content/new',
-        canActivate: [roleGuard('Admin', 'Editor')],
+        canActivate: [onboardingGuard, roleGuard('Admin', 'Editor')],
         loadComponent: () => import('./pages/content-edit.component').then(m => m.ContentEditComponent),
       },
       {
         path: 'content/:id',
-        canActivate: [roleGuard('Admin', 'Editor')],
+        canActivate: [onboardingGuard, roleGuard('Admin', 'Editor')],
         loadComponent: () => import('./pages/content-edit.component').then(m => m.ContentEditComponent),
       },
       {
         path: 'media',
+        canActivate: [onboardingGuard],
         loadComponent: () => import('./pages/media.component').then(m => m.MediaComponent),
       },
       {
         path: 'security',
         loadComponent: () => import('./pages/security.component').then(m => m.SecurityComponent),
+      },
+      {
+        path: 'account/password',
+        loadComponent: () => import('./pages/change-password.component').then(m => m.ChangePasswordComponent),
       },
     ],
   },

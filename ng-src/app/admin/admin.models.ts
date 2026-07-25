@@ -8,6 +8,7 @@ export interface UserProfile {
   displayName: string;
   roles: Role[];
   twoFactorEnabled: boolean;
+  mustChangePassword: boolean;
 }
 
 export interface AuthTokens {

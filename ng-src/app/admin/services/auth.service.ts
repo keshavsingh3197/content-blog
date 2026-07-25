@@ -99,6 +99,11 @@ export class AuthService {
       .pipe(tap(() => this.patchUser({ twoFactorEnabled: false })));
   }
 
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.base}/auth/change-password`, { currentPassword, newPassword })
+      .pipe(tap(() => this.patchUser({ mustChangePassword: false })));
+  }
+
   private patchUser(patch: Partial<UserProfile>): void {
     const u = this.user();
     if (u) this.user.set({ ...u, ...patch });

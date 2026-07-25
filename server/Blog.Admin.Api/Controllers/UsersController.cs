@@ -28,7 +28,8 @@ public sealed class UsersController : ControllerBase
     {
         var user = await _db.Users.Find(u => u.Id == User.GetUserId()).FirstOrDefaultAsync();
         if (user is null) return Unauthorized();
-        return Ok(new UserProfile(user.Id, user.Email, user.DisplayName, user.Roles, user.TwoFactorEnabled));
+        return Ok(new UserProfile(
+            user.Id, user.Email, user.DisplayName, user.Roles, user.TwoFactorEnabled, user.MustChangePassword));
     }
 
     [HttpGet]
@@ -65,6 +66,9 @@ public sealed class UsersController : ControllerBase
             DisplayName = request.DisplayName.Trim(),
             PasswordHash = _passwords.Hash(request.Password),
             Roles = roles,
+            // Admin-created accounts get a temporary password and must set their own
+            // password + enrol 2FA on first sign-in.
+            MustChangePassword = true,
         };
         await _db.Users.InsertOneAsync(user);
         return CreatedAtAction(nameof(Get), new { id = user.Id }, Map(user));

@@ -69,14 +69,14 @@ interface EditModel {
       </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal-backdrop" *ngIf="editing()" (click)="close()">
-      <div class="modal" (click)="$event.stopPropagation()" @modalIn>
-        <div class="modal-head">
+    <!-- Edit / create dialog (class names avoid ad-blocker "modal/popup" cosmetic filters) -->
+    <div class="admin-dialog-scrim" *ngIf="editing()" (click)="close()">
+      <div class="admin-dialog" (click)="$event.stopPropagation()" @modalIn>
+        <div class="admin-dialog-head">
           <h3>{{ model.id ? 'Edit user' : 'Add user' }}</h3>
           <button class="icon-btn" (click)="close()"><i class="fas fa-xmark"></i></button>
         </div>
-        <form class="modal-body" (ngSubmit)="save()">
+        <form class="admin-dialog-body" (ngSubmit)="save()">
           <label class="field"><span>Display name</span>
             <div class="field-input"><i class="fas fa-user"></i>
               <input name="dn" [(ngModel)]="model.displayName" required placeholder="Jane Doe"></div>
@@ -106,7 +106,7 @@ interface EditModel {
             <input type="checkbox" name="act" [(ngModel)]="model.isActive"><span class="switch"></span>
           </label>
 
-          <div class="modal-foot">
+          <div class="admin-dialog-foot">
             <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
             <button type="submit" class="btn-primary" [disabled]="busy()">
               <i class="fas fa-spinner fa-spin" *ngIf="busy()"></i> Save

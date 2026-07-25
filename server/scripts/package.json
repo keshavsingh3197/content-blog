@@ -1,0 +1,12 @@
+{
+  "name": "blog-admin-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Maintenance scripts for the Blog Admin database.",
+  "scripts": {
+    "seed-admin": "node seed-admin.mjs"
+  },
+  "dependencies": {
+    "mongodb": "^6.9.0"
+  }
+}

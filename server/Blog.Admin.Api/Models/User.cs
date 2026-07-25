@@ -16,6 +16,9 @@ public sealed class User
     /// <summary>PBKDF2 hash string (format: iterations.salt.hash). Never the raw password.</summary>
     public string PasswordHash { get; set; } = string.Empty;
 
+    /// <summary>Forces a password change on next login (e.g. an admin-set temporary password).</summary>
+    public bool MustChangePassword { get; set; }
+
     public List<string> Roles { get; set; } = new();
 
     // ---- Two-factor (TOTP authenticator, default method) ----
