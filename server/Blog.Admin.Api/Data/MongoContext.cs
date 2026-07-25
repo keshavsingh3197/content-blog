@@ -15,6 +15,7 @@ public sealed class MongoContext
     public IMongoCollection<LoginAudit> Audit { get; }
     public IMongoCollection<RefreshToken> RefreshTokens { get; }
     public IMongoCollection<Link> Links { get; }
+    public IMongoCollection<AppSettings> Settings { get; }
 
     public MongoContext(IOptions<MongoOptions> options)
     {
@@ -33,6 +34,7 @@ public sealed class MongoContext
         Audit = db.GetCollection<LoginAudit>("audit");
         RefreshTokens = db.GetCollection<RefreshToken>("refresh_tokens");
         Links = db.GetCollection<Link>("links");
+        Settings = db.GetCollection<AppSettings>("settings");
 
         EnsureIndexes();
     }

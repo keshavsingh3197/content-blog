@@ -26,13 +26,13 @@ public sealed class AuthService
     private readonly IEmailSender _email;
     private readonly ISmsSender _sms;
     private readonly AuditLogger _audit;
-    private readonly SecurityOptions _security;
+    private readonly SettingsService _settings;
     private readonly JwtOptions _jwtOptions;
 
     public AuthService(
         MongoContext db, PasswordHasher passwords, TotpService totp, DataProtector protector,
         JwtService jwt, IEmailSender email, ISmsSender sms, AuditLogger audit,
-        IOptions<SecurityOptions> security, IOptions<JwtOptions> jwtOptions)
+        SettingsService settings, IOptions<JwtOptions> jwtOptions)
     {
         _db = db;
         _passwords = passwords;
@@ -42,7 +42,7 @@ public sealed class AuthService
         _email = email;
         _sms = sms;
         _audit = audit;
-        _security = security.Value;
+        _settings = settings;
         _jwtOptions = jwtOptions.Value;
     }
 
@@ -90,8 +90,9 @@ public sealed class AuthService
         return new LoginResponse(
             TwoFactorRequired: true,
             TwoFactorToken: twoFactorToken,
-            EmailFallbackAvailable: true,
-            SmsFallbackAvailable: !string.IsNullOrWhiteSpace(user.PhoneNumber),
+            EmailFallbackAvailable: _settings.Current.EmailTwoFactorEnabled,
+            SmsFallbackAvailable: _settings.Current.SmsTwoFactorEnabled
+                                  && !string.IsNullOrWhiteSpace(user.PhoneNumber),
             Tokens: null);
     }
 
@@ -128,7 +129,7 @@ public sealed class AuthService
         var code = TokenHasher.NewNumericOtp(6);
         var update = Builders<User>.Update
             .Set(u => u.EmailOtpHash, TokenHasher.Hash(code))
-            .Set(u => u.EmailOtpExpiresAt, DateTime.UtcNow.AddMinutes(_security.EmailOtpMinutes))
+            .Set(u => u.EmailOtpExpiresAt, DateTime.UtcNow.AddMinutes(_settings.Current.EmailOtpMinutes))
             .Set(u => u.EmailOtpAttempts, 0);
         await _db.Users.UpdateOneAsync(u => u.Id == user.Id, update);
 
@@ -144,7 +145,7 @@ public sealed class AuthService
         var code = TokenHasher.NewNumericOtp(6);
         var update = Builders<User>.Update
             .Set(u => u.EmailOtpHash, TokenHasher.Hash(code))
-            .Set(u => u.EmailOtpExpiresAt, DateTime.UtcNow.AddMinutes(_security.EmailOtpMinutes))
+            .Set(u => u.EmailOtpExpiresAt, DateTime.UtcNow.AddMinutes(_settings.Current.EmailOtpMinutes))
             .Set(u => u.EmailOtpAttempts, 0);
         await _db.Users.UpdateOneAsync(u => u.Id == user.Id, update);
 
@@ -218,7 +219,7 @@ public sealed class AuthService
         if (!_totp.VerifyCode(secret, code))
             throw new AuthException("The code did not match. Check your authenticator and try again.", 400);
 
-        var backupCodes = Enumerable.Range(0, _security.BackupCodeCount)
+        var backupCodes = Enumerable.Range(0, _settings.Current.BackupCodeCount)
             .Select(_ => TokenHasher.NewBackupCode()).ToList();
 
         await _db.Users.UpdateOneAsync(u => u.Id == user.Id, Builders<User>.Update
@@ -321,8 +322,8 @@ public sealed class AuthService
     {
         var attempts = user.FailedLoginAttempts + 1;
         var update = Builders<User>.Update.Set(u => u.FailedLoginAttempts, attempts);
-        if (attempts >= _security.MaxFailedLoginAttempts)
-            update = update.Set(u => u.LockoutUntil, DateTime.UtcNow.AddMinutes(_security.LockoutMinutes));
+        if (attempts >= _settings.Current.MaxFailedLoginAttempts)
+            update = update.Set(u => u.LockoutUntil, DateTime.UtcNow.AddMinutes(_settings.Current.LockoutMinutes));
         await _db.Users.UpdateOneAsync(u => u.Id == user.Id, update);
     }
 

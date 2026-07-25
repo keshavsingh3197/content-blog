@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE } from '../api.config';
 import {
-  ContentListItem, ContentTopic, Link, MediaListItem, Role, UserListItem,
+  ContentListItem, ContentTopic, Link, MediaListItem, Role,
+  SettingsView, UpdateSettings, UserListItem,
 } from '../admin.models';
 
 @Injectable({ providedIn: 'root' })
@@ -80,6 +81,20 @@ export class AdminApiService {
   }
   deleteLink(id: string) {
     return this.http.delete<void>(`${this.base}/links/${id}`);
+  }
+
+  // ---- Settings ----
+  getSettings(): Observable<SettingsView> {
+    return this.http.get<SettingsView>(`${this.base}/settings`);
+  }
+  updateSettings(body: UpdateSettings): Observable<SettingsView> {
+    return this.http.put<SettingsView>(`${this.base}/settings`, body);
+  }
+  exportSettings(): Observable<Blob> {
+    return this.http.get(`${this.base}/settings/export`, { responseType: 'blob' });
+  }
+  importSettings(json: string): Observable<SettingsView> {
+    return this.http.post<SettingsView>(`${this.base}/settings/import`, { json });
   }
 
   mediaUrl(url: string): string {

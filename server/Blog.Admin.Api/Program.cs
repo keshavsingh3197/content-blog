@@ -35,6 +35,7 @@ builder.Services.AddSingleton<MongoContext>();
 builder.Services.AddSingleton<PasswordHasher>();
 builder.Services.AddSingleton<TotpService>();
 builder.Services.AddSingleton<DataProtector>();
+builder.Services.AddSingleton<SettingsService>();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient();
@@ -165,6 +166,8 @@ app.MapControllers();
 // ---- First-run admin seed ----
 using (var scope = app.Services.CreateScope())
 {
+    // Load/seed settings before anything that reads them.
+    await scope.ServiceProvider.GetRequiredService<SettingsService>().InitAsync();
     await scope.ServiceProvider.GetRequiredService<AdminSeeder>().SeedAsync();
 }
 

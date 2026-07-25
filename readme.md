@@ -142,8 +142,12 @@ double underscore `__`:
 | `Cors__AllowedOrigins__0` | `https://<you>.github.io` (your Pages origin, no trailing slash) |
 | `Seed__AdminEmail` | `you@example.com` |
 | `Seed__AdminPassword` | strong password, **rotate after first login** (mark **secret**) |
-| `Email__Enabled` / `Email__Host` / `Email__Username` / `Email__Password` | optional SMTP for the email OTP fallback |
-| `Sms__Enabled` / `Sms__AccountSid` / `Sms__AuthToken` / `Sms__FromNumber` | optional Twilio-compatible SMS OTP fallback (users need a phone number) |
+| `Email__*` / `Sms__*` | **optional — only seeds first-run defaults.** Email, SMS, and security thresholds are managed in **Admin → Settings** (stored in Mongo; secrets encrypted at rest). You can leave these unset and configure them in the UI. |
+
+> **Only 3 secrets belong in env**: `Mongo__ConnectionString`, `Jwt__SigningKey`, `Encryption__DataKey`
+> (the AES key that decrypts everything else). These can't move to the DB — the connection string
+> is needed *to reach* the DB, and the AES key must live outside the data it protects. Everything
+> else lives in **Admin → Settings** with an Export/Import JSON backup.
 
 > **MongoDB Atlas:** create a database user, and under *Network Access* allow Render's egress
 > (simplest: `0.0.0.0/0` while testing, then tighten). Atlas enforces TLS by default.

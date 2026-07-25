@@ -83,3 +83,33 @@ export interface Link {
   visible: boolean;
   updatedAt?: string;
 }
+
+export interface SettingsView {
+  siteTitle: string;
+  emailTwoFactorEnabled: boolean;
+  smsTwoFactorEnabled: boolean;
+  emailEnabled: boolean;
+  emailHost: string;
+  emailPort: number;
+  emailUseStartTls: boolean;
+  emailFromAddress: string;
+  emailFromName: string;
+  emailUsername: string;
+  emailPasswordSet: boolean;
+  smsEnabled: boolean;
+  smsAccountSid: string;
+  smsAuthTokenSet: boolean;
+  smsFromNumber: string;
+  maxFailedLoginAttempts: number;
+  lockoutMinutes: number;
+  emailOtpMinutes: number;
+  backupCodeCount: number;
+  updatedAt: string;
+}
+
+/** Fields sent on update — omit a secret to keep it, send a value to replace it. */
+export type UpdateSettings = Partial<Omit<SettingsView,
+  'emailPasswordSet' | 'smsAuthTokenSet' | 'updatedAt'>> & {
+  emailPassword?: string;
+  smsAuthToken?: string;
+};

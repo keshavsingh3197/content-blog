@@ -51,6 +51,11 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/security.component').then(m => m.SecurityComponent),
       },
       {
+        path: 'settings',
+        canActivate: [onboardingGuard, roleGuard('Admin')],
+        loadComponent: () => import('./pages/settings.component').then(m => m.SettingsComponent),
+      },
+      {
         path: 'account/password',
         loadComponent: () => import('./pages/change-password.component').then(m => m.ChangePasswordComponent),
       },

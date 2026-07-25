@@ -99,6 +99,7 @@ export class AdminLayoutComponent {
     { label: 'Links', icon: 'fa-link', path: '/admin/links', exact: false },
     { label: 'Users & Roles', icon: 'fa-users-gear', path: '/admin/users', exact: false, roles: ['Admin'] },
     { label: 'Security & 2FA', icon: 'fa-lock', path: '/admin/security', exact: false },
+    { label: 'Settings', icon: 'fa-gear', path: '/admin/settings', exact: false, roles: ['Admin'] },
   ];
 
   visibleLinks = computed(() => {

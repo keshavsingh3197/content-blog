@@ -1,7 +1,5 @@
 using System.Net;
 using System.Net.Mail;
-using Blog.Admin.Api.Configuration;
-using Microsoft.Extensions.Options;
 
 namespace Blog.Admin.Api.Services;
 
@@ -11,25 +9,26 @@ public interface IEmailSender
 }
 
 /// <summary>
-/// Sends the email-fallback OTP over SMTP with STARTTLS. When email is disabled
-/// (e.g. local dev) the code is logged instead of sent so the flow stays testable
-/// without wiring a mail provider. The OTP is not personal data; no other user
-/// data is included.
+/// Sends the email-fallback OTP over SMTP with STARTTLS, using settings managed in
+/// the admin UI (the password is decrypted from the DB at send time). When email is
+/// disabled the code is logged instead so the flow stays testable. The OTP is not
+/// personal data; no other user data is included.
 /// </summary>
 public sealed class SmtpEmailSender : IEmailSender
 {
-    private readonly EmailOptions _opts;
+    private readonly SettingsService _settings;
     private readonly ILogger<SmtpEmailSender> _logger;
 
-    public SmtpEmailSender(IOptions<EmailOptions> options, ILogger<SmtpEmailSender> logger)
+    public SmtpEmailSender(SettingsService settings, ILogger<SmtpEmailSender> logger)
     {
-        _opts = options.Value;
+        _settings = settings;
         _logger = logger;
     }
 
     public async Task SendOtpAsync(string toEmail, string code, CancellationToken ct = default)
     {
-        if (!_opts.Enabled || string.IsNullOrWhiteSpace(_opts.Host))
+        var s = _settings.Current;
+        if (!s.EmailEnabled || string.IsNullOrWhiteSpace(s.EmailHost))
         {
             // Dev fallback: surface the code in logs only. Never do this in production.
             _logger.LogWarning("Email disabled — OTP for {Email} is {Code} (valid briefly).", toEmail, code);
@@ -38,7 +37,7 @@ public sealed class SmtpEmailSender : IEmailSender
 
         using var message = new MailMessage
         {
-            From = new MailAddress(_opts.FromAddress, _opts.FromName),
+            From = new MailAddress(s.EmailFromAddress, s.EmailFromName),
             Subject = "Your sign-in verification code",
             Body = $"Your verification code is {code}. It expires shortly. " +
                    "If you did not try to sign in, ignore this message.",
@@ -46,13 +45,13 @@ public sealed class SmtpEmailSender : IEmailSender
         };
         message.To.Add(toEmail);
 
-        using var client = new SmtpClient(_opts.Host, _opts.Port)
+        using var client = new SmtpClient(s.EmailHost, s.EmailPort)
         {
-            EnableSsl = _opts.UseStartTls, // STARTTLS — no plaintext credentials on the wire.
+            EnableSsl = s.EmailUseStartTls, // STARTTLS — no plaintext credentials on the wire.
             DeliveryMethod = SmtpDeliveryMethod.Network,
-            Credentials = string.IsNullOrEmpty(_opts.Username)
+            Credentials = string.IsNullOrEmpty(s.EmailUsername)
                 ? CredentialCache.DefaultNetworkCredentials
-                : new NetworkCredential(_opts.Username, _opts.Password),
+                : new NetworkCredential(s.EmailUsername, _settings.EmailPassword ?? string.Empty),
         };
 
         await client.SendMailAsync(message, ct);
