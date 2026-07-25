@@ -142,7 +142,9 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseHttpsRedirection();
+    // TLS is terminated at Render's edge (which also redirects http->https), so an
+    // in-container HTTPS redirect is redundant and just warns about a missing port.
+    // We still emit HSTS on responses.
     app.UseHsts();
 }
 

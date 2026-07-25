@@ -5,18 +5,18 @@ namespace Blog.Admin.Api.Dtos;
 // ---- Users & roles ----
 
 public sealed record CreateUserRequest(
-    [property: Required, EmailAddress, MaxLength(256)] string Email,
-    [property: Required, MaxLength(120)] string DisplayName,
-    [property: Required, MinLength(12), MaxLength(256)] string Password,
+    [Required, EmailAddress, MaxLength(256)] string Email,
+    [Required, MaxLength(120)] string DisplayName,
+    [Required, MinLength(12), MaxLength(256)] string Password,
     List<string>? Roles);
 
 public sealed record UpdateUserRequest(
-    [property: MaxLength(120)] string? DisplayName,
+    [MaxLength(120)] string? DisplayName,
     List<string>? Roles,
     bool? IsActive);
 
 public sealed record ResetPasswordRequest(
-    [property: Required, MinLength(12), MaxLength(256)] string NewPassword);
+    [Required, MinLength(12), MaxLength(256)] string NewPassword);
 
 public sealed record UserListItem(
     string Id,
@@ -31,18 +31,18 @@ public sealed record UserListItem(
 // ---- Content ----
 
 public sealed record CreateContentRequest(
-    [property: Required, MaxLength(200)] string Title,
-    [property: MaxLength(200)] string? Slug,
-    [property: MaxLength(200)] string? Folder,
+    [Required, MaxLength(200)] string Title,
+    [MaxLength(200)] string? Slug,
+    [MaxLength(200)] string? Folder,
     string? Body,
     List<string>? Tags,
     int Order,
     bool Published);
 
 public sealed record UpdateContentRequest(
-    [property: MaxLength(200)] string? Title,
-    [property: MaxLength(200)] string? Slug,
-    [property: MaxLength(200)] string? Folder,
+    [MaxLength(200)] string? Title,
+    [MaxLength(200)] string? Slug,
+    [MaxLength(200)] string? Folder,
     string? Body,
     List<string>? Tags,
     int? Order,

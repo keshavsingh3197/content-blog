@@ -5,8 +5,8 @@ namespace Blog.Admin.Api.Dtos;
 // Input is validated at this trust boundary before any processing.
 
 public sealed record LoginRequest(
-    [property: Required, EmailAddress, MaxLength(256)] string Email,
-    [property: Required, MaxLength(256)] string Password);
+    [Required, EmailAddress, MaxLength(256)] string Email,
+    [Required, MaxLength(256)] string Password);
 
 /// <summary>Returned after the password step. When TwoFactorRequired, no access token is issued yet.</summary>
 public sealed record LoginResponse(
@@ -24,13 +24,13 @@ public sealed record AuthTokens(
 public enum TwoFactorMethod { Totp, Email, BackupCode }
 
 public sealed record TwoFactorVerifyRequest(
-    [property: Required] string TwoFactorToken,
-    [property: Required, MaxLength(32)] string Code,
+    [Required] string TwoFactorToken,
+    [Required, MaxLength(32)] string Code,
     TwoFactorMethod Method = TwoFactorMethod.Totp);
 
-public sealed record SendEmailOtpRequest([property: Required] string TwoFactorToken);
+public sealed record SendEmailOtpRequest([Required] string TwoFactorToken);
 
-public sealed record RefreshRequest([property: Required] string RefreshToken);
+public sealed record RefreshRequest([Required] string RefreshToken);
 
 public sealed record LogoutRequest(string? RefreshToken);
 
@@ -39,12 +39,12 @@ public sealed record LogoutRequest(string? RefreshToken);
 public sealed record EnrollStartResponse(string Secret, string OtpAuthUri, string QrCodePngDataUrl);
 
 public sealed record EnrollConfirmRequest(
-    [property: Required, MaxLength(12)] string Code);
+    [Required, MaxLength(12)] string Code);
 
 public sealed record EnrollConfirmResponse(IReadOnlyList<string> BackupCodes);
 
 public sealed record DisableTwoFactorRequest(
-    [property: Required, MaxLength(256)] string Password);
+    [Required, MaxLength(256)] string Password);
 
 public sealed record UserProfile(
     string Id,
