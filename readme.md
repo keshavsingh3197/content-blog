@@ -188,23 +188,37 @@ double underscore `__`:
 
 ---
 
-## Seeding the admin directly in MongoDB (script)
+## Seeding the admin directly in MongoDB (scripts)
 
 Besides the built-in `Seed__*` env vars, you can insert an admin **straight into Mongo**
-using your connection string — handy for recovery or first setup:
+using your connection string. All three variants below write the password with the exact
+PBKDF2 scheme the API verifies, create the user as **Admin** with **2FA off** (so first login
+forces authenticator setup), and won't overwrite an existing user's password.
+
+**PowerShell** (lightest — computes the hash natively, only needs `mongosh` on PATH):
+
+```powershell
+cd server/scripts
+./seed-admin.ps1 -Uri "mongodb+srv://user:pass@cluster.mongodb.net" `
+                 -Email admin@keshavsingh.in -Password "a-strong-password" -DisplayName "Keshav Singh"
+```
+
+**Bash** (needs `mongosh` + `python3`):
 
 ```bash
 cd server/scripts
-npm install                      # installs the mongodb driver (one time)
+./seed-admin.sh "mongodb+srv://user:pass@cluster.mongodb.net" admin@keshavsingh.in "a-strong-password" "Keshav Singh"
+```
 
-# args: <mongodb-uri> <email> <password> [displayName]
+**Node** (self-contained — no `mongosh`, but runs `npm install` once):
+
+```bash
+cd server/scripts && npm install
 node seed-admin.mjs "mongodb+srv://user:pass@cluster.mongodb.net" admin@keshavsingh.in "a-strong-password" "Keshav Singh"
 ```
 
-It writes the password with the exact PBKDF2 scheme the API verifies, creates the user with
-the **Admin** role and **2FA off** (so first login forces authenticator setup), and prints a
-fresh `Jwt__SigningKey` / `Encryption__DataKey` you can paste into Render. If the user already
-exists it won't overwrite the password — it just ensures the Admin role.
+> `mongosh` = the [MongoDB Shell](https://www.mongodb.com/try/download/shell). The Node version
+> also prints fresh `Jwt__SigningKey` / `Encryption__DataKey` values for your Render env.
 
 ## First-login onboarding (temp password + forced 2FA)
 
