@@ -1,7 +1,9 @@
 using Blog.Admin.Api.Data;
 using Blog.Admin.Api.Dtos;
 using Blog.Admin.Api.Models;
-using Blog.Admin.Api.Security;
+using KeshavSingh.Auth;
+using KeshavSingh.Auth.Dtos;
+using KeshavSingh.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;

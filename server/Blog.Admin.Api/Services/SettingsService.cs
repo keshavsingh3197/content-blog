@@ -3,7 +3,8 @@ using Blog.Admin.Api.Configuration;
 using Blog.Admin.Api.Data;
 using Blog.Admin.Api.Dtos;
 using Blog.Admin.Api.Models;
-using Blog.Admin.Api.Security;
+using KeshavSingh.Auth.Abstractions;
+using KeshavSingh.Security;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -16,7 +17,7 @@ namespace Blog.Admin.Api.Services;
 /// rest via <see cref="DataProtector"/>. The cached copy gives synchronous access
 /// across the app; it is refreshed whenever settings are updated.
 /// </summary>
-public sealed class SettingsService
+public sealed class SettingsService : IAuthSettings
 {
     private readonly MongoContext _db;
     private readonly DataProtector _protector;
@@ -32,6 +33,14 @@ public sealed class SettingsService
 
     /// <summary>The current cached settings (never null after Init).</summary>
     public AppSettings Current => _current;
+
+    // ---- IAuthSettings: the thin slice the shared auth engine reads ----
+    public bool EmailTwoFactorEnabled => _current.EmailTwoFactorEnabled;
+    public bool SmsTwoFactorEnabled => _current.SmsTwoFactorEnabled;
+    public int EmailOtpMinutes => _current.EmailOtpMinutes;
+    public int MaxFailedLoginAttempts => _current.MaxFailedLoginAttempts;
+    public int LockoutMinutes => _current.LockoutMinutes;
+    public int BackupCodeCount => _current.BackupCodeCount;
 
     public async Task InitAsync()
     {

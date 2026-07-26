@@ -1,5 +1,6 @@
 using Blog.Admin.Api.Data;
 using Blog.Admin.Api.Models;
+using KeshavSingh.Auth.Abstractions;
 using Microsoft.AspNetCore.Http;
 
 namespace Blog.Admin.Api.Services;
@@ -7,8 +8,9 @@ namespace Blog.Admin.Api.Services;
 /// <summary>
 /// Records security events (auth attempts, authorization outcomes, 2FA changes)
 /// with context. Deliberately excludes passwords, tokens, and other personal data.
+/// Also serves as the auth engine's <see cref="IAuthAuditSink"/> (matching signature).
 /// </summary>
-public sealed class AuditLogger
+public sealed class AuditLogger : IAuthAuditSink
 {
     private readonly MongoContext _db;
     private readonly IHttpContextAccessor _http;

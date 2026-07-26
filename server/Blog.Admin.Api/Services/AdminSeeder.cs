@@ -1,7 +1,7 @@
 using Blog.Admin.Api.Configuration;
 using Blog.Admin.Api.Data;
 using Blog.Admin.Api.Models;
-using Blog.Admin.Api.Security;
+using KeshavSingh.Security;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
