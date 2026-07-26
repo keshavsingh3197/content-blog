@@ -1,12 +1,8 @@
 using System.Net;
 using System.Net.Mail;
+using KeshavSingh.Auth.Abstractions;
 
 namespace Blog.Admin.Api.Services;
-
-public interface IEmailSender
-{
-    Task SendOtpAsync(string toEmail, string code, CancellationToken ct = default);
-}
 
 /// <summary>
 /// Sends the email-fallback OTP over SMTP with STARTTLS, using settings managed in

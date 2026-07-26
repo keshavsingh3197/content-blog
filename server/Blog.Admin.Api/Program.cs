@@ -1,10 +1,12 @@
 using System.Text;
 using System.Threading.RateLimiting;
+using Blog.Admin.Api.Auth;
 using Blog.Admin.Api.Configuration;
 using Blog.Admin.Api.Data;
-using Blog.Admin.Api.Middleware;
-using Blog.Admin.Api.Security;
 using Blog.Admin.Api.Services;
+using KeshavSingh.Auth;
+using KeshavSingh.Auth.Abstractions;
+using KeshavSingh.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
@@ -41,9 +43,15 @@ builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<ISmsSender, TwilioSmsSender>();
 builder.Services.AddScoped<AuditLogger>();
-builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AdminSeeder>();
 builder.Services.AddHttpContextAccessor();
+
+// ---- Shared auth engine (KeshavSingh.Auth) + this app's storage adapters ----
+builder.Services.AddScoped<IAuthUserStore, MongoAuthUserStore>();
+builder.Services.AddScoped<IRefreshTokenStore, MongoRefreshTokenStore>();
+builder.Services.AddScoped<IAuthAuditSink>(sp => sp.GetRequiredService<AuditLogger>());
+builder.Services.AddSingleton<IAuthSettings>(sp => sp.GetRequiredService<SettingsService>());
+builder.Services.AddKeshavAuthEngine();
 
 // Behind Render's TLS-terminating proxy: honour X-Forwarded-* so the app sees the
 // real client IP (rate limiting & audit) and the original https scheme (so the
@@ -57,6 +65,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(o =>
 
 builder.Services
     .AddControllers()
+    .AddKeshavAuthControllers() // discover the shared /api/auth controller from the package
     .AddJsonOptions(options =>
         // Accept/emit enums as their string names (e.g. "Totp") to match the UI.
         options.JsonSerializerOptions.Converters.Add(
@@ -131,7 +140,7 @@ var app = builder.Build();
 
 // ---- Pipeline ----
 app.UseForwardedHeaders(); // Must run before anything that reads scheme / client IP.
-app.UseMiddleware<ExceptionMiddleware>();
+app.UseKeshavAuthExceptionHandling();
 
 // Baseline security headers.
 app.Use(async (context, next) =>

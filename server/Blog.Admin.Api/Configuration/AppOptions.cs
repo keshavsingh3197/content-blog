@@ -8,22 +8,7 @@ public sealed class MongoOptions
     public string Database { get; set; } = "blog_admin";
 }
 
-public sealed class JwtOptions
-{
-    public const string Section = "Jwt";
-    public string Issuer { get; set; } = "blog-admin-api";
-    public string Audience { get; set; } = "blog-admin-ui";
-    public string SigningKey { get; set; } = string.Empty;
-    public int AccessTokenMinutes { get; set; } = 15;
-    public int RefreshTokenDays { get; set; } = 7;
-    public int TwoFactorTokenMinutes { get; set; } = 5;
-}
-
-public sealed class EncryptionOptions
-{
-    public const string Section = "Encryption";
-    public string DataKey { get; set; } = string.Empty;
-}
+// JwtOptions and EncryptionOptions now live in the shared KeshavSingh.Security package.
 
 public sealed class EmailOptions
 {

@@ -22,4 +22,11 @@
     <PackageReference Include="QRCoder" Version="1.6.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Shared security + auth packages from GitHub Packages. Restore reads the "github"
+         source in the repo-root nuget.config, which needs the PACKAGES_READ_TOKEN env var. -->
+    <PackageReference Include="KeshavSingh.Security" Version="0.1.0" />
+    <PackageReference Include="KeshavSingh.Auth" Version="0.1.0" />
+  </ItemGroup>
+
 </Project>

@@ -1,12 +1,8 @@
 using System.Net.Http.Headers;
 using System.Text;
+using KeshavSingh.Auth.Abstractions;
 
 namespace Blog.Admin.Api.Services;
-
-public interface ISmsSender
-{
-    Task SendOtpAsync(string toPhone, string code, CancellationToken ct = default);
-}
 
 /// <summary>
 /// Sends the SMS-fallback OTP via a Twilio-compatible REST endpoint using only
