@@ -7,7 +7,9 @@
     <RootNamespace>Blog.Admin.Api</RootNamespace>
     <AssemblyName>Blog.Admin.Api</AssemblyName>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <SkipPrivatePackagesForAutoDependencySubmission Condition="'$(GITHUB_WORKFLOW)' == 'Automatic Dependency Submission (NuGet)' and '$(GITHUB_ACTOR)' == 'github-advanced-security[bot]'">true</SkipPrivatePackagesForAutoDependencySubmission>
+    <AutoDependencySubmissionWorkflowName>Automatic Dependency Submission (NuGet)</AutoDependencySubmissionWorkflowName>
+    <AutoDependencySubmissionActor>github-advanced-security[bot]</AutoDependencySubmissionActor>
+    <SkipPrivatePackages Condition="'$(GITHUB_WORKFLOW)' == '$(AutoDependencySubmissionWorkflowName)' and '$(GITHUB_ACTOR)' == '$(AutoDependencySubmissionActor)'">true</SkipPrivatePackages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +25,7 @@
     <PackageReference Include="QRCoder" Version="1.6.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(SkipPrivatePackagesForAutoDependencySubmission)' != 'true'">
+  <ItemGroup Condition="'$(SkipPrivatePackages)' != 'true'">
     <!-- Shared security + auth packages from GitHub Packages. Restore reads the "github"
          source in the repo-root nuget.config, which needs the PACKAGES_READ_TOKEN env var.
          GitHub's hosted automatic NuGet dependency submission job cannot read this private
