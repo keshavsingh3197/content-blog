@@ -139,15 +139,20 @@ double underscore `__`:
 | `Mongo__Database` | `blog_admin` |
 | `Jwt__SigningKey` | 32+ byte random string (mark **secret**) |
 | `Encryption__DataKey` | Base64 of 32 random bytes — AES-256 key (mark **secret**) |
+| `PACKAGES_READ_TOKEN` | GitHub PAT with `read:packages` so the Docker build can restore the private `KeshavSingh.*` NuGet packages (mark **secret/build secret**) |
 | `Cors__AllowedOrigins__0` | `https://<you>.github.io` (your Pages origin, no trailing slash) |
 | `Seed__AdminEmail` | `you@example.com` |
 | `Seed__AdminPassword` | strong password, **rotate after first login** (mark **secret**) |
 | `Email__*` / `Sms__*` | **optional — only seeds first-run defaults.** Email, SMS, and security thresholds are managed in **Admin → Settings** (stored in Mongo; secrets encrypted at rest). You can leave these unset and configure them in the UI. |
 
-> **Only 3 secrets belong in env**: `Mongo__ConnectionString`, `Jwt__SigningKey`, `Encryption__DataKey`
-> (the AES key that decrypts everything else). These can't move to the DB — the connection string
-> is needed *to reach* the DB, and the AES key must live outside the data it protects. Everything
-> else lives in **Admin → Settings** with an Export/Import JSON backup.
+> **The running app only needs 3 app secrets in env**: `Mongo__ConnectionString`,
+> `Jwt__SigningKey`, `Encryption__DataKey` (the AES key that decrypts everything else).
+> These can't move to the DB — the connection string is needed *to reach* the DB, and the
+> AES key must live outside the data it protects. Everything else lives in **Admin → Settings**
+> with an Export/Import JSON backup. `PACKAGES_READ_TOKEN` is additionally required during the
+> Docker build so `dotnet restore` can read the private GitHub Packages feed; the running app
+> does not use it. For plain Docker builds, pass it as a BuildKit secret (for example
+> `--secret id=PACKAGES_READ_TOKEN,env=PACKAGES_READ_TOKEN`).
 
 > **MongoDB Atlas:** create a database user, and under *Network Access* allow Render's egress
 > (simplest: `0.0.0.0/0` while testing, then tighten). Atlas enforces TLS by default.
