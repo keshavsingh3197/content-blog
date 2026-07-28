@@ -139,7 +139,7 @@ double underscore `__`:
 | `Mongo__Database` | `blog_admin` |
 | `Jwt__SigningKey` | 32+ byte random string (mark **secret**) |
 | `Encryption__DataKey` | Base64 of 32 random bytes — AES-256 key (mark **secret**) |
-| `PACKAGES_READ_TOKEN` | GitHub PAT with `read:packages` so the Docker build can restore the private `KeshavSingh.*` NuGet packages (mark **secret**) |
+| `PACKAGES_READ_TOKEN` | GitHub PAT with `read:packages` so the Docker build can restore the private `KeshavSingh.*` NuGet packages (mark **secret/build secret**) |
 | `Cors__AllowedOrigins__0` | `https://<you>.github.io` (your Pages origin, no trailing slash) |
 | `Seed__AdminEmail` | `you@example.com` |
 | `Seed__AdminPassword` | strong password, **rotate after first login** (mark **secret**) |
@@ -151,7 +151,8 @@ double underscore `__`:
 > AES key must live outside the data it protects. Everything else lives in **Admin → Settings**
 > with an Export/Import JSON backup. `PACKAGES_READ_TOKEN` is additionally required during the
 > Docker build so `dotnet restore` can read the private GitHub Packages feed; the running app
-> does not use it.
+> does not use it. For plain Docker builds, pass it as a BuildKit secret (for example
+> `--secret id=PACKAGES_READ_TOKEN,env=PACKAGES_READ_TOKEN`).
 
 > **MongoDB Atlas:** create a database user, and under *Network Access* allow Render's egress
 > (simplest: `0.0.0.0/0` while testing, then tighten). Atlas enforces TLS by default.
