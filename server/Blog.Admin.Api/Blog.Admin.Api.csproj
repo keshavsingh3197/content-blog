@@ -36,7 +36,7 @@
          feed, so that specific job skips these references instead of failing restore. -->
     <PackageReference Include="KeshavSingh.Security" Version="0.1.0" />
     <PackageReference Include="KeshavSingh.Auth" Version="0.1.0" />
-    <PackageReference Include="KeshavSingh.Mongo.NoSql" Version="0.1.0" />
+    <PackageReference Include="KeshavSingh.Mongo.NoSql" Version="0.1.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(SkipPrivatePackages)' == 'true'">
