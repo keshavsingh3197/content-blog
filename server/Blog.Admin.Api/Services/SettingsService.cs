@@ -41,6 +41,9 @@ public sealed class SettingsService : IAuthSettings
     public int MaxFailedLoginAttempts => _current.MaxFailedLoginAttempts;
     public int LockoutMinutes => _current.LockoutMinutes;
     public int BackupCodeCount => _current.BackupCodeCount;
+    public int AccessTokenMinutes => _current.AccessTokenMinutes;
+    public int RefreshTokenDays => _current.RefreshTokenDays;
+    public int TwoFactorTokenMinutes => _current.TwoFactorTokenMinutes;
 
     public async Task InitAsync()
     {
@@ -51,6 +54,7 @@ public sealed class SettingsService : IAuthSettings
         var email = _seedDefaults.GetRequiredService<IOptions<EmailOptions>>().Value;
         var sms = _seedDefaults.GetRequiredService<IOptions<SmsOptions>>().Value;
         var security = _seedDefaults.GetRequiredService<IOptions<SecurityOptions>>().Value;
+        var jwt = _seedDefaults.GetRequiredService<IOptions<JwtOptions>>().Value;
 
         var seeded = new AppSettings
         {
@@ -71,6 +75,9 @@ public sealed class SettingsService : IAuthSettings
             LockoutMinutes = security.LockoutMinutes,
             EmailOtpMinutes = security.EmailOtpMinutes,
             BackupCodeCount = security.BackupCodeCount,
+            AccessTokenMinutes = jwt.AccessTokenMinutes,
+            RefreshTokenDays = jwt.RefreshTokenDays,
+            TwoFactorTokenMinutes = jwt.TwoFactorTokenMinutes,
         };
         await _db.Settings.ReplaceOneAsync(s => s.Id == AppSettings.SingletonId, seeded,
             new ReplaceOptions { IsUpsert = true });
@@ -164,5 +171,7 @@ public sealed class SettingsService : IAuthSettings
         SmsAuthTokenEncrypted = s.SmsAuthTokenEncrypted, SmsFromNumber = s.SmsFromNumber,
         MaxFailedLoginAttempts = s.MaxFailedLoginAttempts, LockoutMinutes = s.LockoutMinutes,
         EmailOtpMinutes = s.EmailOtpMinutes, BackupCodeCount = s.BackupCodeCount,
+        AccessTokenMinutes = s.AccessTokenMinutes, RefreshTokenDays = s.RefreshTokenDays,
+        TwoFactorTokenMinutes = s.TwoFactorTokenMinutes,
     };
 }

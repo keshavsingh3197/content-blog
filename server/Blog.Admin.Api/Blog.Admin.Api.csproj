@@ -34,8 +34,8 @@
          source in the repo-root nuget.config, which needs the PACKAGES_READ_TOKEN env var.
          GitHub's hosted automatic NuGet dependency submission job cannot read this private
          feed, so that specific job skips these references instead of failing restore. -->
-    <PackageReference Include="KeshavSingh.Security" Version="0.1.0" />
-    <PackageReference Include="KeshavSingh.Auth" Version="0.1.0" />
+    <PackageReference Include="KeshavSingh.Security" Version="0.3.0" />
+    <PackageReference Include="KeshavSingh.Auth" Version="0.3.0" />
     <PackageReference Include="KeshavSingh.Mongo.NoSql" Version="0.1.1" />
   </ItemGroup>
 
