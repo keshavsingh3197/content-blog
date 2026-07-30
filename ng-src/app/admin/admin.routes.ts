@@ -17,11 +17,6 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/dashboard.component').then(m => m.DashboardComponent),
       },
       {
-        path: 'users',
-        canActivate: [onboardingGuard, roleGuard('Admin')],
-        loadComponent: () => import('./pages/users.component').then(m => m.UsersComponent),
-      },
-      {
         path: 'content',
         canActivate: [onboardingGuard],
         loadComponent: () => import('./pages/content-list.component').then(m => m.ContentListComponent),
@@ -46,19 +41,8 @@ export const ADMIN_ROUTES: Routes = [
         canActivate: [onboardingGuard],
         loadComponent: () => import('./pages/links.component').then(m => m.LinksComponent),
       },
-      {
-        path: 'security',
-        loadComponent: () => import('./pages/security.component').then(m => m.SecurityComponent),
-      },
-      {
-        path: 'settings',
-        canActivate: [onboardingGuard, roleGuard('Admin')],
-        loadComponent: () => import('./pages/settings.component').then(m => m.SettingsComponent),
-      },
-      {
-        path: 'account/password',
-        loadComponent: () => import('./pages/change-password.component').then(m => m.ChangePasswordComponent),
-      },
+      // Identity is centralized at admin.keshavsingh.in — users, security/2FA, password and
+      // settings are managed there, not here. Those routes were removed from the blog admin.
     ],
   },
   { path: '**', redirectTo: '' },

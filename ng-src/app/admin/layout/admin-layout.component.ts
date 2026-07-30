@@ -41,6 +41,12 @@ interface NavLink {
           </ng-container>
         </nav>
 
+        <a class="admin-nav-link" [href]="idpUrl" target="_blank" rel="noopener">
+          <i class="fas fa-user-shield"></i>
+          <span>Identity &amp; account</span>
+          <i class="fas fa-arrow-up-right-from-square" style="margin-left:auto;font-size:0.75em;opacity:0.6"></i>
+        </a>
+
         <div class="admin-sidebar-foot">
           <div class="admin-user-chip">
             <span class="admin-avatar">{{ initials() }}</span>
@@ -92,15 +98,17 @@ export class AdminLayoutComponent {
   menuOpen = false;
   user = this.auth.user;
 
+  // Users & roles, security/2FA and settings live at the central identity provider
+  // (admin.keshavsingh.in) — see the "Identity & account" link in the sidebar foot.
   private links: NavLink[] = [
     { label: 'Dashboard', icon: 'fa-gauge-high', path: '/admin', exact: true },
     { label: 'Content / Docs', icon: 'fa-file-lines', path: '/admin/content', exact: false },
     { label: 'Media', icon: 'fa-images', path: '/admin/media', exact: false },
     { label: 'Links', icon: 'fa-link', path: '/admin/links', exact: false },
-    { label: 'Users & Roles', icon: 'fa-users-gear', path: '/admin/users', exact: false, roles: ['Admin'] },
-    { label: 'Security & 2FA', icon: 'fa-lock', path: '/admin/security', exact: false },
-    { label: 'Settings', icon: 'fa-gear', path: '/admin/settings', exact: false, roles: ['Admin'] },
   ];
+
+  /** The central identity provider where account, 2FA, users and settings are managed. */
+  readonly idpUrl = 'https://admin.keshavsingh.in';
 
   visibleLinks = computed(() => {
     const u = this.user();

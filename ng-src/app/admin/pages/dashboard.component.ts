@@ -44,7 +44,7 @@ import { AuthService } from '../services/auth.service';
           <span class="stat-value">{{ twoFa() ? 'On' : 'Off' }}</span>
           <span class="stat-name">Your 2FA</span>
         </div>
-        <a *ngIf="!twoFa()" class="stat-cta" routerLink="/admin/security">Enable</a>
+        <a *ngIf="!twoFa()" class="stat-cta" [href]="idpUrl + '/security'" target="_blank" rel="noopener">Enable</a>
       </div>
     </div>
 
@@ -99,11 +99,11 @@ import { AuthService } from '../services/auth.service';
           <span class="quick-ico q2"><i class="fas fa-cloud-arrow-up"></i></span>
           <strong>Upload media</strong><small>Images used by your posts</small>
         </a>
-        <a class="quick-card" routerLink="/admin/users" *ngIf="isAdmin()">
+        <a class="quick-card" [href]="idpUrl + '/users'" target="_blank" rel="noopener" *ngIf="isAdmin()">
           <span class="quick-ico q3"><i class="fas fa-user-plus"></i></span>
-          <strong>Invite users</strong><small>Assign roles &amp; access</small>
+          <strong>Users &amp; roles</strong><small>Managed at the identity provider</small>
         </a>
-        <a class="quick-card" routerLink="/admin/security">
+        <a class="quick-card" [href]="idpUrl + '/security'" target="_blank" rel="noopener">
           <span class="quick-ico q4"><i class="fas fa-key"></i></span>
           <strong>Security &amp; 2FA</strong><small>Authenticator &amp; backup codes</small>
         </a>
@@ -119,6 +119,9 @@ export class DashboardComponent implements OnInit {
   publishedCount = signal(0);
   mediaCount = signal(0);
   userCount = signal(0);
+
+  /** Central identity provider — users, roles, security/2FA and settings are managed there. */
+  readonly idpUrl = 'https://admin.keshavsingh.in';
 
   firstName = computed(() => (this.auth.user()?.displayName ?? '').split(' ')[0] || 'there');
   isAdmin = computed(() => this.auth.hasRole('Admin'));

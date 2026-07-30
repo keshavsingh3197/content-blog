@@ -32,16 +32,12 @@ export const roleGuard = (...roles: Role[]): CanActivateFn => () => {
 };
 
 /**
- * Onboarding gate: a user with a temporary password must change it first, and a user without 2FA
- * must enrol before doing anything else. These flows are proxied to the central IdP. The
- * change-password and security pages are intentionally left ungated as the redirect targets.
+ * Session gate for blog pages. Identity onboarding — changing a temporary password and enrolling
+ * 2FA — is now handled centrally at the identity provider (admin.keshavsingh.in/security), so it
+ * is no longer enforced (or proxied) here; the blog admin simply trusts the issued token.
  */
 export const onboardingGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
-  const router = inject(Router);
-  const user = auth.user();
-  if (!user) { auth.loginRedirect(); return false; }
-  if (user.mustChangePassword) return router.createUrlTree(['/admin/account/password']);
-  if (!user.twoFactorEnabled) return router.createUrlTree(['/admin/security']);
+  if (!auth.user()) { auth.loginRedirect(); return false; }
   return true;
 };
