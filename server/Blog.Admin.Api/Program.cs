@@ -65,7 +65,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(o =>
 
 builder.Services
     .AddControllers()
-    .AddKeshavAuthControllers() // discover the shared /api/auth controller from the package
+    // No local /api/auth controller: this app is a RESOURCE server. Authentication is centralized
+    // at the identity provider (admin.keshavsingh.in). We only VALIDATE its tokens below.
     .AddJsonOptions(options =>
         // Accept/emit enums as their string names (e.g. "Totp") to match the UI.
         options.JsonSerializerOptions.Converters.Add(
@@ -172,12 +173,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// ---- First-run admin seed ----
+// ---- Startup init ----
 using (var scope = app.Services.CreateScope())
 {
-    // Load/seed settings before anything that reads them.
+    // Load/seed settings before anything that reads them. Identity is centralized at the IdP
+    // (admin.keshavsingh.in), so this app no longer seeds or stores its own login users.
     await scope.ServiceProvider.GetRequiredService<SettingsService>().InitAsync();
-    await scope.ServiceProvider.GetRequiredService<AdminSeeder>().SeedAsync();
 }
 
 app.Run();

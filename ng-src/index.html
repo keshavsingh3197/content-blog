@@ -19,6 +19,15 @@
     build, point it at your Render backend by uncommenting and editing the line below.
   -->
   <script>window.__ADMIN_API_BASE__ = 'https://content-blog-nms8.onrender.com/api';</script>
+  <!--
+    Central identity provider (admin.keshavsingh.in). The console gets its session from here via
+    the shared SSO cookie. __IDP_API_BASE__ must be a keshavsingh.in subdomain so the cookie is
+    sent; __ADMIN_APP_URL__ is the IdP SPA used for interactive sign-in redirects.
+  -->
+  <script>
+    window.__IDP_API_BASE__ = 'https://id.keshavsingh.in/api';
+    window.__ADMIN_APP_URL__ = 'https://admin.keshavsingh.in';
+  </script>
   <app-root></app-root>
 </body>
 </html>
