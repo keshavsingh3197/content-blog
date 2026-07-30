@@ -6,6 +6,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { ReadingProgressComponent } from './components/reading-progress/reading-progress.component';
 import { ThemeService } from './services/theme.service';
+import { VisitTrackingService } from './services/visit-tracking.service';
 
 @Component({
   selector: 'app-root',
@@ -28,11 +29,30 @@ import { ThemeService } from './services/theme.service';
 })
 export class AppComponent {
   readonly isAdmin = signal(false);
+  private lastTrackedUrl = '';
 
-  constructor(private themeService: ThemeService, private router: Router) {
+  constructor(
+    private themeService: ThemeService,
+    private router: Router,
+    private visitTracking: VisitTrackingService
+  ) {
     this.isAdmin.set(this.router.url.startsWith('/admin'));
+    this.trackVisit(this.router.url);
+
     this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
-      .subscribe(e => this.isAdmin.set(e.urlAfterRedirects.startsWith('/admin')));
+      .subscribe(e => {
+        this.isAdmin.set(e.urlAfterRedirects.startsWith('/admin'));
+        this.trackVisit(e.urlAfterRedirects);
+      });
+  }
+
+  private trackVisit(url: string): void {
+    if (!url || this.lastTrackedUrl === url) return;
+    this.lastTrackedUrl = url;
+
+    const normalized = url.startsWith('/') ? url : `/${url}`;
+    const websiteKey = normalized.startsWith('/admin') ? 'blog-admin' : 'blog';
+    this.visitTracking.track(websiteKey, normalized);
   }
 }
