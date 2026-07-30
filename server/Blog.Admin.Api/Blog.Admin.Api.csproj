@@ -7,9 +7,13 @@
     <RootNamespace>Blog.Admin.Api</RootNamespace>
     <AssemblyName>Blog.Admin.Api</AssemblyName>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <AutoDependencySubmissionWorkflowName>Automatic Dependency Submission (NuGet)</AutoDependencySubmissionWorkflowName>
-    <AutoDependencySubmissionActor>github-advanced-security[bot]</AutoDependencySubmissionActor>
-    <SkipPrivatePackages Condition="'$(GITHUB_WORKFLOW)' == '$(AutoDependencySubmissionWorkflowName)' and '$(GITHUB_ACTOR)' == '$(AutoDependencySubmissionActor)'">true</SkipPrivatePackages>
+    <!--
+      The private KeshavSingh.* feed needs PACKAGES_READ_TOKEN. When it is absent we skip those
+      references so restore can't 401. This deterministically covers GitHub's hosted automatic
+      NuGet dependency submission (which has no access to repo secrets), while the real Docker /
+      Render build — which exports PACKAGES_READ_TOKEN before restore — still includes them.
+    -->
+    <SkipPrivatePackages Condition="'$(PACKAGES_READ_TOKEN)' == ''">true</SkipPrivatePackages>
   </PropertyGroup>
 
   <ItemGroup>
