@@ -29,7 +29,6 @@ builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection(Sec
 builder.Services.Configure<MediaOptions>(builder.Configuration.GetSection(MediaOptions.Section));
 builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection(SeedOptions.Section));
 
-var corsOptions = builder.Configuration.GetSection(CorsOptions.Section).Get<CorsOptions>() ?? new CorsOptions();
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.Section).Get<JwtOptions>() ?? new JwtOptions();
 
 // ---- Services ----
@@ -73,13 +72,21 @@ builder.Services
             new System.Text.Json.Serialization.JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 
-// ---- CORS: only the configured admin origins may call the API ----
+// ---- CORS: allow the SSO family — any keshavsingh.in subdomain (blog, git, admin, id, …)
+// over https, plus localhost in dev. Credentialed, so this is a scoped predicate allowlist
+// (never AllowAnyOrigin). New sibling apps work without touching this. ----
 const string CorsPolicy = "AdminUi";
 builder.Services.AddCors(options => options.AddPolicy(CorsPolicy, policy =>
+    policy.SetIsOriginAllowed(IsAllowedOrigin).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
+
+static bool IsAllowedOrigin(string origin)
 {
-    if (corsOptions.AllowedOrigins.Length > 0)
-        policy.WithOrigins(corsOptions.AllowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-}));
+    if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri)) return false;
+    if (uri.Host == "localhost") return true; // dev, any port
+    return uri.Scheme == Uri.UriSchemeHttps
+        && (uri.Host == "keshavsingh.in"
+            || uri.Host.EndsWith(".keshavsingh.in", StringComparison.OrdinalIgnoreCase));
+}
 
 // ---- Authentication: OAuth2 bearer (JWT) validated on every request ----
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
