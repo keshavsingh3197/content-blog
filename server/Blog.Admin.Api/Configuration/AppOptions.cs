@@ -1,13 +1,5 @@
 namespace Blog.Admin.Api.Configuration;
 
-/// <summary>Strongly-typed configuration bound from appsettings + secret providers.</summary>
-public sealed class MongoOptions
-{
-    public const string Section = "Mongo";
-    public string ConnectionString { get; set; } = string.Empty;
-    public string Database { get; set; } = "blog_admin";
-}
-
 // JwtOptions and EncryptionOptions now live in the shared KeshavSingh.Security package.
 
 public sealed class EmailOptions

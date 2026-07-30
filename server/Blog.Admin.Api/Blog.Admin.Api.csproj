@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <!-- MongoDB access: required, the application's database driver. -->
-    <PackageReference Include="MongoDB.Driver" Version="2.28.0" />
+    <PackageReference Include="MongoDB.Driver" Version="3.10.0" />
     <!-- JWT bearer validation for OAuth2-style bearer tokens. -->
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.1.2" />
@@ -36,6 +36,13 @@
          feed, so that specific job skips these references instead of failing restore. -->
     <PackageReference Include="KeshavSingh.Security" Version="0.1.0" />
     <PackageReference Include="KeshavSingh.Auth" Version="0.1.0" />
+    <PackageReference Include="KeshavSingh.Mongo.NoSql" Version="0.1.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SkipPrivatePackages)' == 'true'">
+    <ProjectReference Include="..\..\..\shared-security\src\KeshavSingh.Security\KeshavSingh.Security.csproj" />
+    <ProjectReference Include="..\..\..\shared-security\src\KeshavSingh.Auth\KeshavSingh.Auth.csproj" />
+    <ProjectReference Include="..\..\..\KeshavSingh-Packages-Nosql\src\KeshavSingh.Mongo.NoSql\KeshavSingh.Mongo.NoSql.csproj" />
   </ItemGroup>
 
 </Project>

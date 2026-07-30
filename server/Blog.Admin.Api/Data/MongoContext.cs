@@ -1,6 +1,5 @@
 using Blog.Admin.Api.Configuration;
 using Blog.Admin.Api.Models;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -17,17 +16,8 @@ public sealed class MongoContext
     public IMongoCollection<Link> Links { get; }
     public IMongoCollection<AppSettings> Settings { get; }
 
-    public MongoContext(IOptions<MongoOptions> options)
+    public MongoContext(MongoDbService db)
     {
-        var opts = options.Value;
-        if (string.IsNullOrWhiteSpace(opts.ConnectionString))
-            throw new InvalidOperationException(
-                "Mongo:ConnectionString is not configured. Provide it via user-secrets, the " +
-                "Mongo__ConnectionString environment variable, or Azure Key Vault.");
-
-        var client = new MongoClient(opts.ConnectionString);
-        var db = client.GetDatabase(opts.Database);
-
         Users = db.GetCollection<User>("users");
         Content = db.GetCollection<ContentTopic>("content");
         Media = db.GetCollection<MediaAsset>("media");

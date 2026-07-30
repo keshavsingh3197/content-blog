@@ -20,7 +20,7 @@ if (!string.IsNullOrWhiteSpace(port))
     builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // ---- Configuration (secrets come from user-secrets / env / Key Vault, never appsettings) ----
-builder.Services.Configure<MongoOptions>(builder.Configuration.GetSection(MongoOptions.Section));
+builder.Services.AddKeshavMongo(builder.Configuration);
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.Section));
 builder.Services.Configure<EncryptionOptions>(builder.Configuration.GetSection(EncryptionOptions.Section));
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.Section));
