@@ -1,20 +1,25 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { API_BASE } from '../api.config';
-import {
-  AuthTokens, EnrollStartResponse, LoginResponse, Role,
-  TwoFactorMethod, UserProfile,
-} from '../admin.models';
+import { ADMIN_APP_URL, IDP_BASE } from '../api.config';
+import { EnrollStartResponse, Role, SsoSession, UserProfile } from '../admin.models';
 
-const REFRESH_KEY = 'admin.refresh';
-
+/**
+ * Auth client for the blog admin console. This app is an SSO CONSUMER: it does not authenticate
+ * users itself. Sessions come from the central identity provider (admin.keshavsingh.in) via the
+ * shared HttpOnly cookie — {@link refresh} silently exchanges that cookie for a short-lived access
+ * token (kept in memory only). Interactive sign-in happens by redirecting to the IdP.
+ *
+ * Account self-service (2FA enrolment, password change) is proxied to the IdP with the bearer
+ * token, so those pages continue to work against the single identity source.
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
-  private base = inject(API_BASE);
+  private idp = inject(IDP_BASE);
+  private adminApp = inject(ADMIN_APP_URL);
 
-  /** Access token is kept in memory only (not localStorage) to limit XSS exposure. */
+  /** Access token in memory only (not localStorage) to limit XSS exposure. */
   private accessToken = signal<string | null>(null);
   readonly user = signal<UserProfile | null>(null);
 
@@ -29,82 +34,63 @@ export class AuthService {
     return !!u && roles.some(r => u.roles.includes(r));
   }
 
-  // ---- Login flow ----
+  // ---- Session (silent SSO) ----
 
-  login(email: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.base}/auth/login`, { email, password }).pipe(
-      tap(res => { if (res.tokens) this.setSession(res.tokens); })
-    );
-  }
-
-  verifyTwoFactor(twoFactorToken: string, code: string, method: TwoFactorMethod): Observable<AuthTokens> {
+  /** Exchange the shared SSO cookie for a fresh access token. 401 => not signed in. */
+  refresh(): Observable<SsoSession> {
     return this.http
-      .post<AuthTokens>(`${this.base}/auth/2fa/verify`, { twoFactorToken, code, method })
-      .pipe(tap(tokens => this.setSession(tokens)));
+      .post<SsoSession>(`${this.idp}/sso/session`, {}, { withCredentials: true })
+      .pipe(tap(session => this.setSession(session)));
   }
 
-  sendEmailOtp(twoFactorToken: string): Observable<void> {
-    return this.http.post<void>(`${this.base}/auth/2fa/email/send`, { twoFactorToken });
-  }
-
-  sendSmsOtp(twoFactorToken: string): Observable<void> {
-    return this.http.post<void>(`${this.base}/auth/2fa/sms/send`, { twoFactorToken });
-  }
-
-  // ---- Session ----
-
-  private setSession(tokens: AuthTokens): void {
-    this.accessToken.set(tokens.accessToken);
-    this.user.set(tokens.user);
-    localStorage.setItem(REFRESH_KEY, tokens.refreshToken);
-  }
-
-  private clearSession(): void {
-    this.accessToken.set(null);
-    this.user.set(null);
-    localStorage.removeItem(REFRESH_KEY);
-  }
-
-  /** Restore a session on app start / after a 401 using the stored refresh token. */
-  refresh(): Observable<AuthTokens> {
-    const refreshToken = localStorage.getItem(REFRESH_KEY) ?? '';
-    return this.http
-      .post<AuthTokens>(`${this.base}/auth/refresh`, { refreshToken })
-      .pipe(tap(tokens => this.setSession(tokens)));
-  }
-
+  /** The refresh token is an HttpOnly cookie we cannot read, so always attempt a silent session. */
   hasStoredSession(): boolean {
-    return !!localStorage.getItem(REFRESH_KEY);
+    return true;
   }
 
   logout(): Observable<void> {
-    const refreshToken = localStorage.getItem(REFRESH_KEY);
-    const req = this.http.post<void>(`${this.base}/auth/logout`, { refreshToken });
-    return req.pipe(tap({ next: () => this.clearSession(), error: () => this.clearSession() }));
+    return this.http
+      .post<void>(`${this.idp}/sso/logout`, {}, { withCredentials: true })
+      .pipe(tap({ next: () => this.clearSession(), error: () => this.clearSession() }));
+  }
+
+  /** Send the browser to the central IdP to sign in, returning to {@link returnTo} afterwards. */
+  loginRedirect(returnTo: string = location.href): void {
+    location.href = `${this.adminApp}/login?return=${encodeURIComponent(returnTo)}`;
   }
 
   forceClear(): void {
     this.clearSession();
   }
 
-  // ---- Self-service 2FA enrollment ----
+  private setSession(session: SsoSession): void {
+    this.accessToken.set(session.accessToken);
+    this.user.set(session.user);
+  }
+
+  private clearSession(): void {
+    this.accessToken.set(null);
+    this.user.set(null);
+  }
+
+  // ---- Self-service against the central IdP (bearer; the interceptor attaches the token) ----
 
   enrollStart(): Observable<EnrollStartResponse> {
-    return this.http.post<EnrollStartResponse>(`${this.base}/auth/2fa/enroll/start`, {});
+    return this.http.post<EnrollStartResponse>(`${this.idp}/auth/2fa/enroll/start`, {});
   }
 
   enrollConfirm(code: string): Observable<{ backupCodes: string[] }> {
-    return this.http.post<{ backupCodes: string[] }>(`${this.base}/auth/2fa/enroll/confirm`, { code })
+    return this.http.post<{ backupCodes: string[] }>(`${this.idp}/auth/2fa/enroll/confirm`, { code })
       .pipe(tap(() => this.patchUser({ twoFactorEnabled: true })));
   }
 
   disableTwoFactor(password: string): Observable<void> {
-    return this.http.post<void>(`${this.base}/auth/2fa/disable`, { password })
+    return this.http.post<void>(`${this.idp}/auth/2fa/disable`, { password })
       .pipe(tap(() => this.patchUser({ twoFactorEnabled: false })));
   }
 
   changePassword(currentPassword: string, newPassword: string): Observable<void> {
-    return this.http.post<void>(`${this.base}/auth/change-password`, { currentPassword, newPassword })
+    return this.http.post<void>(`${this.idp}/auth/change-password`, { currentPassword, newPassword })
       .pipe(tap(() => this.patchUser({ mustChangePassword: false })));
   }
 

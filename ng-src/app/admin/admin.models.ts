@@ -19,6 +19,16 @@ export interface AuthTokens {
   user: UserProfile;
 }
 
+/**
+ * Session returned by the central IdP's /sso/session. No refresh token here — it lives only in
+ * the HttpOnly SSO cookie.
+ */
+export interface SsoSession {
+  accessToken: string;
+  accessTokenExpiresAt: string;
+  user: UserProfile;
+}
+
 export interface LoginResponse {
   twoFactorRequired: boolean;
   twoFactorToken?: string;

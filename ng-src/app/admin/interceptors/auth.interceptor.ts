@@ -1,24 +1,22 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
-import { API_BASE } from '../api.config';
+import { API_BASE, IDP_BASE } from '../api.config';
 
 /**
- * Attaches the bearer token to API calls and transparently refreshes it once on a
- * 401. Auth endpoints (login / refresh / verify) are never retried to avoid loops.
+ * Attaches the bearer access token to calls to the resource API and the central IdP, and on a
+ * single 401 tries one silent SSO refresh (exchanging the shared cookie) before replaying the
+ * request. The /sso/session and /sso/logout endpoints are never refreshed, to avoid loops.
+ * Any unrecoverable 401 fails closed: clear state and redirect to the IdP sign-in.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
-  const router = inject(Router);
   const base = inject(API_BASE);
+  const idp = inject(IDP_BASE);
 
-  const isApi = req.url.startsWith(base);
-  const isAuthRoute = req.url.includes('/auth/login')
-    || req.url.includes('/auth/refresh')
-    || req.url.includes('/auth/2fa/verify')
-    || req.url.includes('/auth/2fa/email/send');
+  const isApi = req.url.startsWith(base) || req.url.startsWith(idp);
+  const isSessionRoute = req.url.includes('/sso/session') || req.url.includes('/sso/logout');
 
   const token = auth.token();
   const authed = isApi && token
@@ -27,17 +25,16 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authed).pipe(
     catchError((err: HttpErrorResponse) => {
-      if (err.status !== 401 || !isApi || isAuthRoute || !auth.hasStoredSession()) {
+      if (err.status !== 401 || !isApi || isSessionRoute) {
         return throwError(() => err);
       }
-      // One refresh attempt, then replay the original request with the new token.
       return auth.refresh().pipe(
-        switchMap(tokens => next(req.clone({
-          setHeaders: { Authorization: `Bearer ${tokens.accessToken}` },
+        switchMap(session => next(req.clone({
+          setHeaders: { Authorization: `Bearer ${session.accessToken}` },
         }))),
         catchError(refreshErr => {
           auth.forceClear();
-          router.navigate(['/admin/login']);
+          auth.loginRedirect();
           return throwError(() => refreshErr);
         })
       );

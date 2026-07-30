@@ -4,19 +4,22 @@ import { catchError, map, of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { Role } from '../admin.models';
 
-/** Blocks a route unless a session is active; tries a silent refresh first. */
+/**
+ * Blocks a route unless a session is active; tries a silent SSO exchange of the shared cookie
+ * first, so a user already signed in at the identity provider lands here without a second login.
+ * Failure redirects the browser to the central IdP sign-in.
+ */
 export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
-  const router = inject(Router);
 
   if (auth.isAuthenticated()) return of(true);
-  if (!auth.hasStoredSession()) return of(router.createUrlTree(['/admin/login']));
 
   return auth.refresh().pipe(
     map(() => true),
     catchError(() => {
       auth.forceClear();
-      return of(router.createUrlTree(['/admin/login']));
+      auth.loginRedirect();
+      return of(false);
     })
   );
 };
@@ -29,16 +32,15 @@ export const roleGuard = (...roles: Role[]): CanActivateFn => () => {
 };
 
 /**
- * Onboarding gate for normal pages: a user with a temporary password must change
- * it first, and a user without 2FA must enrol before doing anything else. The
- * change-password and security pages are intentionally left ungated so they are
- * reachable as the redirect targets.
+ * Onboarding gate: a user with a temporary password must change it first, and a user without 2FA
+ * must enrol before doing anything else. These flows are proxied to the central IdP. The
+ * change-password and security pages are intentionally left ungated as the redirect targets.
  */
 export const onboardingGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
   const user = auth.user();
-  if (!user) return router.createUrlTree(['/admin/login']);
+  if (!user) { auth.loginRedirect(); return false; }
   if (user.mustChangePassword) return router.createUrlTree(['/admin/account/password']);
   if (!user.twoFactorEnabled) return router.createUrlTree(['/admin/security']);
   return true;
