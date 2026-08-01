@@ -21,6 +21,7 @@ public sealed class AppSettings
     // ---- Two-factor availability ----
     public bool EmailTwoFactorEnabled { get; set; } = true;
     public bool SmsTwoFactorEnabled { get; set; }
+    public bool WhatsAppTwoFactorEnabled { get; set; }
 
     // ---- Email (SMTP) ----
     public bool EmailEnabled { get; set; }

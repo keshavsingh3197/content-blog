@@ -38,6 +38,7 @@ public sealed class SettingsService : IAuthSettings, IWhatsAppSettings
     // ---- IAuthSettings: the thin slice the shared auth engine reads ----
     public bool EmailTwoFactorEnabled => _current.EmailTwoFactorEnabled;
     public bool SmsTwoFactorEnabled => _current.SmsTwoFactorEnabled;
+    public bool WhatsAppTwoFactorEnabled => _current.WhatsAppTwoFactorEnabled;
     public int EmailOtpMinutes => _current.EmailOtpMinutes;
     public int MaxFailedLoginAttempts => _current.MaxFailedLoginAttempts;
     public int LockoutMinutes => _current.LockoutMinutes;
@@ -107,7 +108,7 @@ public sealed class SettingsService : IAuthSettings, IWhatsAppSettings
     {
         var s = _current;
         return new SettingsView(
-            s.SiteTitle, s.EmailTwoFactorEnabled, s.SmsTwoFactorEnabled,
+            s.SiteTitle, s.EmailTwoFactorEnabled, s.SmsTwoFactorEnabled, s.WhatsAppTwoFactorEnabled,
             s.EmailEnabled, s.EmailHost, s.EmailPort, s.EmailUseStartTls,
             s.EmailFromAddress, s.EmailFromName, s.EmailUsername, !string.IsNullOrEmpty(s.EmailPasswordEncrypted),
             s.SmsEnabled, s.SmsAccountSid, !string.IsNullOrEmpty(s.SmsAuthTokenEncrypted), s.SmsFromNumber,
@@ -123,6 +124,7 @@ public sealed class SettingsService : IAuthSettings, IWhatsAppSettings
         if (r.SiteTitle is not null) s.SiteTitle = r.SiteTitle.Trim();
         if (r.EmailTwoFactorEnabled is { } e2) s.EmailTwoFactorEnabled = e2;
         if (r.SmsTwoFactorEnabled is { } s2) s.SmsTwoFactorEnabled = s2;
+        if (r.WhatsAppTwoFactorEnabled is { } wa2fa) s.WhatsAppTwoFactorEnabled = wa2fa;
 
         if (r.EmailEnabled is { } ee) s.EmailEnabled = ee;
         if (r.EmailHost is not null) s.EmailHost = r.EmailHost.Trim();
@@ -177,6 +179,7 @@ public sealed class SettingsService : IAuthSettings, IWhatsAppSettings
     {
         Id = s.Id, SiteTitle = s.SiteTitle,
         EmailTwoFactorEnabled = s.EmailTwoFactorEnabled, SmsTwoFactorEnabled = s.SmsTwoFactorEnabled,
+        WhatsAppTwoFactorEnabled = s.WhatsAppTwoFactorEnabled,
         EmailEnabled = s.EmailEnabled, EmailHost = s.EmailHost, EmailPort = s.EmailPort,
         EmailUseStartTls = s.EmailUseStartTls, EmailFromAddress = s.EmailFromAddress,
         EmailFromName = s.EmailFromName, EmailUsername = s.EmailUsername,
