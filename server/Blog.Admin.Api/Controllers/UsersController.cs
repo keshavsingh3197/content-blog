@@ -164,9 +164,9 @@ public sealed class UsersController : ControllerBase
 
     private static List<string>? NormalizeRoles(List<string>? roles)
     {
-        if (roles is null || roles.Count == 0) return new List<string> { Models.Roles.Viewer };
+        if (roles is null || roles.Count == 0) return new List<string> { Roles.Viewer };
         var normalized = roles.Distinct().ToList();
-        return normalized.All(Models.Roles.IsValid) ? normalized : null;
+        return normalized.All(Roles.IsValid) ? normalized : null;
     }
 
     private static UserListItem Map(User u) => new(

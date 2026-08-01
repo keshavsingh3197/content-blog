@@ -41,14 +41,15 @@ builder.Services.AddSingleton<JwtService>();
 builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<ISmsSender, TwilioSmsSender>();
-builder.Services.AddScoped<AuditLogger>();
 builder.Services.AddScoped<AdminSeeder>();
 builder.Services.AddHttpContextAccessor();
 
 // ---- Shared auth engine (KeshavSingh.Auth) + this app's storage adapters ----
+// MongoRefreshTokenStore/MongoAuditSink come from KeshavSingh.Core (shared with admin). This
+// app doesn't enforce single-session-per-user, so the default (false) is used.
 builder.Services.AddScoped<IAuthUserStore, MongoAuthUserStore>();
 builder.Services.AddScoped<IRefreshTokenStore, MongoRefreshTokenStore>();
-builder.Services.AddScoped<IAuthAuditSink>(sp => sp.GetRequiredService<AuditLogger>());
+builder.Services.AddScoped<IAuthAuditSink, MongoAuditSink>();
 builder.Services.AddSingleton<IAuthSettings>(sp => sp.GetRequiredService<SettingsService>());
 builder.Services.AddKeshavAuthEngine();
 
@@ -76,17 +77,7 @@ builder.Services.AddEndpointsApiExplorer();
 // over https, plus localhost in dev. Credentialed, so this is a scoped predicate allowlist
 // (never AllowAnyOrigin). New sibling apps work without touching this. ----
 const string CorsPolicy = "AdminUi";
-builder.Services.AddCors(options => options.AddPolicy(CorsPolicy, policy =>
-    policy.SetIsOriginAllowed(IsAllowedOrigin).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
-
-static bool IsAllowedOrigin(string origin)
-{
-    if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri)) return false;
-    if (uri.Host == "localhost") return true; // dev, any port
-    return uri.Scheme == Uri.UriSchemeHttps
-        && (uri.Host == "keshavsingh.in"
-            || uri.Host.EndsWith(".keshavsingh.in", StringComparison.OrdinalIgnoreCase));
-}
+builder.Services.AddKeshavSsoCors(CorsPolicy);
 
 // ---- Authentication: OAuth2 bearer (JWT) validated on every request ----
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
