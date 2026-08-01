@@ -47,5 +47,11 @@ public sealed class AppSettings
     public int RefreshTokenDays { get; set; } = 7;
     public int TwoFactorTokenMinutes { get; set; } = 5;
 
+    // ---- WhatsApp security alerts (Meta Cloud API), sent on account lockout ----
+    public bool WhatsAppAlertsEnabled { get; set; }
+    public string? WhatsAppAccessTokenEncrypted { get; set; }   // 🔒 AES-encrypted.
+    public string WhatsAppPhoneNumberId { get; set; } = string.Empty;
+    public string WhatsAppAlertToNumber { get; set; } = string.Empty;
+
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

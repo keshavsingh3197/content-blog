@@ -51,6 +51,9 @@ builder.Services.AddScoped<IAuthUserStore, MongoAuthUserStore>();
 builder.Services.AddScoped<IRefreshTokenStore, MongoRefreshTokenStore>();
 builder.Services.AddScoped<IAuthAuditSink, MongoAuditSink>();
 builder.Services.AddSingleton<IAuthSettings>(sp => sp.GetRequiredService<SettingsService>());
+// WhatsApp security alerts (e.g. account lockout) via KeshavSingh.Core's Meta Cloud API notifier.
+builder.Services.AddSingleton<IWhatsAppSettings>(sp => sp.GetRequiredService<SettingsService>());
+builder.Services.AddSingleton<WhatsAppNotifier>();
 builder.Services.AddKeshavAuthEngine();
 
 // Behind Render's TLS-terminating proxy: honour X-Forwarded-* so the app sees the

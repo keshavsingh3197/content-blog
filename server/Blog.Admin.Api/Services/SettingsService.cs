@@ -4,6 +4,7 @@ using Blog.Admin.Api.Data;
 using Blog.Admin.Api.Dtos;
 using Blog.Admin.Api.Models;
 using KeshavSingh.Auth.Abstractions;
+using KeshavSingh.Core;
 using KeshavSingh.Security;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -17,7 +18,7 @@ namespace Blog.Admin.Api.Services;
 /// rest via <see cref="DataProtector"/>. The cached copy gives synchronous access
 /// across the app; it is refreshed whenever settings are updated.
 /// </summary>
-public sealed class SettingsService : IAuthSettings
+public sealed class SettingsService : IAuthSettings, IWhatsAppSettings
 {
     private readonly MongoContext _db;
     private readonly DataProtector _protector;
@@ -44,6 +45,12 @@ public sealed class SettingsService : IAuthSettings
     public int AccessTokenMinutes => _current.AccessTokenMinutes;
     public int RefreshTokenDays => _current.RefreshTokenDays;
     public int TwoFactorTokenMinutes => _current.TwoFactorTokenMinutes;
+
+    // ---- IWhatsAppSettings (read by WhatsAppNotifier) ----
+    public bool WhatsAppAlertsEnabled => _current.WhatsAppAlertsEnabled;
+    public string WhatsAppAccessToken => Decrypt(_current.WhatsAppAccessTokenEncrypted) ?? string.Empty;
+    public string WhatsAppPhoneNumberId => _current.WhatsAppPhoneNumberId;
+    public string WhatsAppAlertToNumber => _current.WhatsAppAlertToNumber;
 
     public async Task InitAsync()
     {
@@ -104,7 +111,9 @@ public sealed class SettingsService : IAuthSettings
             s.EmailEnabled, s.EmailHost, s.EmailPort, s.EmailUseStartTls,
             s.EmailFromAddress, s.EmailFromName, s.EmailUsername, !string.IsNullOrEmpty(s.EmailPasswordEncrypted),
             s.SmsEnabled, s.SmsAccountSid, !string.IsNullOrEmpty(s.SmsAuthTokenEncrypted), s.SmsFromNumber,
-            s.MaxFailedLoginAttempts, s.LockoutMinutes, s.EmailOtpMinutes, s.BackupCodeCount, s.UpdatedAt);
+            s.MaxFailedLoginAttempts, s.LockoutMinutes, s.EmailOtpMinutes, s.BackupCodeCount,
+            s.WhatsAppAlertsEnabled, !string.IsNullOrEmpty(s.WhatsAppAccessTokenEncrypted),
+            s.WhatsAppPhoneNumberId, s.WhatsAppAlertToNumber, s.UpdatedAt);
     }
 
     public async Task<SettingsView> ApplyAsync(UpdateSettingsRequest r)
@@ -133,6 +142,11 @@ public sealed class SettingsService : IAuthSettings
         if (r.LockoutMinutes is { } lm) s.LockoutMinutes = lm;
         if (r.EmailOtpMinutes is { } eom) s.EmailOtpMinutes = eom;
         if (r.BackupCodeCount is { } bcc) s.BackupCodeCount = bcc;
+
+        if (r.WhatsAppAlertsEnabled is { } wae) s.WhatsAppAlertsEnabled = wae;
+        if (!string.IsNullOrEmpty(r.WhatsAppAccessToken)) s.WhatsAppAccessTokenEncrypted = _protector.Encrypt(r.WhatsAppAccessToken);
+        if (r.WhatsAppPhoneNumberId is not null) s.WhatsAppPhoneNumberId = r.WhatsAppPhoneNumberId.Trim();
+        if (r.WhatsAppAlertToNumber is not null) s.WhatsAppAlertToNumber = r.WhatsAppAlertToNumber.Trim();
 
         s.UpdatedAt = DateTime.UtcNow;
         await SaveAsync(s);
@@ -173,5 +187,9 @@ public sealed class SettingsService : IAuthSettings
         EmailOtpMinutes = s.EmailOtpMinutes, BackupCodeCount = s.BackupCodeCount,
         AccessTokenMinutes = s.AccessTokenMinutes, RefreshTokenDays = s.RefreshTokenDays,
         TwoFactorTokenMinutes = s.TwoFactorTokenMinutes,
+        WhatsAppAlertsEnabled = s.WhatsAppAlertsEnabled,
+        WhatsAppAccessTokenEncrypted = s.WhatsAppAccessTokenEncrypted,
+        WhatsAppPhoneNumberId = s.WhatsAppPhoneNumberId,
+        WhatsAppAlertToNumber = s.WhatsAppAlertToNumber,
     };
 }

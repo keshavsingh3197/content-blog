@@ -38,7 +38,7 @@
     <PackageReference Include="KeshavSingh.Auth" Version="0.4.0" />
     <PackageReference Include="KeshavSingh.Mongo.NoSql" Version="0.1.1" />
     <PackageReference Include="KeshavSingh.Realtime" Version="0.1.0" />
-    <PackageReference Include="KeshavSingh.Core" Version="0.1.0" />
+    <PackageReference Include="KeshavSingh.Core" Version="0.2.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(SkipPrivatePackages)' == 'true'">

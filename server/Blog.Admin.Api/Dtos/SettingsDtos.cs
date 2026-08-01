@@ -23,6 +23,10 @@ public sealed record SettingsView(
     int LockoutMinutes,
     int EmailOtpMinutes,
     int BackupCodeCount,
+    bool WhatsAppAlertsEnabled,
+    bool WhatsAppAccessTokenSet,
+    string WhatsAppPhoneNumberId,
+    string WhatsAppAlertToNumber,
     DateTime UpdatedAt);
 
 /// <summary>
@@ -47,4 +51,8 @@ public sealed record UpdateSettingsRequest(
     [Range(3, 20)] int? MaxFailedLoginAttempts,
     [Range(1, 1440)] int? LockoutMinutes,
     [Range(1, 60)] int? EmailOtpMinutes,
-    [Range(4, 20)] int? BackupCodeCount);
+    [Range(4, 20)] int? BackupCodeCount,
+    bool? WhatsAppAlertsEnabled,
+    [MaxLength(400)] string? WhatsAppAccessToken,
+    [MaxLength(60)] string? WhatsAppPhoneNumberId,
+    [MaxLength(20)] string? WhatsAppAlertToNumber);
