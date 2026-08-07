@@ -9,6 +9,9 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  # GITHUB_TOKEN gets exactly the scopes listed here and nothing more. Without this, npm's read of the
+  # private @keshavsingh3197/* packages is refused even though the token is wired into the install step.
+  packages: read
 
 concurrency:
   group: "pages"

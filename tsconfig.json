@@ -15,6 +15,7 @@
       ]
     },
     "outDir": "./dist/out-tsc",
+    "rootDir": "./ng-src",
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
