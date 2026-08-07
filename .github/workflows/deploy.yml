@@ -32,7 +32,13 @@ jobs:
       - name: Regenerate structure.json
         run: python3 generate_structure.py
 
-      - run: npm ci --legacy-peer-deps
+      # The private @keshavsingh3197/* packages come from GitHub Packages. The committed .npmrc
+      # references ${PACKAGES_READ_TOKEN}; without it npm sends an empty credential and the registry
+      # answers 401 for every scoped package. GITHUB_TOKEN works here because this repo and the
+      # package repo share an owner.
+      - env:
+          PACKAGES_READ_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN || github.token }}
+        run: npm ci --legacy-peer-deps
 
       - run: npx ng build --base-href /
 
