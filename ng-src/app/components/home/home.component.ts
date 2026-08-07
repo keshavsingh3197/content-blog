@@ -1,19 +1,29 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ContentService } from '../../services/content.service';
+import { I18nService } from '../../services/i18n.service';
+import { CONFIG_KEYS, RuntimeConfigService } from '../../services/runtime-config.service';
 import { FileNode } from '../../models/file-node.model';
 import { FileTreeComponent } from '../file-tree/file-tree.component';
 import { SearchComponent } from '../search/search.component';
 
+/**
+ * One topic card, as the `blog.topics` config document describes it. `nameKey`/`descriptionKey` are
+ * translation keys rather than text, so a card is editable AND translatable without a code change.
+ */
 interface TopicCard {
-  name: string;
+  nameKey: string;
+  descriptionKey: string;
   icon: string;
   color: string;
-  description: string;
   folderName: string;
 }
 
+/**
+ * The blog home page. The hero copy comes from the translation catalogue and the topic cards from the
+ * `blog.topics` config document — adding a topic is a config edit plus two strings, not a deploy.
+ */
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -25,27 +35,22 @@ interface TopicCard {
         <div class="row align-items-center">
           <div class="col-lg-7">
             <span class="hero-eyebrow">
-              <i class="fas fa-bolt"></i> Engineering Knowledge Base
+              <i class="fas fa-bolt"></i> {{ i18n.t('blog.hero.eyebrow') }}
             </span>
-            <h1 class="hero-title">
-              Deep-dive guides for<br />modern developers
-            </h1>
-            <p class="hero-subtitle">
-              Hands-on notes and tutorials on C#/.NET, Azure, AWS, Docker, Kubernetes,
-              design patterns and more — curated and kept current.
-            </p>
+            <h1 class="hero-title">{{ i18n.t('blog.hero.title') }}</h1>
+            <p class="hero-subtitle">{{ i18n.t('blog.hero.subtitle') }}</p>
             <div class="hero-stats">
               <div class="stat-item">
                 <span class="stat-number">{{ fileCount }}</span>
-                <span class="stat-label">Articles</span>
+                <span class="stat-label">{{ i18n.t('blog.hero.stat.articles') }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-number">{{ topics.length }}</span>
-                <span class="stat-label">Topics</span>
+                <span class="stat-number">{{ topics().length }}</span>
+                <span class="stat-label">{{ i18n.t('blog.hero.stat.topics') }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-number">Free</span>
-                <span class="stat-label">Forever</span>
+                <span class="stat-number">{{ i18n.t('blog.hero.stat.free') }}</span>
+                <span class="stat-label">{{ i18n.t('blog.hero.stat.forever') }}</span>
               </div>
             </div>
           </div>
@@ -60,20 +65,20 @@ interface TopicCard {
       <div class="row mb-4">
         <div class="col-12 mb-3">
           <h2 class="section-heading">
-            <i class="fas fa-layer-group me-2"></i>Browse Topics
+            <i class="fas fa-layer-group me-2"></i>{{ i18n.t('blog.section.browseTopics') }}
           </h2>
         </div>
-        <div class="col-6 col-md-4 col-lg-3 mb-3" *ngFor="let topic of topics">
+        <div class="col-6 col-md-4 col-lg-3 mb-3" *ngFor="let topic of topics()">
           <button
             class="topic-card w-100"
             (click)="navigateToTopic(topic)"
-            [attr.aria-label]="'Browse ' + topic.name"
+            [attr.aria-label]="i18n.t('blog.nav.browseFolder', { name: i18n.t(topic.nameKey) })"
           >
             <span class="topic-icon-chip" [style.background]="topic.color">
               <i class="fas topic-icon" [ngClass]="topic.icon"></i>
             </span>
-            <div class="topic-title">{{ topic.name }}</div>
-            <div class="topic-count">{{ topic.description }}</div>
+            <div class="topic-title">{{ i18n.t(topic.nameKey) }}</div>
+            <div class="topic-count">{{ i18n.t(topic.descriptionKey) }}</div>
           </button>
         </div>
       </div>
@@ -81,7 +86,7 @@ interface TopicCard {
         <div class="col-12">
           <div class="sidebar-panel">
             <div class="panel-title">
-              <i class="fas fa-folder-tree text-primary me-2"></i>All Files
+              <i class="fas fa-folder-tree text-primary me-2"></i>{{ i18n.t('blog.section.allFiles') }}
             </div>
             <app-file-tree
               *ngIf="nodes.length > 0"
@@ -90,7 +95,7 @@ interface TopicCard {
             </app-file-tree>
             <div class="loading-spinner" *ngIf="nodes.length === 0">
               <div class="spinner-border text-primary" role="status"></div>
-              <span>Loading...</span>
+              <span>{{ i18n.t('common.state.loading') }}</span>
             </div>
           </div>
         </div>
@@ -99,20 +104,20 @@ interface TopicCard {
   `
 })
 export class HomeComponent implements OnInit {
+  protected readonly i18n = inject(I18nService);
+  private readonly config = inject(RuntimeConfigService);
+
   nodes: FileNode[] = [];
   fileCount = 0;
 
-  topics: TopicCard[] = [
-    { name: 'Interview Prep',  icon: 'fa-user-graduate',  color: 'linear-gradient(135deg,#6366f1,#a855f7)', description: 'Senior/architect track', folderName: 'Interview-Prep' },
-    { name: 'C# Programming', icon: 'fa-code',           color: 'linear-gradient(135deg,#667eea,#764ba2)', description: 'Language & patterns', folderName: 'CSharp' },
-    { name: 'Azure Cloud',    icon: 'fa-cloud',           color: 'linear-gradient(135deg,#0072c6,#00b4f0)', description: 'Cloud services',        folderName: 'Azure' },
-    { name: 'AWS',            icon: 'fa-amazon',          color: 'linear-gradient(135deg,#ff9900,#ff6600)', description: 'Amazon Web Services',    folderName: 'AWS' },
-    { name: 'Containerize',   icon: 'fa-box',             color: 'linear-gradient(135deg,#0db7ed,#066da5)', description: 'Docker & Kubernetes',    folderName: 'Containerization' },
-    { name: 'SQL',            icon: 'fa-database',        color: 'linear-gradient(135deg,#11998e,#38ef7d)', description: 'Database & queries',     folderName: 'SQL' },
-    { name: 'Design Patterns',icon: 'fa-puzzle-piece',    color: 'linear-gradient(135deg,#f953c6,#b91d73)', description: 'GOF patterns',           folderName: 'GOF' },
-    { name: 'Networking',     icon: 'fa-network-wired',   color: 'linear-gradient(135deg,#4facfe,#00f2fe)', description: 'Protocols & concepts',   folderName: 'Networking' },
-    { name: 'VS Code Ext.',   icon: 'fa-puzzle-piece',    color: 'linear-gradient(135deg,#f7971e,#ffd200)', description: 'Extensions',             folderName: 'Extensions' },
-  ];
+  /**
+   * The cards, from config. The fallback is empty rather than a duplicate list: the seeded config
+   * entry is the single source, and an empty grid makes a config problem obvious instead of hiding it
+   * behind a stale copy.
+   */
+  topics(): TopicCard[] {
+    return this.config.json<TopicCard[]>(CONFIG_KEYS.blogTopics, []);
+  }
 
   constructor(private contentService: ContentService, private router: Router, private cdr: ChangeDetectorRef) {}
 

@@ -8,6 +8,7 @@
     "watch": "ng build --watch --configuration development"
   },
   "dependencies": {
+    "@keshavsingh3197/web-config": "^0.1.0",
     "@angular/animations": "^21.2.11",
     "@angular/common": "^21.2.11",
     "@angular/compiler": "^21.2.11",

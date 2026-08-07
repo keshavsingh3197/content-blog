@@ -7,6 +7,8 @@ import { FooterComponent } from './components/footer/footer.component';
 import { ReadingProgressComponent } from './components/reading-progress/reading-progress.component';
 import { ThemeService } from './services/theme.service';
 import { VisitTrackingService } from './services/visit-tracking.service';
+import { RuntimeConfigService } from './services/runtime-config.service';
+import { I18nService } from './services/i18n.service';
 
 @Component({
   selector: 'app-root',
@@ -34,8 +36,15 @@ export class AppComponent {
   constructor(
     private themeService: ThemeService,
     private router: Router,
-    private visitTracking: VisitTrackingService
+    private visitTracking: VisitTrackingService,
+    private config: RuntimeConfigService,
+    private i18n: I18nService
   ) {
+    // Central config first (it carries the language-persistence key and the poll interval), then the
+    // strings. Both fail soft: if the API is unreachable the site still renders, using the built-in
+    // fallbacks rather than showing nothing.
+    this.config.load().subscribe(() => this.i18n.init().subscribe());
+
     this.isAdmin.set(this.router.url.startsWith('/admin'));
     this.trackVisit(this.router.url);
 

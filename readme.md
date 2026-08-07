@@ -112,6 +112,38 @@ this in [ng-src/index.html](ng-src/index.html) before the app boots:
 
 ---
 
+## Languages and runtime configuration
+
+The public blog holds **no user-facing text of its own**. Its strings, its brand name, its icons, its
+topic cards and its footer links all come from the identity provider
+(`window.__IDP_API_BASE__`, default `http://localhost:5000/api`) at runtime:
+
+```
+GET /api/config                        → brand, icons, links, topic cards, feature flags, languages
+GET /api/i18n/manifest                 → per-language bundle versions (polled)
+GET /api/i18n/bundle/hi?ns=common,blog,brand → the strings themselves
+```
+
+English and Hindi ship seeded, and the language picker appears in the navbar as soon as more than one
+language is enabled. A visitor's choice is remembered locally; an untranslated string falls back to
+English rather than rendering blank. Both fetches fail soft — if the API is unreachable the blog still
+renders, using each component's built-in fallback.
+
+Editing all of it happens on the admin app's **Localization** screen (languages, translations,
+JSON/CSV/Excel import & export, and the configuration registry). The model, endpoints and validation
+rules are documented in the admin repo: `admin/docs/LOCALIZATION.md`.
+
+The client is the shared **`@keshavsingh3197/web-config`** package (repo `KeshavSingh-Packages-Web`) — the
+same one the admin app and the portfolio use — wrapped by a thin signal-based adapter in
+[ng-src/app/services/i18n.service.ts](ng-src/app/services/i18n.service.ts). Installing it needs
+`PACKAGES_READ_TOKEN` (see `.npmrc`); before the first publish, `tsconfig.json` falls back to the
+sibling checkout's `dist/`, so run `npm run build` in that repo once.
+
+> The blog's own admin console (`/admin`) is still English-only — it reads the same catalogue, but its
+> screens have not been migrated to it yet.
+
+---
+
 ## Deploying (Render backend + GitHub Pages frontend)
 
 The two halves deploy independently. **The frontend holds no secrets** — it's a static bundle,

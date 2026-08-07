@@ -1,6 +1,19 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    /*
+      Local-dev fallback for the private @keshavsingh3197/* packages, mirroring what the csproj files do
+      with SkipPrivatePackages -> ProjectReference: node_modules is tried first, so the published
+      package wins once it is installed; the sibling checkout keeps builds working before that.
+      Points at dist/ (not src/) because the Angular 16 webpack builder cannot map a ".js"
+      specifier back to a ".ts" file the way esbuild can. Run `npm run build` in that repo once.
+    */
+    "paths": {
+      "@keshavsingh3197/web-config": [
+        "./node_modules/@keshavsingh3197/web-config",
+        "../KeshavSingh-Packages-Web/dist"
+      ]
+    },
     "outDir": "./dist/out-tsc",
     "strict": true,
     "noImplicitOverride": true,
