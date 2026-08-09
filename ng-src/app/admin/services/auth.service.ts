@@ -54,9 +54,11 @@ export class AuthService {
       .pipe(tap({ next: () => this.clearSession(), error: () => this.clearSession() }));
   }
 
-  /** Send the browser to the central IdP to sign in, returning to {@link returnTo} afterwards. */
+  /** Send the browser to the central IdP to sign in, returning to {@link returnTo} afterwards.
+   *  `app=content-blog` scopes single-session enforcement to this site only — signing in here
+   *  never prompts to remove a session on admin or ghar-ledger, and vice versa. */
   loginRedirect(returnTo: string = location.href): void {
-    location.href = `${this.adminApp}/login?return=${encodeURIComponent(returnTo)}`;
+    location.href = `${this.adminApp}/login?return=${encodeURIComponent(returnTo)}&app=content-blog`;
   }
 
   forceClear(): void {

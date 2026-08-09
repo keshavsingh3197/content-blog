@@ -46,6 +46,9 @@ public sealed class SettingsService : IAuthSettings, IWhatsAppSettings
     public int AccessTokenMinutes => _current.AccessTokenMinutes;
     public int RefreshTokenDays => _current.RefreshTokenDays;
     public int TwoFactorTokenMinutes => _current.TwoFactorTokenMinutes;
+    // This app has no login UI of its own (its admin panel redirects to admin.keshavsingh.in to
+    // sign in), so single-session enforcement is admin's concern, not this app's.
+    public bool EnforceSingleSessionPerUser => false;
 
     // ---- IWhatsAppSettings (read by WhatsAppNotifier) ----
     public bool WhatsAppAlertsEnabled => _current.WhatsAppAlertsEnabled;
