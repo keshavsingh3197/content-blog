@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # Build context is the repo's server/ directory (Render "Root Directory" = server).
 # ---- Build stage ----
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Restore first (layer-cached) using just the project file + NuGet source config.
@@ -21,7 +21,7 @@ COPY Blog.Admin.Api/ Blog.Admin.Api/
 RUN dotnet publish Blog.Admin.Api/Blog.Admin.Api.csproj -c Release -o /app /p:UseAppHost=false --no-restore
 
 # ---- Runtime stage ----
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app .
 

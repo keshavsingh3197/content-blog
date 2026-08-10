@@ -7,6 +7,6 @@
     "seed-admin": "node seed-admin.mjs"
   },
   "dependencies": {
-    "mongodb": "^6.9.0"
+    "mongodb": "^7.5.0"
   }
 }

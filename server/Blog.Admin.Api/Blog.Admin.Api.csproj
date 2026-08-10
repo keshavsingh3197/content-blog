@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Blog.Admin.Api</RootNamespace>
@@ -13,20 +13,21 @@
       NuGet dependency submission (which has no access to repo secrets), while the real Docker /
       Render build — which exports PACKAGES_READ_TOKEN before restore — still includes them.
     -->
-    <SkipPrivatePackages Condition="'$(PACKAGES_READ_TOKEN)' == ''">true</SkipPrivatePackages>
+    <UseLocalProjectReferences Condition="'$(UseLocalProjectReferences)' == '' and Exists('..\..\..\shared-security\src\KeshavSingh.Security\KeshavSingh.Security.csproj')">true</UseLocalProjectReferences>
+    <SkipPrivatePackages Condition="'$(UseLocalProjectReferences)' == 'true' or '$(PACKAGES_READ_TOKEN)' == ''">true</SkipPrivatePackages>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- MongoDB access: required, the application's database driver. -->
     <PackageReference Include="MongoDB.Driver" Version="3.10.0" />
     <!-- JWT bearer validation for OAuth2-style bearer tokens. -->
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
     <!-- API documentation for the admin API surface. -->
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     <!-- Server-side QR generation for TOTP enrollment. Keeps the shared secret
          on the server instead of leaking it to a third-party QR service. -->
-    <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="QRCoder" Version="1.8.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(SkipPrivatePackages)' != 'true'">
@@ -34,11 +35,11 @@
          source in the repo-root nuget.config, which needs the PACKAGES_READ_TOKEN env var.
          GitHub's hosted automatic NuGet dependency submission job cannot read this private
          feed, so that specific job skips these references instead of failing restore. -->
-    <PackageReference Include="KeshavSingh.Security" Version="0.4.0" />
-    <PackageReference Include="KeshavSingh.Auth" Version="0.6.0" />
-    <PackageReference Include="KeshavSingh.Mongo.NoSql" Version="0.1.1" />
-    <PackageReference Include="KeshavSingh.Realtime" Version="0.1.0" />
-    <PackageReference Include="KeshavSingh.Core" Version="0.4.0" />
+    <PackageReference Include="KeshavSingh.Security" Version="0.5.0" />
+    <PackageReference Include="KeshavSingh.Auth" Version="0.7.0" />
+    <PackageReference Include="KeshavSingh.Mongo.NoSql" Version="0.3.0" />
+    <PackageReference Include="KeshavSingh.Realtime" Version="0.7.0" />
+    <PackageReference Include="KeshavSingh.Core" Version="0.5.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(SkipPrivatePackages)' == 'true'">
