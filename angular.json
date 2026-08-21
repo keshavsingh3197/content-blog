@@ -22,6 +22,7 @@
               { "glob": "**/*", "input": "src", "output": "src" },
               { "glob": "**/*", "input": "deploy-static", "output": "" },
               { "glob": "structure.json", "input": ".", "output": "" },
+              { "glob": "mermaid.min.js", "input": "node_modules/mermaid/dist", "output": "assets/mermaid" },
               { "glob": "CNAME", "input": ".", "output": "" },
               { "glob": "favicon.svg", "input": ".", "output": "" }
             ],

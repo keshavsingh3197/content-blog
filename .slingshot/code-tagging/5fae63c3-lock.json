@@ -1,0 +1,440 @@
+{
+  "src\\CSharp\\csharp-old.md": {
+    "filename": "csharp-old.md",
+    "path": "src\\CSharp\\csharp-old.md",
+    "version": "1.2",
+    "contextFile": null,
+    "chunks": {
+      "952adc": {
+        "user": "Keshav Singh",
+        "model": "gpt-4.1",
+        "timestamp": 1787272565,
+        "platform": "VisualStudioCode",
+        "product": "AIPP",
+        "productVersion": "3.1.0",
+        "source": "chat",
+        "type": "compareCode",
+        "extraContext": {
+          "promptMessage": "b312e7db",
+          "files": "71d5c42a"
+        },
+        "hash": "89301342",
+        "messageId": "system_147a0700-9cf8-11f1-8aaa-8bba45c3d17f",
+        "codeBlockId": "system_147a0700-9cf8-11f1-8aaa-8bba45c3d17f-Codeblock-1",
+        "isActive": true,
+        "hoverData": "\n### Slingshot Generated Code\n\n- **user**: Keshav Singh\n- **model**: gpt-4.1\n- **timestamp**: 8/21/2026, 6:06:05 AM\n- **source**: chat\n- **type**: compareCode\n"
+      }
+    },
+    "lines": {
+      "6": {
+        "chunkId": "952adc",
+        "hash": "b130fb01",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "8": {
+        "chunkId": "952adc",
+        "hash": "cc7e7e97",
+        "encoded": "##%20Table%20of%20Contents",
+        "prevChunkIds": []
+      },
+      "18": {
+        "chunkId": "952adc",
+        "hash": "998d7e03",
+        "encoded": "-%20%5BOperators%5D(#operators)",
+        "prevChunkIds": []
+      },
+      "24": {
+        "chunkId": "952adc",
+        "hash": "601391f5",
+        "encoded": "-%20%5BDependency%20Injection%20(DI)%5D(#dependency-injection-di)",
+        "prevChunkIds": []
+      },
+      "34": {
+        "chunkId": "952adc",
+        "hash": "fa7ae154",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "50": {
+        "chunkId": "952adc",
+        "hash": "6a5bdc1a",
+        "encoded": "%7D",
+        "prevChunkIds": []
+      },
+      "51": {
+        "chunkId": "952adc",
+        "hash": "38b604dc",
+        "encoded": "%7D",
+        "prevChunkIds": []
+      },
+      "52": {
+        "chunkId": "952adc",
+        "hash": "88fadba2",
+        "encoded": "%7D",
+        "prevChunkIds": []
+      },
+      "53": {
+        "chunkId": "952adc",
+        "hash": "b91fdb39",
+        "encoded": "%60%60%60",
+        "prevChunkIds": []
+      },
+      "56": {
+        "chunkId": "952adc",
+        "hash": "032f1ceb",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "65": {
+        "chunkId": "952adc",
+        "hash": "5b98275b",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "82": {
+        "chunkId": "952adc",
+        "hash": "fab9c447",
+        "encoded": "%60%60%60",
+        "prevChunkIds": []
+      },
+      "87": {
+        "chunkId": "952adc",
+        "hash": "4d9b1499",
+        "encoded": "%60%60%60",
+        "prevChunkIds": []
+      },
+      "89": {
+        "chunkId": "952adc",
+        "hash": "5078e1c2",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "109": {
+        "chunkId": "952adc",
+        "hash": "7e03f6ac",
+        "encoded": "%7D",
+        "prevChunkIds": []
+      },
+      "110": {
+        "chunkId": "952adc",
+        "hash": "a4ba47af",
+        "encoded": "%7D",
+        "prevChunkIds": []
+      },
+      "111": {
+        "chunkId": "952adc",
+        "hash": "367981c3",
+        "encoded": "%7D",
+        "prevChunkIds": []
+      },
+      "113": {
+        "chunkId": "952adc",
+        "hash": "fd8e1155",
+        "encoded": "%7D",
+        "prevChunkIds": []
+      },
+      "114": {
+        "chunkId": "952adc",
+        "hash": "d56c4c7a",
+        "encoded": "%60%60%60",
+        "prevChunkIds": []
+      },
+      "117": {
+        "chunkId": "952adc",
+        "hash": "7f1e825c",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "132": {
+        "chunkId": "952adc",
+        "hash": "a459e1d5",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "142": {
+        "chunkId": "952adc",
+        "hash": "1b2fde43",
+        "encoded": "%7D",
+        "prevChunkIds": []
+      },
+      "143": {
+        "chunkId": "952adc",
+        "hash": "dc91ebc7",
+        "encoded": "%60%60%60",
+        "prevChunkIds": []
+      },
+      "146": {
+        "chunkId": "952adc",
+        "hash": "6e98c841",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "154": {
+        "chunkId": "952adc",
+        "hash": "63f0f6c6",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "168": {
+        "chunkId": "952adc",
+        "hash": "af401e66",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "170": {
+        "chunkId": "952adc",
+        "hash": "009eaf5d",
+        "encoded": "##%20Operators",
+        "prevChunkIds": []
+      },
+      "180": {
+        "chunkId": "952adc",
+        "hash": "fdb3c626",
+        "encoded": "%60%60%60c#::snippet.cs::src/CSharp/snippet.cs",
+        "prevChunkIds": []
+      },
+      "181": {
+        "chunkId": "952adc",
+        "hash": "f6a0c5b3",
+        "encoded": "public%20readonly%20record%20struct%20Money(decimal%20Amount)",
+        "prevChunkIds": []
+      },
+      "182": {
+        "chunkId": "952adc",
+        "hash": "dadb1956",
+        "encoded": "%7B",
+        "prevChunkIds": []
+      },
+      "186": {
+        "chunkId": "952adc",
+        "hash": "92ab12a1",
+        "encoded": "%7D",
+        "prevChunkIds": []
+      },
+      "187": {
+        "chunkId": "952adc",
+        "hash": "01a8494f",
+        "encoded": "%60%60%60",
+        "prevChunkIds": []
+      },
+      "189": {
+        "chunkId": "952adc",
+        "hash": "392feed2",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "196": {
+        "chunkId": "952adc",
+        "hash": "98332756",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "204": {
+        "chunkId": "952adc",
+        "hash": "a422f964",
+        "encoded": "%60%60%60",
+        "prevChunkIds": []
+      },
+      "206": {
+        "chunkId": "952adc",
+        "hash": "522b3585",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "209": {
+        "chunkId": "952adc",
+        "hash": "4cf7edd5",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "213": {
+        "chunkId": "952adc",
+        "hash": "3c37ead5",
+        "encoded": "-%20**Delegate:**%20Type-safe%20function%20pointer.",
+        "prevChunkIds": []
+      },
+      "214": {
+        "chunkId": "952adc",
+        "hash": "59e6c933",
+        "encoded": "-%20**Event:**%20Delegate%20with%20publisher/subscriber%20pattern.",
+        "prevChunkIds": []
+      },
+      "219": {
+        "chunkId": "952adc",
+        "hash": "1d79e9d1",
+        "encoded": "public%20event%20EventHandler%20Clicked;",
+        "prevChunkIds": []
+      },
+      "221": {
+        "chunkId": "952adc",
+        "hash": "e44f08de",
+        "encoded": "%7D",
+        "prevChunkIds": []
+      },
+      "222": {
+        "chunkId": "952adc",
+        "hash": "4781336d",
+        "encoded": "%60%60%60",
+        "prevChunkIds": []
+      },
+      "227": {
+        "chunkId": "952adc",
+        "hash": "26c7298d",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "230": {
+        "chunkId": "952adc",
+        "hash": "bb9819a6",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "235": {
+        "chunkId": "952adc",
+        "hash": "51506d87",
+        "encoded": "%7C--------------%7C-------------------%7C--------------------%7C",
+        "prevChunkIds": []
+      },
+      "236": {
+        "chunkId": "952adc",
+        "hash": "50acdc1e",
+        "encoded": "%7C%20Type%20Safety%20%20%7C%20%E2%9C%85%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7C%20%E2%9D%8C%20(object%20only)%20%20%20%7C",
+        "prevChunkIds": []
+      },
+      "237": {
+        "chunkId": "952adc",
+        "hash": "1fdbd703",
+        "encoded": "%7C%20Performance%20%20%7C%20Better%20%20%20%20%20%20%20%20%20%20%20%20%7C%20Worse%20(boxing)%20%20%20%20%20%7C",
+        "prevChunkIds": []
+      },
+      "238": {
+        "chunkId": "952adc",
+        "hash": "f82a350c",
+        "encoded": "%7C%20Generics%20%20%20%20%20%7C%20%E2%9C%85%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7C%20%E2%9D%8C%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7C",
+        "prevChunkIds": []
+      },
+      "239": {
+        "chunkId": "952adc",
+        "hash": "c47bd9dd",
+        "encoded": "%7C%20Modern%20Use%20%20%20%7C%20%E2%9C%85%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%7C%20%E2%9D%8C%20(avoid)%20%20%20%20%20%20%20%20%20%7C",
+        "prevChunkIds": []
+      },
+      "244": {
+        "chunkId": "952adc",
+        "hash": "a07905f8",
+        "encoded": "%60%60%60",
+        "prevChunkIds": []
+      },
+      "246": {
+        "chunkId": "952adc",
+        "hash": "7661708a",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "249": {
+        "chunkId": "952adc",
+        "hash": "c0acfb46",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "260": {
+        "chunkId": "952adc",
+        "hash": "cc4c236f",
+        "encoded": "%60%60%60",
+        "prevChunkIds": []
+      },
+      "262": {
+        "chunkId": "952adc",
+        "hash": "03a7a799",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "264": {
+        "chunkId": "952adc",
+        "hash": "281af69d",
+        "encoded": "##%20Dependency%20Injection%20(DI)",
+        "prevChunkIds": []
+      },
+      "277": {
+        "chunkId": "952adc",
+        "hash": "c663f07c",
+        "encoded": "%7D",
+        "prevChunkIds": []
+      },
+      "280": {
+        "chunkId": "952adc",
+        "hash": "fdd3114e",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "288": {
+        "chunkId": "952adc",
+        "hash": "23cd17f9",
+        "encoded": "var%20builder%20=%20WebApplication.CreateBuilder(args);",
+        "prevChunkIds": []
+      },
+      "289": {
+        "chunkId": "952adc",
+        "hash": "4d019a5e",
+        "encoded": "var%20app%20=%20builder.Build();",
+        "prevChunkIds": []
+      },
+      "291": {
+        "chunkId": "952adc",
+        "hash": "74a6c698",
+        "encoded": "app.Run();",
+        "prevChunkIds": []
+      },
+      "294": {
+        "chunkId": "952adc",
+        "hash": "04f97b5e",
+        "encoded": "---",
+        "prevChunkIds": []
+      },
+      "298": {
+        "chunkId": "952adc",
+        "hash": "08198b60",
+        "encoded": "-%20**Synchronous:**%20Blocks%20until%20operation%20completes.",
+        "prevChunkIds": []
+      },
+      "299": {
+        "chunkId": "952adc",
+        "hash": "dc311bd7",
+        "encoded": "-%20**Asynchronous:**%20Runs%20in%20background,%20does%20not%20block%20main%20thread.",
+        "prevChunkIds": []
+      },
+      "302": {
+        "chunkId": "952adc",
+        "hash": "6ee938d9",
+        "encoded": "//%20Synchronous",
+        "prevChunkIds": []
+      },
+      "303": {
+        "chunkId": "952adc",
+        "hash": "45c64670",
+        "encoded": "string%20result%20=%20GetDataFromWeb();%20//%20blocks",
+        "prevChunkIds": []
+      },
+      "305": {
+        "chunkId": "952adc",
+        "hash": "9e3d2027",
+        "encoded": "//%20Asynchronous",
+        "prevChunkIds": []
+      },
+      "307": {
+        "chunkId": "952adc",
+        "hash": "e4f08292",
+        "encoded": "string%20result%20=%20await%20resultTask;",
+        "prevChunkIds": []
+      },
+      "360": {
+        "chunkId": "952adc",
+        "hash": "65468654",
+        "encoded": "%7D",
+        "prevChunkIds": []
+      }
+    },
+    "_prevLineCount": 409
+  }
+}

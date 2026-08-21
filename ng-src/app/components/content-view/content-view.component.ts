@@ -1,13 +1,15 @@
 import {
   Component, OnInit, OnDestroy, ElementRef, ViewChild,
-  ChangeDetectionStrategy, ChangeDetectorRef
+  ChangeDetectionStrategy, ChangeDetectorRef, effect, inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
-import { MarkdownModule } from 'ngx-markdown';
+import { MarkdownModule, MermaidAPI } from 'ngx-markdown';
 import { ContentService } from '../../services/content.service';
+import { MermaidLoaderService } from '../../services/mermaid-loader.service';
+import { ThemeService } from '../../services/theme.service';
 import { BreadcrumbComponent, BreadcrumbItem } from '../breadcrumb/breadcrumb.component';
 
 export interface TocItem {
@@ -87,7 +89,12 @@ export interface TocItem {
               <span class="meta-item"><i class="fas fa-align-left"></i>&nbsp;{{ wordCount }} words</span>
             </div>
             <div class="markdown-body" #contentDiv>
-              <markdown [data]="content" (ready)="onMarkdownReady()"></markdown>
+              <markdown
+                [data]="content"
+                [mermaid]="mermaidReady"
+                [mermaidOptions]="mermaidOptions"
+                (ready)="onMarkdownReady()"
+              ></markdown>
             </div>
           </div>
         </div>
@@ -118,6 +125,38 @@ export class ContentViewComponent implements OnInit, OnDestroy {
   showBackToTop = false;
   tocOpen = false;
   currentPath = '';
+
+  /** Only true once the Mermaid bundle is on the page for a document that needs it. */
+  mermaidReady = false;
+  mermaidOptions: MermaidAPI.MermaidConfig = {
+    startOnLoad: false,          // ngx-markdown calls mermaid.run() itself
+    securityLevel: 'strict',     // no raw HTML / click handlers inside diagrams
+    theme: 'default',
+    fontFamily: 'inherit',
+    // Required when a page holds more than one diagram. With random ids mermaid falls back to
+    // Date.now(), so every diagram rendered in the same millisecond gets the SAME svg id — and
+    // since each svg carries an id-scoped <style> plus url(#id) arrow markers, diagram #1 then
+    // styles all the others. A deterministic generator increments instead, keeping ids unique.
+    deterministicIds: true,
+  };
+
+  private readonly mermaidLoader = inject(MermaidLoaderService);
+  private readonly themeService = inject(ThemeService);
+
+  /** Diagrams bake their colours in at render time, so re-render them when the theme flips. */
+  private readonly themeEffect = effect(() => {
+    const dark = this.themeService.theme() === 'dark';
+    this.mermaidOptions = { ...this.mermaidOptions, theme: dark ? 'dark' : 'default' };
+
+    const markdown = this.content;
+    if (!this.mermaidReady || !markdown) return;
+    this.content = '';
+    this.cdr.markForCheck();
+    setTimeout(() => {
+      this.content = markdown;
+      this.cdr.markForCheck();
+    });
+  });
 
   private destroy$ = new Subject<void>();
   private scrollHandler = () => {
@@ -154,11 +193,21 @@ export class ContentViewComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (text) => {
         const rewritten = this.contentService.rewriteImagePaths(text, this.currentPath);
-        this.content = rewritten;
         this.wordCount = rewritten.split(/\s+/).filter(Boolean).length;
         this.readingTime = Math.ceil(this.wordCount / 200);
-        this.loading = false;
-        this.cdr.markForCheck();
+
+        if (!MermaidLoaderService.hasDiagram(rewritten)) {
+          this.mermaidReady = false;
+          this.show(rewritten);
+          return;
+        }
+
+        // Hold the markdown back until the global `mermaid` object exists, otherwise
+        // ngx-markdown renders the fence once as plain text and never revisits it.
+        this.mermaidLoader.load().then(ok => {
+          this.mermaidReady = ok;
+          this.show(rewritten);
+        });
       },
       error: () => {
         this.error = 'Failed to load file. Please try again.';
@@ -166,6 +215,12 @@ export class ContentViewComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  private show(markdown: string): void {
+    this.content = markdown;
+    this.loading = false;
+    this.cdr.markForCheck();
   }
 
   onMarkdownReady(): void {
