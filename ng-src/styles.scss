@@ -749,6 +749,37 @@ body {
     border-top: 1px solid var(--border-color);
     margin: 2.5rem 0;
   }
+
+  /* Mermaid diagrams (```mermaid fences, rendered client-side by ngx-markdown) */
+  .mermaid {
+    margin: 1.75rem 0;
+    padding: 1.5rem 1rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+    text-align: center;
+    line-height: normal;
+
+    svg {
+      max-width: 100%;
+      height: auto;
+      display: inline-block;
+    }
+  }
+
+  /* Keep the raw diagram source from flashing before mermaid.run() swaps in the SVG.
+     The delayed animation is a safety net: if rendering never completes (parse error,
+     bundle blocked) the source becomes visible instead of vanishing for good. */
+  .mermaid:not([data-processed]) {
+    opacity: 0;
+    animation: mermaid-source-fallback 0s linear 2.5s forwards;
+  }
+}
+
+@keyframes mermaid-source-fallback {
+  to { opacity: 1; }
 }
 
 /* ── Code Block Wrapper ───────────────────────────────── */

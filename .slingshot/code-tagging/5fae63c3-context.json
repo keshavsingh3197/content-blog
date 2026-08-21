@@ -1,0 +1,31 @@
+{
+  "filename": "csharp-old.md",
+  "path": "src\\CSharp\\csharp-old.md",
+  "version": "1.1",
+  "files": {
+    "71d5c42a": {
+      "value": [
+        {
+          "programming_language": "Markdown",
+          "fileName": "csharp-old.md",
+          "relativeFilePath": "src/CSharp/csharp-old.md",
+          "startLine": [
+            1
+          ],
+          "endLine": [
+            881
+          ]
+        }
+      ]
+    }
+  },
+  "promptMessage": {
+    "b312e7db": {
+      "value": "Improve this file content based on .net 10 , digram etc ... as preapring for interview, for promotion"
+    }
+  },
+  "localPrompts": {},
+  "remotePrompts": {},
+  "figma": {},
+  "jira": {}
+}

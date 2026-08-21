@@ -46,6 +46,35 @@ python generate_structure.py          # one-off
 python generate_structure.py --watch  # auto-regenerate on change
 ```
 
+### Diagrams in markdown (Mermaid)
+
+Any content file can embed a diagram with a fenced ` ```mermaid ` block — flowcharts, sequence
+diagrams, class diagrams, state charts, ER diagrams. It renders client-side and follows the
+light/dark theme toggle.
+
+````markdown
+```mermaid
+flowchart LR
+  A["HTTP request"] --> B{"Authenticated?"}
+  B -->|"yes"| C["Handler"]
+  B -->|"no"| D["401"]
+```
+````
+
+**How it is wired** — worth knowing before you change it:
+
+- The Mermaid bundle is ~3.5 MB, so it is **not** in `angular.json > scripts` (that would load it on
+  every page view and blow the 2 MB initial budget). It is copied to `assets/mermaid/` as a build
+  asset and injected as a `<script>` on demand by
+  [`MermaidLoaderService`](ng-src/app/services/mermaid-loader.service.ts) — only for documents that
+  actually contain a mermaid fence.
+- `deterministicIds: true` is **required** in the mermaid config. Without it mermaid falls back to
+  `Date.now()` for the svg id, so every diagram rendered in the same millisecond shares one id — and
+  since each svg carries an id-scoped `<style>` plus `url(#id)` arrow markers, the first diagram then
+  styles all the others.
+- Authoring rules that avoid surprises: **quote every node label** (`A["text"]`), use `<br/>` for
+  line breaks, and avoid raw `<`, `>` and `&` in labels — write "of T" rather than `<T>`.
+
 ---
 
 ## 2. Run the admin console
