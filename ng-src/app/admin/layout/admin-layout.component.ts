@@ -105,6 +105,7 @@ export class AdminLayoutComponent {
     { label: 'Content / Docs', icon: 'fa-file-lines', path: '/admin/content', exact: false },
     { label: 'Media', icon: 'fa-images', path: '/admin/media', exact: false },
     { label: 'Links', icon: 'fa-link', path: '/admin/links', exact: false },
+    { label: 'Comments', icon: 'fa-comments', path: '/admin/comments', exact: false, roles: ['Admin'] },
   ];
 
   /** The central identity provider where account, 2FA, users and settings are managed. */

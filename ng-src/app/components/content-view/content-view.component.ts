@@ -8,11 +8,13 @@ import { Subject } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
 import { MarkdownModule, MermaidAPI } from 'ngx-markdown';
 import { ContentService } from '../../services/content.service';
+import { PageStatsService } from '../../services/page-stats.service';
 import { MermaidLoaderService } from '../../services/mermaid-loader.service';
 import { ThemeService } from '../../services/theme.service';
 import { I18nService } from '../../services/i18n.service';
 import { FileNode } from '../../models/file-node.model';
 import { BreadcrumbComponent, BreadcrumbItem } from '../breadcrumb/breadcrumb.component';
+import { CommentsComponent } from '../comments/comments.component';
 import { parseDocName } from '../../utils/doc-name';
 
 export interface TocItem {
@@ -31,7 +33,7 @@ interface TagChip {
   selector: 'app-content-view',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, BreadcrumbComponent, MarkdownModule],
+  imports: [CommonModule, RouterModule, BreadcrumbComponent, MarkdownModule, CommentsComponent],
   template: `
     <div class="container container-reader mt-4">
       <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
@@ -124,6 +126,10 @@ interface TagChip {
               <span class="meta-item" *ngIf="updated">
                 <i class="fas fa-calendar-day"></i>&nbsp;{{ i18n.t('blog.content.updated', { date: updated }) }}
               </span>
+              <!-- Absent until the API answers: a missing counter is better than a wrong "0 views". -->
+              <span class="meta-item" *ngIf="views !== null">
+                <i class="fas fa-eye"></i>&nbsp;{{ i18n.t('blog.content.views', { count: views }) }}
+              </span>
               <!--
                 Pushed to the end of the bar so the action never sits between two read-only facts.
                 Hidden from print itself: a button is noise on paper.
@@ -163,6 +169,8 @@ interface TagChip {
               ></markdown>
             </div>
           </div>
+
+          <app-comments [path]="currentPath"></app-comments>
         </div>
       </div>
 
@@ -190,6 +198,8 @@ export class ContentViewComponent implements OnInit, OnDestroy {
   hasOwnHeading = false;
   wordCount = 0;
   readingTime = 0;
+  /** Read count for this document, or null while unknown / when the API is unreachable. */
+  views: number | null = null;
   tags: TagChip[] = [];
   breadcrumbs: BreadcrumbItem[] = [];
   toc: TocItem[] = [];
@@ -219,6 +229,7 @@ export class ContentViewComponent implements OnInit, OnDestroy {
     deterministicIds: true,
   };
 
+  private readonly pageStats = inject(PageStatsService);
   private readonly mermaidLoader = inject(MermaidLoaderService);
   private readonly themeService = inject(ThemeService);
   readonly i18n = inject(I18nService);
@@ -281,6 +292,8 @@ export class ContentViewComponent implements OnInit, OnDestroy {
         this.docTitle = '';
         this.updated = '';
         this.hasOwnHeading = false;
+        this.views = null;
+        this.trackView(path);
         this.tocOpen = false;
         this.currentPath = path;
         this.buildBreadcrumbs(path);
@@ -326,6 +339,19 @@ export class ContentViewComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.cdr.markForCheck();
       }
+    });
+  }
+
+  /**
+   * Count this read and show the running total. The server decides whether it counts — a refresh by
+   * the same reader inside the de-duplication window does not — so this fires on every navigation.
+   */
+  private trackView(path: string): void {
+    if (!path) return;
+    this.pageStats.track(path).subscribe(stat => {
+      if (!stat || stat.path !== this.currentPath) return;
+      this.views = stat.views;
+      this.cdr.markForCheck();
     });
   }
 

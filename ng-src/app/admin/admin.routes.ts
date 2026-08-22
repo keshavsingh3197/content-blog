@@ -41,6 +41,13 @@ export const ADMIN_ROUTES: Routes = [
         canActivate: [onboardingGuard],
         loadComponent: () => import('./pages/links.component').then(m => m.LinksComponent),
       },
+      {
+        // Comments live in this app's own API, so they are moderated here rather than at the
+        // identity provider — which owns accounts, not blog content.
+        path: 'comments',
+        canActivate: [onboardingGuard, roleGuard('Admin')],
+        loadComponent: () => import('./pages/comments.component').then(m => m.AdminCommentsComponent),
+      },
       // Identity is centralized at admin.keshavsingh.in — users, security/2FA, password and
       // settings are managed there, not here. Those routes were removed from the blog admin.
     ],
