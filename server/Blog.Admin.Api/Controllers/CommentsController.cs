@@ -257,8 +257,9 @@ public sealed class CommentsController : ControllerBase
         await _db.CommentBans.ReplaceOneAsync(b => b.UserId == userId, ban,
             new ReplaceOptions { IsUpsert = true }, ct);
 
+        var logSafeUserId = userId.Replace("\r", "").Replace("\n", "");
         _logger.LogInformation("User {UserId} banned from commenting by admin {AdminId} at {Timestamp:o}",
-            userId, adminId, DateTime.UtcNow);
+            logSafeUserId, adminId, DateTime.UtcNow);
 
         return Ok(new CommentBanDto(ban.UserId, ban.DisplayName, ban.Reason, ban.CreatedAt));
     }
