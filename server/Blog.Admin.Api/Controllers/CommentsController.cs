@@ -147,8 +147,11 @@ public sealed class CommentsController : ControllerBase
             cancellationToken: ct);
 
         if (isAdmin && comment.UserId != userId)
+        {
+            var safeCommentId = id.Replace("\r", string.Empty).Replace("\n", string.Empty);
             _logger.LogInformation("Comment {CommentId} on {Path} deleted by admin {AdminId} at {Timestamp:o}",
-                id, comment.Path, userId, DateTime.UtcNow);
+                safeCommentId, comment.Path, userId, DateTime.UtcNow);
+        }
 
         return NoContent();
     }
