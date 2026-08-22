@@ -77,8 +77,11 @@ public sealed class CommentsController : ControllerBase
         if (await IsBannedAsync(userId, ct))
         {
             // Logged as a security event: who was refused, and when. No comment text, no address.
+            var safePathForLog = contentPath
+                .Replace("\r", string.Empty, StringComparison.Ordinal)
+                .Replace("\n", string.Empty, StringComparison.Ordinal);
             _logger.LogWarning("Comment rejected for banned user {UserId} on {Path} at {Timestamp:o}",
-                userId, contentPath, DateTime.UtcNow);
+                userId, safePathForLog, DateTime.UtcNow);
             return StatusCode(StatusCodes.Status403Forbidden,
                 new { error = "Commenting is disabled for this account." });
         }
