@@ -197,8 +197,9 @@ public sealed class CommentsController : ControllerBase
             cancellationToken: ct);
 
         if (result.MatchedCount == 0) return NotFound();
+        var safeCommentId = (id ?? string.Empty).Replace("\r", string.Empty).Replace("\n", string.Empty);
         _logger.LogInformation("Comment {CommentId} hidden by admin {AdminId} at {Timestamp:o}",
-            id, adminId, DateTime.UtcNow);
+            safeCommentId, adminId, DateTime.UtcNow);
         return NoContent();
     }
 
