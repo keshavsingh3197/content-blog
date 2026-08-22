@@ -9,6 +9,7 @@ import { ThemeService } from './services/theme.service';
 import { VisitTrackingService } from './services/visit-tracking.service';
 import { RuntimeConfigService } from './services/runtime-config.service';
 import { I18nService } from './services/i18n.service';
+import { AuthService } from './admin/services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -38,12 +39,18 @@ export class AppComponent {
     private router: Router,
     private visitTracking: VisitTrackingService,
     private config: RuntimeConfigService,
-    private i18n: I18nService
+    private i18n: I18nService,
+    private auth: AuthService
   ) {
     // Central config first (it carries the language-persistence key and the poll interval), then the
     // strings. Both fail soft: if the API is unreachable the site still renders, using the built-in
     // fallbacks rather than showing nothing.
     this.config.load().subscribe(() => this.i18n.init().subscribe());
+
+    // Try the shared SSO cookie once at boot, so a reader who is already signed in elsewhere on
+    // keshavsingh.in can comment without a round trip through the identity provider. A 401 here is
+    // the ordinary case — most visitors are signed out — so it is swallowed, not surfaced.
+    this.auth.refresh().subscribe({ error: () => {} });
 
     this.isAdmin.set(this.router.url.startsWith('/admin'));
     this.trackVisit(this.router.url);

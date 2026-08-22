@@ -42,6 +42,8 @@ builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<ISmsSender, TwilioSmsSender>();
 builder.Services.AddScoped<AdminSeeder>();
+// Keyed digest of IP + user agent, used to count a reader once per page rather than once per refresh.
+builder.Services.AddSingleton<VisitorKeyService>();
 builder.Services.AddHttpContextAccessor();
 
 // ---- Shared auth engine (KeshavSingh.Auth) + this app's storage adapters ----
@@ -116,6 +118,30 @@ builder.Services.AddRateLimiter(options =>
         factory: _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 20,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+        }));
+
+    // Posting a comment is a signed-in action, so partition by user rather than by address: one
+    // approved account cannot flood a thread even from many addresses.
+    options.AddPolicy("comments", context => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: context.User.Identity?.IsAuthenticated == true
+            ? context.User.FindFirst("sub")?.Value ?? context.User.Identity.Name ?? "authenticated"
+            : context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(5),
+            QueueLimit = 0,
+        }));
+
+    // View tracking is anonymous and fires on every navigation, so the limit is generous — it is
+    // there to blunt a script, not to ration ordinary reading.
+    options.AddPolicy("page-views", context => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 120,
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0,
         }));

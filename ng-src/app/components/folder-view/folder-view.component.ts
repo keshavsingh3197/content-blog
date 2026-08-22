@@ -75,6 +75,7 @@ const FOLDER_COLORS: string[] = [
               </span>
               <span class="doc-body">
                 <span class="doc-title">{{ docTitle(file) }}</span>
+                <span class="doc-summary" *ngIf="file.summary">{{ file.summary }}</span>
                 <span class="doc-file">{{ file.name }}</span>
               </span>
               <i class="fas fa-arrow-right doc-go"></i>
@@ -139,9 +140,12 @@ export class FolderViewComponent implements OnInit, OnDestroy {
     return parseDocName(node.name).order;
   }
 
-  /** Readable title from a filename, e.g. "09-aspnet-core-pipeline-and-di.md" -> "Aspnet Core Pipeline and DI". */
+  /**
+   * The document's own title when its front matter (or first heading) gave one, otherwise a title
+   * derived from the filename: "09-aspnet-core-pipeline-and-di.md" -> "Aspnet Core Pipeline and DI".
+   */
   docTitle(node: FileNode): string {
-    return parseDocName(node.name).title;
+    return node.title || parseDocName(node.name).title;
   }
 
   openFolder(node: FileNode): void {

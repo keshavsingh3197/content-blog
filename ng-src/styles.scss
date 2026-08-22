@@ -55,6 +55,10 @@
   /* Layout */
   --navbar-height: 68px;
   --content-max: 1240px;
+  /* The reader is allowed to run wider than a listing page: it has side rails to fill. */
+  --reader-max: 1240px;
+  /* Article measure. Prose stops growing here; the leftover width goes to the rails. */
+  --reader-measure: 105ch;
 
   /* Motion */
   --transition-fast: 0.16s cubic-bezier(0.4, 0, 0.2, 1);
@@ -115,8 +119,37 @@ body {
   transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
+/*
+  The page grows with the window rather than leaving a fixed 1240px island in the middle of a 4K
+  display. It is still capped, because a line of prose stretched across an ultrawide monitor is
+  unreadable — what the extra room buys is side rails (section list, contents) and wider code
+  blocks, not longer lines. The article's own measure is held separately by `--reader-measure`.
+*/
 .container {
   max-width: var(--content-max);
+  width: 100%;
+  padding-inline: clamp(0.85rem, 2vw, 2rem);
+}
+
+.container-reader {
+  max-width: var(--reader-max);
+}
+
+@media (min-width: 1400px) {
+  :root { --content-max: 1360px; --reader-max: 1500px; }
+}
+
+@media (min-width: 1700px) {
+  :root { --content-max: 1480px; --reader-max: 1760px; --reader-measure: 110ch; }
+}
+
+@media (min-width: 2100px) {
+  :root { --content-max: 1560px; --reader-max: 2000px; --reader-measure: 115ch; }
+}
+
+@media (min-width: 2600px) {
+  /* Past this point the limit is the eye, not the display: stop widening and centre instead. */
+  :root { --content-max: 1600px; --reader-max: 2200px; --reader-measure: 118ch; }
 }
 
 ::selection {
@@ -220,8 +253,38 @@ body {
     color: var(--text-primary);
     &:focus { box-shadow: none; }
   }
+
+  /*
+    The topic list grows with the content tree, and the bar has a fixed height — so once the
+    topics no longer fit they must scroll sideways rather than wrap onto a second row and push
+    the page down behind the header.
+  */
+  @media (min-width: 992px) {
+    /*
+      A flex item will not shrink below its content width unless min-width is cleared, so without
+      this the overflow-x below never engages: the topic list keeps its full width and shoves the
+      theme, language and tag controls off the right-hand edge of the screen.
+    */
+    /* Keep the scrolling topic list clear of the controls it would otherwise slide under. */
+    .navbar-collapse { min-width: 0; margin-right: 0.75rem; }
+
+    .navbar-nav {
+      min-width: 0;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar { display: none; }
+
+      .nav-item { flex: 0 0 auto; }
+      .nav-link { white-space: nowrap; }
+    }
+  }
 }
 
+/* A control that belongs to the whole site (tag index), sized to match the theme toggle. */
+.nav-icon-btn,
 .theme-toggle-btn {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -229,19 +292,24 @@ body {
   border-radius: var(--radius-pill);
   width: 40px;
   height: 40px;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  text-decoration: none;
   transition: var(--transition-fast);
 
-  &:hover {
+  &:hover,
+  &:focus-visible {
     background: var(--accent-soft);
     color: var(--accent);
     border-color: var(--accent);
-    transform: rotate(-15deg);
   }
 }
+
+/* Only the theme toggle tilts — it is the one control whose icon is the thing being switched. */
+.theme-toggle-btn:hover { transform: rotate(-15deg); }
 
 /* ── Hero ─────────────────────────────────────────────── */
 .hero-section {
@@ -655,6 +723,105 @@ body {
 
     i { color: var(--accent); }
   }
+
+  /* Actions sit at the far end of the bar, after the read-only facts. */
+  .meta-action {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+
+    i { color: var(--accent); }
+
+    &:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-xs);
+    }
+  }
+}
+
+/* ── Tags ─────────────────────────────────────────────── */
+.content-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+
+  .content-tags-icon {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-right: 0.15rem;
+  }
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.7rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.6;
+  text-decoration: none;
+  transition: var(--transition-fast);
+
+  &:hover,
+  &:focus-visible {
+    background: var(--accent-soft-strong);
+    border-color: var(--accent);
+    color: var(--accent-hover);
+  }
+
+  &.tag-chip-lg {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  /* The tag currently being browsed reads as selected, not as another link. */
+  &.tag-chip-active {
+    background: var(--gradient-primary);
+    border-color: transparent;
+    color: #fff;
+
+    .tag-count { background: rgba(255, 255, 255, 0.25); color: #fff; }
+  }
+}
+
+.tag-count {
+  padding: 0 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--bg-primary);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tags-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  margin-bottom: 1.25rem;
 }
 
 /* ── Markdown Body ────────────────────────────────────── */
@@ -910,16 +1077,101 @@ body {
 /* ── Content Layout (Article + TOC) ───────────────────── */
 .content-layout {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.75rem;
   align-items: start;
 
+  /* Two columns: article, then the contents rail on the right. */
   @media (min-width: 1100px) {
     grid-template-columns: minmax(0, 1fr) 250px;
+  }
+
+  /*
+    Three columns once there is room for them. The article is pinned to a readable measure and the
+    grid is centred, so the surplus width of a very large display becomes balanced margin plus two
+    usable rails — never a 200-character line of text.
+  */
+  @media (min-width: 1600px) {
+    grid-template-columns:
+      minmax(210px, 300px)
+      minmax(0, var(--reader-measure))
+      minmax(230px, 320px);
+    justify-content: center;
+    column-gap: clamp(1.75rem, 2.5vw, 3.25rem);
+
+    .section-rail { grid-column: 1; grid-row: 1; }
+    .content-main { grid-column: 2; grid-row: 1; }
+    .toc-sidebar  { grid-column: 3; grid-row: 1; }
+  }
+
+  /* Longer document titles and heading text get room to breathe before the margins do. */
+  @media (min-width: 2100px) {
+    grid-template-columns:
+      minmax(240px, 360px)
+      minmax(0, var(--reader-measure))
+      minmax(260px, 380px);
   }
 }
 
 .content-main { min-width: 0; }
+
+/* ── Section rail (very wide viewports only) ──────────── */
+.section-rail {
+  display: none;
+
+  @media (min-width: 1600px) {
+    display: block;
+    position: sticky;
+    top: calc(var(--navbar-height) + 1.5rem);
+    max-height: calc(100vh - var(--navbar-height) - 3rem);
+    overflow-y: auto;
+  }
+}
+
+.rail-panel { background: transparent; }
+
+.rail-title {
+  color: var(--text-muted);
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  word-break: break-word;
+
+  i { color: var(--accent); }
+}
+
+.rail-nav {
+  padding: 0.25rem 0;
+  border-left: 1px solid var(--border-color);
+  margin-left: 1rem;
+}
+
+.rail-link {
+  display: block;
+  padding: 0.4rem 1rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  border-left: 2px solid transparent;
+  margin-left: -1px;
+  transition: var(--transition-fast);
+  word-break: break-word;
+
+  &:hover {
+    color: var(--accent);
+    border-left-color: var(--border-strong);
+  }
+
+  &.rail-active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 600;
+    background: var(--accent-soft);
+  }
+}
 
 /* ── Table of Contents ────────────────────────────────── */
 .toc-sidebar {
@@ -1244,6 +1496,7 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   cursor: pointer;
+  text-decoration: none;
   box-shadow: var(--shadow-xs);
   transition: transform var(--transition-fast), box-shadow var(--transition-normal),
     border-color var(--transition-normal), background var(--transition-fast);
@@ -1292,6 +1545,17 @@ body {
     line-height: 1.35;
   }
 
+  .doc-summary {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
   .doc-file {
     font-family: var(--font-mono);
     font-size: 0.74rem;
@@ -1331,4 +1595,504 @@ body {
   }
 
   a.anchor-link { border-bottom-color: var(--border-strong); }
+}
+
+/* ── Wide displays ────────────────────────────────────── */
+/*
+  Beyond ~2100px the reader gains a third column and the article keeps its measure, so the only
+  thing left worth scaling is the type itself — at that size the default is optically small.
+*/
+@media (min-width: 2100px) {
+  .markdown-body {
+    font-size: 1.08rem;
+
+    pre { font-size: 0.92rem; }
+  }
+
+  .content-meta .meta-item { font-size: 0.86rem; }
+}
+
+/* ── Small screens ────────────────────────────────────── */
+@media (max-width: 575.98px) {
+  /*
+    The header holds a brand, three controls and the menu toggle. On a 390px phone that is more
+    than fits, so the brand gives up its width first (it can ellipsis) and the controls shrink.
+  */
+  .navbar {
+    .container-fluid { gap: 0.35rem; }
+
+    .navbar-brand {
+      font-size: 1.05rem;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .nav-icon-btn,
+  .theme-toggle-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 0.85rem;
+  }
+
+  .lang-picker select { max-width: 5rem; }
+
+  .content-meta {
+    padding: 0.75rem 1rem;
+
+    /* Let the action wrap onto its own line rather than being pushed off the edge. */
+    .meta-action { margin-left: 0; }
+  }
+
+  .content-tags { padding: 0.65rem 1rem; }
+
+  .markdown-body {
+    padding: 1.15rem;
+
+    pre { padding: 1rem 1.1rem; }
+  }
+
+  .tag-chip.tag-chip-lg { padding: 0.3rem 0.75rem; font-size: 0.8rem; }
+}
+
+/* ── Print ────────────────────────────────────────────── */
+/*
+  Paper has no navigation, no theme toggle and no address bar, so printing is not "the screen in
+  greyscale": the chrome comes off, the palette is forced back to light (a dark-theme reader would
+  otherwise print black pages), and code — which scrolls sideways on screen — has to wrap, because
+  a sheet of paper cannot.
+*/
+.print-only { display: none; }
+
+@media print {
+  @page {
+    margin: 16mm 14mm;
+  }
+
+  /* Force the light palette regardless of the reader's theme, on both :root and the attribute. */
+  :root,
+  [data-theme='dark'] {
+    --bg-app: #ffffff;
+    --bg-primary: #ffffff;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f5f5f5;
+    --surface-glass: #ffffff;
+    --text-primary: #000000;
+    --text-secondary: #333333;
+    --text-muted: #555555;
+    --border-color: #cccccc;
+    --border-strong: #999999;
+    --accent: #1a1a1a;
+    --accent-hover: #000000;
+    --accent-soft: transparent;
+    --accent-soft-strong: transparent;
+    --shadow-xs: none;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+    --navbar-height: 0px;
+  }
+
+  html { font-size: 11pt; }
+
+  body {
+    padding-top: 0;
+    background: #fff;
+    color: #000;
+  }
+
+  /* Everything that exists only to navigate. */
+  .navbar,
+  .site-footer,
+  .reading-progress-bar,
+  .toc-sidebar,
+  .mobile-toc,
+  .section-rail,
+  .breadcrumb-nav,
+  .back-to-top,
+  .code-actions,
+  .search-container,
+  .meta-action,
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only { display: block; }
+
+  .container,
+  .container-reader {
+    max-width: none;
+    width: auto;
+    padding-inline: 0;
+    margin: 0;
+  }
+
+  .content-layout {
+    display: block;
+  }
+
+  .content-view-panel {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    overflow: visible;
+  }
+
+  /* The on-screen meta bar keeps its facts (filename, reading time) but loses its chrome. */
+  .content-meta {
+    background: transparent;
+    padding: 0 0 0.4rem;
+    gap: 0.35rem 1.1rem;
+    border-bottom: none;
+    font-size: 9pt;
+    color: #555;
+
+    i { color: #555; }
+  }
+
+  .content-tags {
+    padding: 0 0 0.6rem;
+    border-bottom: 1px solid #ccc;
+    gap: 0.3rem;
+  }
+
+  .tag-chip {
+    background: transparent;
+    border-color: #999;
+    color: #333;
+    padding: 0.05rem 0.45rem;
+    font-size: 8.5pt;
+  }
+
+  .print-masthead {
+    margin-bottom: 0.75rem;
+
+    .print-title {
+      font-size: 15pt;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .print-source {
+      font-family: var(--font-mono);
+      font-size: 8pt;
+      color: #555;
+      word-break: break-all;
+    }
+  }
+
+  .markdown-body {
+    padding: 0;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #000;
+
+    /* Keep a heading with the text it introduces, and never strand a single line. */
+    h1, h2, h3, h4, h5, h6 {
+      break-after: avoid;
+      break-inside: avoid;
+      color: #000;
+      margin-top: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    h1 { font-size: 15pt; }
+    h2 { font-size: 13pt; }
+    h3 { font-size: 11.5pt; }
+
+    p, li {
+      orphans: 3;
+      widows: 3;
+    }
+
+    /* Paper cannot scroll sideways: wrap code instead of clipping it. */
+    pre {
+      background: #f6f8fa !important;
+      color: #111 !important;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      padding: 0.6rem 0.75rem;
+      font-size: 8.5pt;
+      line-height: 1.4;
+      overflow: visible;
+      white-space: pre-wrap;
+      word-break: break-word;
+      break-inside: avoid;
+
+      code { color: #111 !important; }
+
+      /* Syntax highlighting is tuned for a dark block; on white it prints as unreadable mud. */
+      * { color: #111 !important; background: transparent !important; }
+    }
+
+    code:not(pre code) {
+      background: transparent;
+      color: #000;
+      border: 1px solid #ddd;
+      padding: 0 0.2em;
+    }
+
+    /* On screen the table is a scroll container; on paper it has to be a table again. */
+    table {
+      display: table;
+      width: 100%;
+      overflow: visible;
+      break-inside: auto;
+      font-size: 9pt;
+    }
+
+    thead { display: table-header-group; }
+    tr { break-inside: avoid; }
+
+    img,
+    .mermaid {
+      max-width: 100%;
+      break-inside: avoid;
+      page-break-inside: avoid;
+      box-shadow: none;
+    }
+
+    blockquote {
+      break-inside: avoid;
+      color: #333;
+    }
+
+    a {
+      color: #000;
+      border-bottom: none;
+      text-decoration: underline;
+    }
+
+    /*
+      A printed link is a dead end unless the sheet says where it goes. Internal `#/…` routes are
+      left alone — the URL would be noise, and the masthead already carries the site address.
+    */
+    a[href^='http']::after {
+      content: ' (' attr(href) ')';
+      font-size: 8pt;
+      color: #555;
+      word-break: break-all;
+    }
+
+    a.external-link::after {
+      content: ' (' attr(href) ')';
+    }
+  }
+
+  .code-block-wrapper {
+    break-inside: avoid;
+  }
+}
+
+/* ── Comments ─────────────────────────────────────────── */
+.comments {
+  margin: 2rem 0 3rem;
+}
+
+.comments-heading {
+  display: flex;
+  align-items: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 1.25rem;
+
+  i { color: var(--accent); }
+}
+
+.comments-state,
+.comments-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.comment-list {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.comment {
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.comment-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.comment-author {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.comment-date,
+.comment-edited {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.comment-edited::before {
+  content: '·';
+  margin-right: 0.4rem;
+}
+
+.comment-actions {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.comment-action {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: var(--transition-fast);
+
+  &:hover { color: var(--accent); background: var(--accent-soft); }
+
+  &.comment-action-danger:hover { color: var(--accent-danger); background: rgba(225, 29, 72, 0.1); }
+}
+
+.comment-body {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  /* Comments are plain text: keep the author's own line breaks without interpreting anything. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comment-form,
+.comment-signin {
+  padding: 1.15rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+}
+
+.comment-form-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+}
+
+.comment-form-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.65rem;
+}
+
+.comment-count {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.comment-form-buttons {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.comment-form-foot .btn-accent { margin-left: auto; }
+.comment-form-buttons .btn-accent { margin-left: 0; }
+
+.comment-error { margin: 0.75rem 0 0; }
+
+.comment-edit { margin-top: 0.5rem; }
+
+.comment-signin-text {
+  margin: 0 0 0.85rem;
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+}
+
+.comment-signin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.comment-signin-note {
+  margin: 0.85rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ── Buttons for the comment UI ───────────────────────── */
+/*
+  Scoped to .comments on purpose: `.btn-ghost` is also an admin-console class defined in the
+  @imported styles-admin.scss above, and an unscoped rule here would win over it everywhere.
+*/
+.comments .btn-accent,
+.comments .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.comments .btn-accent {
+  border: 1px solid transparent;
+  background: var(--gradient-primary);
+  color: #fff;
+
+  &:hover:not(:disabled) { box-shadow: var(--shadow-accent); }
+
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+}
+
+.comments .btn-ghost {
+  border: 1px solid var(--border-strong);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+
+  &:hover { color: var(--accent); border-color: var(--accent); }
 }

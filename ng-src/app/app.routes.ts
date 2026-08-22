@@ -14,6 +14,10 @@ export const routes: Routes = [
     loadComponent: () => import('./components/folder-view/folder-view.component').then(m => m.FolderViewComponent)
   },
   {
+    path: 'tags',
+    loadComponent: () => import('./components/tags-view/tags-view.component').then(m => m.TagsViewComponent)
+  },
+  {
     path: 'admin',
     loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES)
   },

@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { docLabel } from '../../utils/doc-name';
+import { I18nService } from '../../services/i18n.service';
 
 export interface BreadcrumbItem {
   label: string;
@@ -10,6 +11,13 @@ export interface BreadcrumbItem {
   isFile?: boolean;
   /** True when `label` is already a display title and must not be derived from a filename. */
   exact?: boolean;
+  /**
+   * Route this crumb links to, for trails that are not folder paths (the tag index, say).
+   * Defaults to the folder view, which is what a content path wants.
+   */
+  route?: string;
+  /** Query parameters for {@link route}. Defaults to `{ path }`. */
+  query?: Record<string, string>;
 }
 
 @Component({
@@ -17,11 +25,11 @@ export interface BreadcrumbItem {
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <nav aria-label="Breadcrumb" class="breadcrumb-nav">
+    <nav [attr.aria-label]="i18n.t('blog.nav.breadcrumb')" class="breadcrumb-nav">
       <ol class="breadcrumb">
         <li class="breadcrumb-item">
-          <a [routerLink]="['/']" class="crumb crumb-home" title="Home">
-            <i class="fas fa-home"></i><span class="crumb-text">Home</span>
+          <a [routerLink]="['/']" class="crumb crumb-home" [title]="i18n.t('blog.nav.home')">
+            <i class="fas fa-home"></i><span class="crumb-text">{{ i18n.t('blog.nav.home') }}</span>
           </a>
         </li>
 
@@ -35,9 +43,9 @@ export interface BreadcrumbItem {
           <a
             *ngIf="!last && item.path"
             class="crumb"
-            [routerLink]="['/folder']"
-            [queryParams]="{ path: item.path }"
-            [title]="'Browse ' + item.label"
+            [routerLink]="[item.route || '/folder']"
+            [queryParams]="item.query || { path: item.path }"
+            [title]="i18n.t('blog.nav.browseFolder', { name: item.label })"
           >
             <i class="fas fa-folder"></i><span class="crumb-text">{{ item.label }}</span>
           </a>
@@ -53,6 +61,8 @@ export interface BreadcrumbItem {
 })
 export class BreadcrumbComponent {
   @Input() items: BreadcrumbItem[] = [];
+
+  readonly i18n = inject(I18nService);
 
   /**
    * Show a readable title for the current document rather than a raw filename. The content view
