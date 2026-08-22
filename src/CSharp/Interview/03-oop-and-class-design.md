@@ -536,4 +536,4 @@ Yes. That is a perfectly valid way to say "this is a base class, never instantia
 
 **Prev:** [02 — Memory & Types](02-memory-and-type-system.md) ·
 **Next:** [04 — Abstract vs Interface](04-abstract-vs-interface.md) ·
-**Up:** [Interview hub](../CS-01.md)
+**Up:** [Interview hub](../csharp-interview.md)

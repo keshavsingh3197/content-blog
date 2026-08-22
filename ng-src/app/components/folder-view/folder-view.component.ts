@@ -6,6 +6,7 @@ import { takeUntil, switchMap, map } from 'rxjs/operators';
 import { ContentService } from '../../services/content.service';
 import { FileNode } from '../../models/file-node.model';
 import { BreadcrumbComponent, BreadcrumbItem } from '../breadcrumb/breadcrumb.component';
+import { parseDocName } from '../../utils/doc-name';
 
 const FOLDER_COLORS: string[] = [
   'linear-gradient(135deg,#667eea,#764ba2)',
@@ -54,26 +55,30 @@ const FOLDER_COLORS: string[] = [
           </div>
         </div>
 
-        <!-- Files in this folder -->
+        <!-- Documents in this folder -->
         <div *ngIf="files.length > 0">
           <h2 class="section-heading mb-3">
-            <i class="fas fa-file-alt me-2 text-primary"></i>Files
+            <i class="fas fa-file-lines me-2 text-primary"></i>Documents
+            <span class="section-count">{{ files.length }}</span>
           </h2>
-          <div class="sidebar-panel">
-            <ul class="tree-list">
-              <li class="tree-item" *ngFor="let file of files">
-                <div
-                  class="tree-file"
-                  (click)="openFile(file)"
-                  role="button"
-                  tabindex="0"
-                  (keydown.enter)="openFile(file)"
-                >
-                  <i class="fas fa-file-alt me-2 text-primary"></i>
-                  <span>{{ file.name }}</span>
-                </div>
-              </li>
-            </ul>
+          <div class="doc-list">
+            <button
+              class="doc-card"
+              *ngFor="let file of files; let i = index"
+              (click)="openFile(file)"
+              [attr.aria-label]="'Read ' + docTitle(file)"
+            >
+              <!-- A leading number in the filename is the chapter order — surface it as a badge
+                   so a numbered series reads as a sequence rather than a list of filenames. -->
+              <span class="doc-index" [class.doc-index-plain]="!docNumber(file)">
+                {{ docNumber(file) || (i + 1) }}
+              </span>
+              <span class="doc-body">
+                <span class="doc-title">{{ docTitle(file) }}</span>
+                <span class="doc-file">{{ file.name }}</span>
+              </span>
+              <i class="fas fa-arrow-right doc-go"></i>
+            </button>
           </div>
         </div>
 
@@ -127,6 +132,16 @@ export class FolderViewComponent implements OnInit, OnDestroy {
 
   childFileCount(node: FileNode): number {
     return this.contentService.countFiles([node]);
+  }
+
+  /** Leading order number from a filename like "03-oop-and-class-design.md", if present. */
+  docNumber(node: FileNode): string {
+    return parseDocName(node.name).order;
+  }
+
+  /** Readable title from a filename, e.g. "09-aspnet-core-pipeline-and-di.md" -> "Aspnet Core Pipeline and DI". */
+  docTitle(node: FileNode): string {
+    return parseDocName(node.name).title;
   }
 
   openFolder(node: FileNode): void {

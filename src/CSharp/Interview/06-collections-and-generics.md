@@ -287,4 +287,4 @@ signal "not found", or better, use the `TryGet` pattern.
 
 **Prev:** [05 — Language Essentials](05-language-essentials.md) ·
 **Next:** [07 — Delegates, Events & LINQ](07-delegates-events-and-linq.md) ·
-**Up:** [Interview hub](../CS-01.md)
+**Up:** [Interview hub](../csharp-interview.md)

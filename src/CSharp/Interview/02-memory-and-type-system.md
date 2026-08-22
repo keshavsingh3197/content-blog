@@ -363,4 +363,4 @@ readonly fields — measurably faster and it documents immutability.
 
 **Prev:** [01 — Platform & CLR](01-dotnet-platform-and-clr.md) ·
 **Next:** [03 — OOP & Class Design](03-oop-and-class-design.md) ·
-**Up:** [Interview hub](../CS-01.md)
+**Up:** [Interview hub](../csharp-interview.md)

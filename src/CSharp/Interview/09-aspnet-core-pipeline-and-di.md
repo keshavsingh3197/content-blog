@@ -426,4 +426,4 @@ genuinely optional collaborators.
 
 **Prev:** [08 — Async, Threading & TPL](08-async-threading-and-tpl.md) ·
 **Next:** [10 — SOLID, Patterns & Rapid Fire](10-solid-and-patterns.md) ·
-**Up:** [Interview hub](../CS-01.md)
+**Up:** [Interview hub](../csharp-interview.md)

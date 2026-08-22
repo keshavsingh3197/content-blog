@@ -498,4 +498,4 @@ because collaborators are handed to it rather than constructed inside it.
 ---
 
 **Prev:** [09 — ASP.NET Core Pipeline & DI](09-aspnet-core-pipeline-and-di.md) ·
-**Up:** [Interview hub](../CS-01.md)
+**Up:** [Interview hub](../csharp-interview.md)

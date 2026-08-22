@@ -24,11 +24,11 @@
 
 ## Important Links
 
-- [Power Platform Admin Centre](admin.powerplatform.com)
-- [PowerApps Maker](make.powerapps.com)
-- [Power Pages Design Studio](make.powerpages.microsoft.com)
-- [Microsoft Office](portal.office.com)
-- [Power Automate](flow.microsoft.com)
+- [Power Platform Admin Centre](https://admin.powerplatform.com)
+- [PowerApps Maker](https://make.powerapps.com)
+- [Power Pages Design Studio](https://make.powerpages.microsoft.com)
+- [Microsoft Office](https://portal.office.com)
+- [Power Automate](https://flow.microsoft.com)
 
 > Microsoft documentation for Power Pages can be located [here](https://learn.microsoft.com/en-us/power-pages/).
 
