@@ -309,4 +309,4 @@ Ambiguity — the class must provide its own implementation, or explicitly imple
 
 **Prev:** [03 — OOP & Class Design](03-oop-and-class-design.md) ·
 **Next:** [05 — Language Essentials](05-language-essentials.md) ·
-**Up:** [Interview hub](../CS-01.md)
+**Up:** [Interview hub](../csharp-interview.md)

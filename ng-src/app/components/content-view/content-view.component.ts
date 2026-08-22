@@ -192,7 +192,10 @@ export class ContentViewComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: (text) => {
-        const rewritten = this.contentService.rewriteImagePaths(text, this.currentPath);
+        // Images first, then document links — relative hrefs would otherwise resolve against the
+        // site root (hash routing) and fall through 404.html back to the home page.
+        const withImages = this.contentService.rewriteImagePaths(text, this.currentPath);
+        const rewritten = this.contentService.rewriteDocumentLinks(withImages, this.currentPath);
         this.wordCount = rewritten.split(/\s+/).filter(Boolean).length;
         this.readingTime = Math.ceil(this.wordCount / 200);
 
@@ -227,7 +230,9 @@ export class ContentViewComponent implements OnInit, OnDestroy {
     // Use a single rAF to avoid running in the CD cycle
     requestAnimationFrame(() => {
       this.processCodeBlocks();
-      this.buildToc();
+      this.buildToc();       // assigns heading ids — must run before processLinks()
+      this.processLinks();
+      this.useHeadingAsBreadcrumbLabel();
       this.cdr.markForCheck();
     });
   }
@@ -270,6 +275,87 @@ export class ContentViewComponent implements OnInit, OnDestroy {
       }
       return { level, text, id };
     });
+  }
+
+  /**
+   * Replace the final breadcrumb (a filename) with the document's own `<h1>`. A reader recognises
+   * "01 — .NET Platform, CLR & Compilation" far quicker than "01-dotnet-platform-and-clr.md".
+   */
+  private useHeadingAsBreadcrumbLabel(): void {
+    const heading = this.contentDiv?.nativeElement.querySelector('h1');
+    const title = heading?.textContent?.trim();
+    if (!title || !this.breadcrumbs.length) return;
+
+    const last = this.breadcrumbs[this.breadcrumbs.length - 1];
+    this.breadcrumbs = [...this.breadcrumbs.slice(0, -1), { ...last, label: title, exact: true }];
+  }
+
+  /**
+   * Make links inside the rendered markdown behave.
+   *
+   * - **In-page anchors** (`[text](#some-heading)`): a bare `#…` href would overwrite the whole
+   *   location hash, and under hash routing that *is* the route — so the reader gets bounced to the
+   *   home page. Scroll manually instead and leave the route alone.
+   * - **External links** open in a new tab, with `rel="noopener noreferrer"` so the opened page
+   *   cannot reach back into this one.
+   *
+   * Document links (`…/other.md`) are already rewritten to `#/file?path=…` before render.
+   */
+  private processLinks(): void {
+    const el = this.contentDiv?.nativeElement;
+    if (!el) return;
+
+    el.querySelectorAll('a[href]').forEach((node: Element) => {
+      const anchor = node as HTMLAnchorElement;
+      if (anchor.dataset['linkReady']) return;
+      anchor.dataset['linkReady'] = 'true';
+
+      const href = anchor.getAttribute('href') ?? '';
+
+      // Router links produced by rewriteDocumentLinks — leave them to the router.
+      if (href.startsWith('#/')) return;
+
+      if (href.startsWith('#')) {
+        anchor.classList.add('anchor-link');
+        anchor.addEventListener('click', event => {
+          event.preventDefault();
+          this.scrollToAnchor(decodeURIComponent(href.slice(1)));
+        });
+        return;
+      }
+
+      if (/^https?:\/\//i.test(href)) {
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        anchor.classList.add('external-link');
+      }
+    });
+  }
+
+  /** Scroll to a heading by id, falling back to a case-insensitive slug match on its text. */
+  private scrollToAnchor(id: string): void {
+    const root = this.contentDiv?.nativeElement;
+    if (!root) return;
+
+    // Compare ids in JS rather than via a selector: heading ids are slugs that routinely start
+    // with a digit ("1-introduction"), which is not a valid CSS identifier.
+    let target: HTMLElement | null =
+      Array.from(root.querySelectorAll<HTMLElement>('[id]')).find(node => node.id === id) ?? null;
+
+    if (!target) {
+      // GitHub and buildToc() can slugify a heading slightly differently (punctuation, casing),
+      // so match on the normalised text as a second attempt.
+      const wanted = id.toLowerCase();
+      const match = Array.from(root.querySelectorAll<HTMLElement>('h1,h2,h3,h4'))
+        .find(h => h.id.toLowerCase() === wanted || this.slugify(h.innerText) === wanted);
+      target = match ?? null;
+    }
+
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  private slugify(text: string): string {
+    return text.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
   }
 
   private processCodeBlocks(): void {
@@ -321,7 +407,9 @@ export class ContentViewComponent implements OnInit, OnDestroy {
     const parts = path.split('/').filter(Boolean);
     this.breadcrumbs = parts.map((p, i) => ({
       label: p,
-      path: parts.slice(0, i + 1).join('/')
+      // Ancestors link to their folder view; the last crumb is this document itself.
+      path: parts.slice(0, i + 1).join('/'),
+      isFile: i === parts.length - 1
     }));
   }
 

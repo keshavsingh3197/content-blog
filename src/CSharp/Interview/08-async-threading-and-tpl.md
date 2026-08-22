@@ -379,4 +379,4 @@ slow but the servers are bored".
 
 **Prev:** [07 — Delegates, Events & LINQ](07-delegates-events-and-linq.md) ·
 **Next:** [09 — ASP.NET Core Pipeline & DI](09-aspnet-core-pipeline-and-di.md) ·
-**Up:** [Interview hub](../CS-01.md)
+**Up:** [Interview hub](../csharp-interview.md)

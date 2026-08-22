@@ -392,4 +392,4 @@ No, most operators are deferred. Nothing runs until you enumerate or call a mate
 
 **Prev:** [06 — Collections & Generics](06-collections-and-generics.md) ·
 **Next:** [08 — Async, Threading & TPL](08-async-threading-and-tpl.md) ·
-**Up:** [Interview hub](../CS-01.md)
+**Up:** [Interview hub](../csharp-interview.md)

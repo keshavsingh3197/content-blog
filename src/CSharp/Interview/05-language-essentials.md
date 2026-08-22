@@ -485,4 +485,4 @@ No. `is` tests (and can bind a variable). `as` converts, returning `null` on fai
 
 **Prev:** [04 — Abstract vs Interface](04-abstract-vs-interface.md) ·
 **Next:** [06 — Collections & Generics](06-collections-and-generics.md) ·
-**Up:** [Interview hub](../CS-01.md)
+**Up:** [Interview hub](../csharp-interview.md)

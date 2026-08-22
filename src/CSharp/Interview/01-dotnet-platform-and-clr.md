@@ -289,4 +289,4 @@ most of the garbage, so a full Gen 2 collection stays rare.
 ---
 
 **Next:** [02 — Memory, Types & Boxing](02-memory-and-type-system.md) ·
-**Up:** [Interview hub](../CS-01.md)
+**Up:** [Interview hub](../csharp-interview.md)

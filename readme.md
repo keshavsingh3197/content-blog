@@ -46,6 +46,32 @@ python generate_structure.py          # one-off
 python generate_structure.py --watch  # auto-regenerate on change
 ```
 
+### Links between content files
+
+Write them as ordinary **relative markdown links** and they just work:
+
+```markdown
+[Chapter 2](Interview/02-memory-and-type-system.md)   → routes to the reader
+[Back up](../csharp-interview.md)                           → `..` is resolved
+[The diagram](Asset/static_constructor.png)           → opens the asset directly
+[MSDN](https://learn.microsoft.com/…)                 → new tab, rel="noopener"
+[Jump to a heading](#rapid-fire-qa)                   → scrolls, keeps the route
+```
+
+**Why this needs code at all:** the app uses hash routing, so the browser resolves a relative href
+against the *site root* rather than against the markdown file — `Interview/02-…md` becomes
+`/Interview/02-…md`, misses, and falls through `404.html` to the home page.
+[`ContentService.rewriteDocumentLinks`](ng-src/app/services/content.service.ts) rewrites relative
+document links to `#/file?path=…` (or `#/folder?path=…`) before render, leaving the href real so
+hover previews, middle-click and open-in-new-tab still behave.
+
+A bare `#heading` link needs the same care in reverse: under hash routing the fragment *is* the
+route, so clicking one would navigate away. `processLinks()` in the content view intercepts those
+and scrolls instead.
+
+Two authoring notes: give external links a scheme (`https://…`, not `example.com`), and remember
+that links inside fenced or inline code are deliberately left untouched.
+
 ### Diagrams in markdown (Mermaid)
 
 Any content file can embed a diagram with a fenced ` ```mermaid ` block — flowcharts, sequence
