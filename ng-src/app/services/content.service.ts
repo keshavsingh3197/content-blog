@@ -2,7 +2,15 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, catchError, map, shareReplay } from 'rxjs/operators';
-import { FileNode } from '../models/file-node.model';
+import { FileNode, TagSummary } from '../models/file-node.model';
+
+/** The `key: value` pairs of a markdown front-matter block, as authored. */
+export interface FrontMatter {
+  title?: string;
+  summary?: string;
+  updated?: string;
+  tags: string[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class ContentService {
@@ -40,9 +48,14 @@ export class ContentService {
     if (!query.trim()) return [];
     const q = query.toLowerCase();
     const results: FileNode[] = [];
+    const matches = (node: FileNode) =>
+      node.name.toLowerCase().includes(q) ||
+      (node.title?.toLowerCase().includes(q) ?? false) ||
+      (node.tags ?? []).some(tag => tag.toLowerCase().includes(q));
+
     const searchRecursive = (items: FileNode[]) => {
       for (const node of items) {
-        if (!node.isDirectory && node.name.toLowerCase().includes(q)) {
+        if (!node.isDirectory && matches(node)) {
           results.push(node);
         }
         if (node.children) searchRecursive(node.children);
@@ -50,6 +63,157 @@ export class ContentService {
     };
     searchRecursive(nodes);
     return results;
+  }
+
+  // ── Front matter ────────────────────────────────────────────────────────────────────────────
+  //
+  // `generate_structure.py` already lifted this into structure.json, but the reader parses it
+  // again from the file it just downloaded: that is the copy the visitor is actually looking at,
+  // and it stays right even when someone edits a document without regenerating the navigation.
+
+  /** Matches a leading `---` fenced block, and only at the very start of the document. */
+  private static readonly FRONT_MATTER = /^﻿?---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
+
+  /** The document body with its front-matter block removed, so the fence is never rendered. */
+  stripFrontMatter(markdown: string): string {
+    return markdown.replace(ContentService.FRONT_MATTER, '');
+  }
+
+  /**
+   * Read the front-matter block. Mirrors the generator's small hand-rolled reader: scalars and
+   * one-level lists only, and anything unparseable is skipped rather than thrown — a typo in one
+   * document must not blank the page it is on.
+   */
+  parseFrontMatter(markdown: string): FrontMatter {
+    const block = ContentService.FRONT_MATTER.exec(markdown)?.[1];
+    if (!block) return { tags: [] };
+
+    const values = new Map<string, string | string[]>();
+    let pendingListKey: string | null = null;
+
+    for (const rawLine of block.split('\n')) {
+      const line = rawLine.trimEnd();
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+
+      if (pendingListKey && trimmed.startsWith('- ')) {
+        (values.get(pendingListKey) as string[]).push(this.unquote(trimmed.slice(2)));
+        continue;
+      }
+
+      const colon = line.indexOf(':');
+      if (colon < 0) continue;
+
+      const key = line.slice(0, colon).trim().toLowerCase();
+      const value = line.slice(colon + 1).trim();
+      pendingListKey = null;
+
+      if (!value) {
+        values.set(key, []);
+        pendingListKey = key;
+      } else if (value.startsWith('[')) {
+        values.set(key, this.splitInlineList(value));
+      } else {
+        values.set(key, this.unquote(value));
+      }
+    }
+
+    const scalar = (key: string): string | undefined => {
+      const value = values.get(key);
+      return typeof value === 'string' && value ? value : undefined;
+    };
+
+    const rawTags = values.get('tags');
+    const tags = (Array.isArray(rawTags) ? rawTags : typeof rawTags === 'string' ? [rawTags] : [])
+      .map(tag => tag.trim())
+      .filter(Boolean);
+
+    return {
+      title: scalar('title'),
+      summary: scalar('summary') ?? scalar('description'),
+      updated: scalar('updated') ?? scalar('date'),
+      tags: this.dedupeTags(tags),
+    };
+  }
+
+  private unquote(value: string): string {
+    const trimmed = value.trim();
+    const quoted = trimmed.length >= 2 && trimmed[0] === trimmed[trimmed.length - 1] &&
+      (trimmed[0] === '"' || trimmed[0] === "'");
+    return quoted ? trimmed.slice(1, -1) : trimmed;
+  }
+
+  private splitInlineList(value: string): string[] {
+    const inner = value.trim().replace(/^\[/, '').replace(/\]$/, '');
+    return inner.split(',').map(part => this.unquote(part)).filter(Boolean);
+  }
+
+  /** Case-insensitive de-duplication that keeps the author's spelling and order. */
+  private dedupeTags(tags: string[]): string[] {
+    const seen = new Set<string>();
+    return tags.filter(tag => {
+      const key = tag.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  // ── Tags ────────────────────────────────────────────────────────────────────────────────────
+
+  /**
+   * URL-safe form of a tag. Two spellings that differ only in case or punctuation share a slug, so
+   * `C#` and `c#` are one tag — but `.NET` and `dotnet` are deliberately two, because collapsing
+   * them would silently merge things the author kept apart.
+   */
+  static tagSlug(tag: string): string {
+    return tag
+      .trim()
+      .toLowerCase()
+      .replace(/[^\w.+#-]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'untagged';
+  }
+
+  /** Every tag in the tree with its document count, most-used first, then alphabetical. */
+  buildTagIndex(nodes: FileNode[]): TagSummary[] {
+    const index = new Map<string, TagSummary>();
+
+    const walk = (items: FileNode[]) => {
+      for (const node of items) {
+        if (!node.isDirectory) {
+          for (const tag of node.tags ?? []) {
+            const slug = ContentService.tagSlug(tag);
+            const existing = index.get(slug);
+            if (existing) existing.count++;
+            else index.set(slug, { label: tag, slug, count: 1 });
+          }
+        }
+        if (node.children) walk(node.children);
+      }
+    };
+
+    walk(nodes);
+    return [...index.values()].sort(
+      (a, b) => b.count - a.count || a.label.localeCompare(b.label)
+    );
+  }
+
+  /** Every document carrying `slug`, ordered by path so a numbered series stays in sequence. */
+  filesWithTag(slug: string, nodes: FileNode[]): FileNode[] {
+    const wanted = ContentService.tagSlug(slug);
+    const results: FileNode[] = [];
+
+    const walk = (items: FileNode[]) => {
+      for (const node of items) {
+        if (!node.isDirectory && (node.tags ?? []).some(t => ContentService.tagSlug(t) === wanted)) {
+          results.push(node);
+        }
+        if (node.children) walk(node.children);
+      }
+    };
+
+    walk(nodes);
+    return results.sort((a, b) => a.path.localeCompare(b.path));
   }
 
   countFiles(nodes: FileNode[]): number {

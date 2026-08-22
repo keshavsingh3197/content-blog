@@ -24,6 +24,13 @@ import { FileNode } from '../../models/file-node.model';
           <i class="fas fa-code me-2"></i>{{ brandName() }}
         </a>
         <div class="d-flex align-items-center order-lg-3 gap-2">
+          <!-- Browsing by tag is a whole-site control, so it sits with the theme and language
+               pickers rather than competing with the topic dropdowns for bar width. -->
+          <a class="nav-icon-btn" [routerLink]="['/tags']"
+             [title]="i18n.t('blog.tags.title')"
+             [attr.aria-label]="i18n.t('blog.tags.title')">
+            <i class="fas fa-tags"></i>
+          </a>
           <!--
             Language picker. Rendered only when more than one language is enabled AND an admin has
             left the picker on — both are database values, so a single-language deployment shows

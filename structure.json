@@ -11,12 +11,20 @@
         {
           "name": "API.md",
           "path": "src/API/API.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "API",
+          "tags": [
+            "API"
+          ]
         },
         {
           "name": "scalling.md",
           "path": "src/API/scalling.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Scalling",
+          "tags": [
+            "API"
+          ]
         }
       ]
     },
@@ -28,27 +36,47 @@
         {
           "name": "apiGateway.md",
           "path": "src/AWS/apiGateway.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Api Gateway",
+          "tags": [
+            "AWS"
+          ]
         },
         {
           "name": "aws.md",
           "path": "src/AWS/aws.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "AWS",
+          "tags": [
+            "AWS"
+          ]
         },
         {
           "name": "ec2.md",
           "path": "src/AWS/ec2.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "EC2",
+          "tags": [
+            "AWS"
+          ]
         },
         {
           "name": "lambda.md",
           "path": "src/AWS/lambda.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "AWS Lambda",
+          "tags": [
+            "AWS"
+          ]
         },
         {
           "name": "vpc.md",
           "path": "src/AWS/vpc.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "VPC",
+          "tags": [
+            "AWS"
+          ]
         }
       ]
     },
@@ -70,19 +98,36 @@
                 {
                   "name": "app-service.md",
                   "path": "src/Azure/Certification/az-204/app-service.md",
-                  "isDirectory": false
+                  "isDirectory": false,
+                  "title": "App Service",
+                  "tags": [
+                    "Azure",
+                    "Certification",
+                    "az-204"
+                  ]
                 },
                 {
                   "name": "function.md",
                   "path": "src/Azure/Certification/az-204/function.md",
-                  "isDirectory": false
+                  "isDirectory": false,
+                  "title": "Azure Function",
+                  "tags": [
+                    "Azure",
+                    "Certification",
+                    "az-204"
+                  ]
                 }
               ]
             },
             {
               "name": "AZ-204.md",
               "path": "src/Azure/Certification/AZ-204.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Azure Developer Associate",
+              "tags": [
+                "Azure",
+                "Certification"
+              ]
             }
           ]
         },
@@ -94,39 +139,70 @@
             {
               "name": "power-automate.md",
               "path": "src/Azure/Power Platform/power-automate.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Power Automate",
+              "tags": [
+                "Azure",
+                "Power Platform"
+              ]
             },
             {
               "name": "power-platform-cli.md",
               "path": "src/Azure/Power Platform/power-platform-cli.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Power Platform CLI",
+              "tags": [
+                "Azure",
+                "Power Platform"
+              ]
             },
             {
               "name": "readme.md",
               "path": "src/Azure/Power Platform/readme.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Power Platform",
+              "tags": [
+                "Azure",
+                "Power Platform"
+              ]
             }
           ]
         },
         {
           "name": "azure-basic.md",
           "path": "src/Azure/azure-basic.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Azure",
+          "tags": [
+            "Azure"
+          ]
         },
         {
           "name": "Azure-DevOps.md",
           "path": "src/Azure/Azure-DevOps.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Azure DevOps",
+          "tags": [
+            "Azure"
+          ]
         },
         {
           "name": "Azure-service-bus.md",
           "path": "src/Azure/Azure-service-bus.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Azure Service Bus",
+          "tags": [
+            "Azure"
+          ]
         },
         {
           "name": "azure.md",
           "path": "src/Azure/azure.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Azure",
+          "tags": [
+            "Azure"
+          ]
         }
       ]
     },
@@ -143,7 +219,12 @@
             {
               "name": "docker.md",
               "path": "src/Containerization/Docker/docker.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Docker",
+              "tags": [
+                "Containerization",
+                "Docker"
+              ]
             }
           ]
         },
@@ -155,12 +236,22 @@
             {
               "name": "command.helm.md",
               "path": "src/Containerization/Helm/command.helm.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Helm Commands",
+              "tags": [
+                "Containerization",
+                "Helm"
+              ]
             },
             {
               "name": "helm.md",
               "path": "src/Containerization/Helm/helm.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "HELM",
+              "tags": [
+                "Containerization",
+                "Helm"
+              ]
             }
           ]
         },
@@ -177,29 +268,55 @@
                 {
                   "name": "cluster.azure.k8.md",
                   "path": "src/Containerization/K8/Azure/cluster.azure.k8.md",
-                  "isDirectory": false
+                  "isDirectory": false,
+                  "title": "CLUSTER",
+                  "tags": [
+                    "Containerization",
+                    "K8",
+                    "Azure"
+                  ]
                 },
                 {
                   "name": "ingress.azure.k8.md",
                   "path": "src/Containerization/K8/Azure/ingress.azure.k8.md",
-                  "isDirectory": false
+                  "isDirectory": false,
+                  "title": "Ingress",
+                  "tags": [
+                    "Containerization",
+                    "K8",
+                    "Azure"
+                  ]
                 }
               ]
             },
             {
               "name": "aws.k8.md",
               "path": "src/Containerization/K8/aws.k8.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "tags": [
+                "Containerization",
+                "K8"
+              ]
             },
             {
               "name": "azure.k8.md",
               "path": "src/Containerization/K8/azure.k8.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Azure AKS",
+              "tags": [
+                "Containerization",
+                "K8"
+              ]
             },
             {
               "name": "k8.md",
               "path": "src/Containerization/K8/k8.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "k8",
+              "tags": [
+                "Containerization",
+                "K8"
+              ]
             }
           ]
         },
@@ -211,12 +328,22 @@
             {
               "name": "datadog.monitor.md",
               "path": "src/Containerization/Monitor/datadog.monitor.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Datadog",
+              "tags": [
+                "Containerization",
+                "Monitor"
+              ]
             },
             {
               "name": "monitor.md",
               "path": "src/Containerization/Monitor/monitor.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Monitor",
+              "tags": [
+                "Containerization",
+                "Monitor"
+              ]
             }
           ]
         }
@@ -235,7 +362,12 @@
             {
               "name": "asp-net-web-from.md",
               "path": "src/CSharp/ASPNET/asp-net-web-from.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "ASP.NET Web Forms (`.aspx`) --- Complete Interview Preparation Guide",
+              "tags": [
+                "CSharp",
+                "ASPNET"
+              ]
             }
           ]
         },
@@ -247,22 +379,42 @@
             {
               "name": "dotnet-cli.md",
               "path": "src/CSharp/Dotnet/dotnet-cli.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": ".NET CLI",
+              "tags": [
+                "CSharp",
+                "Dotnet"
+              ]
             },
             {
               "name": "dotnet-nuget.md",
               "path": "src/CSharp/Dotnet/dotnet-nuget.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Nuget",
+              "tags": [
+                "CSharp",
+                "Dotnet"
+              ]
             },
             {
               "name": "dotnet-sonar.md",
               "path": "src/CSharp/Dotnet/dotnet-sonar.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Sonar",
+              "tags": [
+                "CSharp",
+                "Dotnet"
+              ]
             },
             {
               "name": "dotnet.md",
               "path": "src/CSharp/Dotnet/dotnet.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": ".NET Overview",
+              "tags": [
+                "CSharp",
+                "Dotnet"
+              ]
             }
           ]
         },
@@ -279,44 +431,80 @@
                 {
                   "name": "filter.implementation.md",
                   "path": "src/CSharp/Filters/Implementation/filter.implementation.md",
-                  "isDirectory": false
+                  "isDirectory": false,
+                  "tags": [
+                    "CSharp",
+                    "Filters",
+                    "Implementation"
+                  ]
                 }
               ]
             },
             {
               "name": "action.filter.md",
               "path": "src/CSharp/Filters/action.filter.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Action Filter",
+              "tags": [
+                "CSharp",
+                "Filters"
+              ]
             },
             {
               "name": "authorization.filter.md",
               "path": "src/CSharp/Filters/authorization.filter.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "tags": [
+                "CSharp",
+                "Filters"
+              ]
             },
             {
               "name": "endpoint.fIlter.md",
               "path": "src/CSharp/Filters/endpoint.fIlter.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "tags": [
+                "CSharp",
+                "Filters"
+              ]
             },
             {
               "name": "exception.filter.md",
               "path": "src/CSharp/Filters/exception.filter.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "tags": [
+                "CSharp",
+                "Filters"
+              ]
             },
             {
               "name": "filter.md",
               "path": "src/CSharp/Filters/filter.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Filter",
+              "tags": [
+                "CSharp",
+                "Filters"
+              ]
             },
             {
               "name": "resource.filter.md",
               "path": "src/CSharp/Filters/resource.filter.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "tags": [
+                "CSharp",
+                "Filters"
+              ]
             },
             {
               "name": "result.filter.md",
               "path": "src/CSharp/Filters/result.filter.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Result filter",
+              "tags": [
+                "CSharp",
+                "Filters"
+              ]
             }
           ]
         },
@@ -328,104 +516,203 @@
             {
               "name": "01-dotnet-platform-and-clr.md",
               "path": "src/CSharp/Interview/01-dotnet-platform-and-clr.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "01 — .NET Platform, CLR & Compilation",
+              "tags": [
+                "CSharp",
+                "Interview"
+              ]
             },
             {
               "name": "02-memory-and-type-system.md",
               "path": "src/CSharp/Interview/02-memory-and-type-system.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "02 — Memory, Types, Boxing & Casting",
+              "tags": [
+                "CSharp",
+                "Interview"
+              ]
             },
             {
               "name": "03-oop-and-class-design.md",
               "path": "src/CSharp/Interview/03-oop-and-class-design.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "03 — OOP, Inheritance & Class Design",
+              "tags": [
+                "CSharp",
+                "Interview"
+              ]
             },
             {
               "name": "04-abstract-vs-interface.md",
               "path": "src/CSharp/Interview/04-abstract-vs-interface.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "04 — Abstract Classes vs Interfaces",
+              "tags": [
+                "CSharp",
+                "Interview"
+              ]
             },
             {
               "name": "05-language-essentials.md",
               "path": "src/CSharp/Interview/05-language-essentials.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "05 — Language Essentials",
+              "tags": [
+                "CSharp",
+                "Interview"
+              ]
             },
             {
               "name": "06-collections-and-generics.md",
               "path": "src/CSharp/Interview/06-collections-and-generics.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "06 — Collections & Generics",
+              "tags": [
+                "CSharp",
+                "Interview"
+              ]
             },
             {
               "name": "07-delegates-events-and-linq.md",
               "path": "src/CSharp/Interview/07-delegates-events-and-linq.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "07 — Delegates, Events & LINQ",
+              "tags": [
+                "CSharp",
+                "Interview"
+              ]
             },
             {
               "name": "08-async-threading-and-tpl.md",
               "path": "src/CSharp/Interview/08-async-threading-and-tpl.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "08 — Async, Threading, TPL & Locking",
+              "tags": [
+                "CSharp",
+                "Interview"
+              ]
             },
             {
               "name": "09-aspnet-core-pipeline-and-di.md",
               "path": "src/CSharp/Interview/09-aspnet-core-pipeline-and-di.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "09 — ASP.NET Core: Middleware, DI, Routing & Filters",
+              "tags": [
+                "CSharp",
+                "Interview"
+              ]
             },
             {
               "name": "10-solid-and-patterns.md",
               "path": "src/CSharp/Interview/10-solid-and-patterns.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "10 — SOLID & Design Patterns",
+              "tags": [
+                "CSharp",
+                "Interview"
+              ]
             }
           ]
         },
         {
-          "name": "CS-01.md",
-          "path": "src/CSharp/CS-01.md",
-          "isDirectory": false
-        },
-        {
           "name": "csharp-delegate.md",
           "path": "src/CSharp/csharp-delegate.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Delegate",
+          "tags": [
+            "CSharp"
+          ]
+        },
+        {
+          "name": "csharp-interview.md",
+          "path": "src/CSharp/csharp-interview.md",
+          "isDirectory": false,
+          "title": "C# & .NET 10 — Interview Prep Hub",
+          "tags": [
+            "CSharp"
+          ]
         },
         {
           "name": "csharp-old.md",
           "path": "src/CSharp/csharp-old.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "C_Sharp",
+          "tags": [
+            "CSharp"
+          ]
         },
         {
           "name": "csharp-solid.md",
           "path": "src/CSharp/csharp-solid.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Solid Prinicipal",
+          "tags": [
+            "CSharp"
+          ]
         },
         {
           "name": "csharp.md",
           "path": "src/CSharp/csharp.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "C SHARP INTERVIEW QUESTIONS",
+          "tags": [
+            "CSharp"
+          ]
+        },
+        {
+          "name": "CSHARP_NEW.md",
+          "path": "src/CSharp/CSHARP_NEW.md",
+          "isDirectory": false,
+          "title": "C# & .NET 10 — Interview Prep Hub",
+          "tags": [
+            "CSharp"
+          ]
         },
         {
           "name": "ef.md",
           "path": "src/CSharp/ef.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "EF",
+          "tags": [
+            "CSharp"
+          ]
         },
         {
           "name": "modern-csharp.md",
           "path": "src/CSharp/modern-csharp.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Modern C# (12 – 14)",
+          "tags": [
+            "CSharp"
+          ]
         },
         {
           "name": "OOP.md",
           "path": "src/CSharp/OOP.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Class and Object",
+          "tags": [
+            "CSharp"
+          ]
         },
         {
           "name": "security-and-cryptography.md",
           "path": "src/CSharp/security-and-cryptography.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Security and Cryptography",
+          "tags": [
+            "CSharp"
+          ]
         },
         {
           "name": "tips.md",
           "path": "src/CSharp/tips.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Tips",
+          "tags": [
+            "CSharp"
+          ]
         }
       ]
     },
@@ -447,14 +734,25 @@
                 {
                   "name": "readme.md",
                   "path": "src/Extensions/MicrosoftTeam/Assets/readme.md",
-                  "isDirectory": false
+                  "isDirectory": false,
+                  "title": "Assets for microsoft team",
+                  "tags": [
+                    "Extensions",
+                    "MicrosoftTeam",
+                    "Assets"
+                  ]
                 }
               ]
             },
             {
               "name": "readme.md",
               "path": "src/Extensions/MicrosoftTeam/readme.md",
-              "isDirectory": false
+              "isDirectory": false,
+              "title": "Microsoft Team Extension",
+              "tags": [
+                "Extensions",
+                "MicrosoftTeam"
+              ]
             }
           ]
         }
@@ -468,7 +766,11 @@
         {
           "name": "GOF.md",
           "path": "src/GOF/GOF.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "GOF",
+          "tags": [
+            "GOF"
+          ]
         }
       ]
     },
@@ -480,97 +782,179 @@
         {
           "name": "01-language-fundamentals.md",
           "path": "src/Interview-Prep/01-language-fundamentals.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Language Fundamentals",
+          "summary": "Core C# / .NET type system, generics, delegates and LINQ, records, pattern matching and CLR internals.",
+          "updated": "2026-08-22",
+          "tags": [
+            "C#",
+            ".NET",
+            "CLR",
+            "Interview-Prep",
+            "Generics",
+            "LINQ"
+          ]
         },
         {
           "name": "02-collections-and-data-structures.md",
           "path": "src/Interview-Prep/02-collections-and-data-structures.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Collections & Data Structures",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "03-solid-and-design-principles.md",
           "path": "src/Interview-Prep/03-solid-and-design-principles.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "SOLID & Design Principles",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "04-design-patterns-gof.md",
           "path": "src/Interview-Prep/04-design-patterns-gof.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "GOF Design Patterns",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "05-concurrency-and-multithreading.md",
           "path": "src/Interview-Prep/05-concurrency-and-multithreading.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Concurrency & Multithreading",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "06-memory-gc-and-profiling.md",
           "path": "src/Interview-Prep/06-memory-gc-and-profiling.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Memory, GC & Profiling",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "07-databases-and-orm.md",
           "path": "src/Interview-Prep/07-databases-and-orm.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Databases & ORM",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "08-rest-and-api-design.md",
           "path": "src/Interview-Prep/08-rest-and-api-design.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "REST & API Design",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "09-messaging-and-eventing.md",
           "path": "src/Interview-Prep/09-messaging-and-eventing.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Messaging & Eventing",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "10-microservices-patterns.md",
           "path": "src/Interview-Prep/10-microservices-patterns.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Microservices Patterns",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "11-api-security.md",
           "path": "src/Interview-Prep/11-api-security.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "API Security",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "12-cloud-architecture.md",
           "path": "src/Interview-Prep/12-cloud-architecture.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Cloud Architecture",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "13-testing-and-quality.md",
           "path": "src/Interview-Prep/13-testing-and-quality.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Testing & Quality",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "14-devops-and-cicd.md",
           "path": "src/Interview-Prep/14-devops-and-cicd.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "DevOps & CI/CD",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "15-observability-and-monitoring.md",
           "path": "src/Interview-Prep/15-observability-and-monitoring.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Observability & Monitoring",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "16-web-and-frontend.md",
           "path": "src/Interview-Prep/16-web-and-frontend.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Web & Frontend",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "17-architecture-and-nfrs.md",
           "path": "src/Interview-Prep/17-architecture-and-nfrs.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Architecture & NFRs",
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "NFR.md",
           "path": "src/Interview-Prep/NFR.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "tags": [
+            "Interview-Prep"
+          ]
         },
         {
           "name": "readme.md",
           "path": "src/Interview-Prep/readme.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Interview & Promotion Prep",
+          "tags": [
+            "Interview-Prep"
+          ]
         }
       ]
     },
@@ -582,7 +966,11 @@
         {
           "name": "introduction.md",
           "path": "src/Introduction/introduction.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Introduction",
+          "tags": [
+            "Introduction"
+          ]
         }
       ]
     },
@@ -594,7 +982,11 @@
         {
           "name": "network.md",
           "path": "src/Networking/network.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Networking",
+          "tags": [
+            "Networking"
+          ]
         }
       ]
     },
@@ -606,12 +998,20 @@
         {
           "name": "migration.md",
           "path": "src/SQL/migration.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "Migration",
+          "tags": [
+            "SQL"
+          ]
         },
         {
           "name": "sql.md",
           "path": "src/SQL/sql.md",
-          "isDirectory": false
+          "isDirectory": false,
+          "title": "SQL",
+          "tags": [
+            "SQL"
+          ]
         }
       ]
     }

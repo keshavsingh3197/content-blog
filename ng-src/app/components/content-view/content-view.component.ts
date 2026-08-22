@@ -10,12 +10,21 @@ import { MarkdownModule, MermaidAPI } from 'ngx-markdown';
 import { ContentService } from '../../services/content.service';
 import { MermaidLoaderService } from '../../services/mermaid-loader.service';
 import { ThemeService } from '../../services/theme.service';
+import { I18nService } from '../../services/i18n.service';
+import { FileNode } from '../../models/file-node.model';
 import { BreadcrumbComponent, BreadcrumbItem } from '../breadcrumb/breadcrumb.component';
+import { parseDocName } from '../../utils/doc-name';
 
 export interface TocItem {
   level: number;
   text: string;
   id: string;
+}
+
+/** A tag as rendered: the author's spelling plus the slug the `/tags` route matches on. */
+interface TagChip {
+  label: string;
+  slug: string;
 }
 
 @Component({
@@ -24,7 +33,7 @@ export interface TocItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, BreadcrumbComponent, MarkdownModule],
   template: `
-    <div class="container mt-4">
+    <div class="container container-reader mt-4">
       <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
 
       <!-- Skeleton loader -->
@@ -43,10 +52,31 @@ export interface TocItem {
       </div>
 
       <div class="content-layout" *ngIf="!loading && !error">
+        <!--
+          Section rail. Only rendered on very wide viewports, where the article has already grown
+          to a comfortable measure and the remaining space would otherwise sit empty.
+        -->
+        <aside class="section-rail" *ngIf="siblings.length > 1">
+          <div class="rail-panel">
+            <div class="rail-title">
+              <i class="fas fa-folder-open me-2"></i>{{ folderName }}
+            </div>
+            <nav class="rail-nav">
+              <a
+                *ngFor="let doc of siblings"
+                class="rail-link"
+                [class.rail-active]="doc.path === currentPath"
+                [routerLink]="['/file']"
+                [queryParams]="{ path: doc.path }"
+              >{{ docLabel(doc) }}</a>
+            </nav>
+          </div>
+        </aside>
+
         <!-- Mobile TOC (collapsible, shown only on small screens) -->
         <div class="mobile-toc" *ngIf="toc.length > 1">
           <button class="mobile-toc-toggle" (click)="tocOpen = !tocOpen" [attr.aria-expanded]="tocOpen">
-            <i class="fas fa-list me-2"></i>Table of Contents
+            <i class="fas fa-list me-2"></i>{{ i18n.t('blog.content.contents') }}
             <i class="fas ms-auto" [class.fa-chevron-down]="!tocOpen" [class.fa-chevron-up]="tocOpen"></i>
           </button>
           <nav class="mobile-toc-nav" [class.open]="tocOpen">
@@ -64,7 +94,7 @@ export interface TocItem {
         <!-- TOC sidebar (desktop) -->
         <aside class="toc-sidebar" *ngIf="toc.length > 1">
           <div class="toc-panel">
-            <div class="toc-title"><i class="fas fa-list me-2"></i>Contents</div>
+            <div class="toc-title"><i class="fas fa-list me-2"></i>{{ i18n.t('blog.content.contents') }}</div>
             <nav class="toc-nav">
               <a
                 *ngFor="let item of toc"
@@ -85,9 +115,45 @@ export interface TocItem {
           <div class="content-view-panel">
             <div class="content-meta">
               <span class="meta-item"><i class="fas fa-file-alt"></i>&nbsp;{{ fileName }}</span>
-              <span class="meta-item"><i class="fas fa-clock"></i>&nbsp;{{ readingTime }} min read</span>
-              <span class="meta-item"><i class="fas fa-align-left"></i>&nbsp;{{ wordCount }} words</span>
+              <span class="meta-item">
+                <i class="fas fa-clock"></i>&nbsp;{{ i18n.t('blog.content.readingTime', { minutes: readingTime }) }}
+              </span>
+              <span class="meta-item">
+                <i class="fas fa-align-left"></i>&nbsp;{{ i18n.t('blog.content.words', { count: wordCount }) }}
+              </span>
+              <span class="meta-item" *ngIf="updated">
+                <i class="fas fa-calendar-day"></i>&nbsp;{{ i18n.t('blog.content.updated', { date: updated }) }}
+              </span>
+              <!--
+                Pushed to the end of the bar so the action never sits between two read-only facts.
+                Hidden from print itself: a button is noise on paper.
+              -->
+              <button class="meta-action no-print" type="button" (click)="print()"
+                      [title]="i18n.t('blog.content.print')">
+                <i class="fas fa-print"></i>&nbsp;{{ i18n.t('blog.content.print') }}
+              </button>
             </div>
+
+            <!-- Tags. Authored in the document's front matter; folder-derived when it has none. -->
+            <div class="content-tags" *ngIf="tags.length">
+              <i class="fas fa-tags content-tags-icon" [title]="i18n.t('blog.tags.title')"></i>
+              <a
+                *ngFor="let tag of tags"
+                class="tag-chip"
+                [routerLink]="['/tags']"
+                [queryParams]="{ tag: tag.slug }"
+              >{{ tag.label }}</a>
+            </div>
+
+            <!--
+              Print-only masthead. On paper there is no navbar, no breadcrumb and no address bar,
+              so the sheet has to say for itself what it is and where it came from.
+            -->
+            <div class="print-only print-masthead">
+              <div class="print-title" *ngIf="!hasOwnHeading">{{ docTitle || fileName }}</div>
+              <div class="print-source">{{ sourceUrl }}</div>
+            </div>
+
             <div class="markdown-body" #contentDiv>
               <markdown
                 [data]="content"
@@ -102,10 +168,10 @@ export interface TocItem {
 
       <!-- Back to top -->
       <button
-        class="back-to-top"
+        class="back-to-top no-print"
         [class.visible]="showBackToTop"
         (click)="scrollToTop()"
-        aria-label="Back to top"
+        [attr.aria-label]="i18n.t('blog.content.backToTop')"
       ><i class="fas fa-arrow-up"></i></button>
     </div>
   `
@@ -117,14 +183,27 @@ export class ContentViewComponent implements OnInit, OnDestroy {
   loading = true;
   error = '';
   fileName = '';
+  docTitle = '';
+  updated = '';
+  /** True once the rendered markdown is found to carry its own `<h1>`; the print masthead
+      then prints only the source URL instead of repeating the title straight above it. */
+  hasOwnHeading = false;
   wordCount = 0;
   readingTime = 0;
+  tags: TagChip[] = [];
   breadcrumbs: BreadcrumbItem[] = [];
   toc: TocItem[] = [];
   activeTocId = '';
   showBackToTop = false;
   tocOpen = false;
   currentPath = '';
+
+  /** Documents in the same folder, for the wide-viewport section rail. */
+  siblings: FileNode[] = [];
+  folderName = '';
+
+  /** The navigation tree, once it arrives; the source for the rail and the metadata fallback. */
+  private structure: FileNode[] = [];
 
   /** Only true once the Mermaid bundle is on the page for a document that needs it. */
   mermaidReady = false;
@@ -142,6 +221,7 @@ export class ContentViewComponent implements OnInit, OnDestroy {
 
   private readonly mermaidLoader = inject(MermaidLoaderService);
   private readonly themeService = inject(ThemeService);
+  readonly i18n = inject(I18nService);
 
   /** Diagrams bake their colours in at render time, so re-render them when the theme flips. */
   private readonly themeEffect = effect(() => {
@@ -171,8 +251,23 @@ export class ContentViewComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) {}
 
+  /** The document's own URL, printed on paper where the address bar is not there to show it. */
+  get sourceUrl(): string {
+    return `${location.origin}${location.pathname}#/file?path=${encodeURIComponent(this.currentPath)}`;
+  }
+
   ngOnInit(): void {
     window.addEventListener('scroll', this.scrollHandler, { passive: true });
+
+    // The navigation tree also carries each document's tags and title, so it doubles as the
+    // fallback for a file whose front matter was never written, and as the source for the rail.
+    this.contentService.getStructure()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(nodes => {
+        this.structure = nodes;
+        this.applyStructureMetadata();
+        this.cdr.markForCheck();
+      });
 
     this.route.queryParams.pipe(
       takeUntil(this.destroy$),
@@ -182,19 +277,33 @@ export class ContentViewComponent implements OnInit, OnDestroy {
         this.error = '';
         this.content = '';
         this.toc = [];
+        this.tags = [];
+        this.docTitle = '';
+        this.updated = '';
+        this.hasOwnHeading = false;
         this.tocOpen = false;
         this.currentPath = path;
         this.buildBreadcrumbs(path);
         this.fileName = path.split('/').pop() || path;
+        this.applyStructureMetadata();
         window.scrollTo({ top: 0, behavior: 'instant' });
         this.cdr.markForCheck();
         return this.contentService.getFile(path);
       })
     ).subscribe({
       next: (text) => {
+        // The front matter is metadata, not prose: read it, then take it off the top so the
+        // reader never sees the raw `---` fence.
+        const front = this.contentService.parseFrontMatter(text);
+        const body = this.contentService.stripFrontMatter(text);
+
+        if (front.title) this.docTitle = front.title;
+        if (front.updated) this.updated = front.updated;
+        if (front.tags.length) this.tags = front.tags.map(tag => this.toChip(tag));
+
         // Images first, then document links — relative hrefs would otherwise resolve against the
         // site root (hash routing) and fall through 404.html back to the home page.
-        const withImages = this.contentService.rewriteImagePaths(text, this.currentPath);
+        const withImages = this.contentService.rewriteImagePaths(body, this.currentPath);
         const rewritten = this.contentService.rewriteDocumentLinks(withImages, this.currentPath);
         this.wordCount = rewritten.split(/\s+/).filter(Boolean).length;
         this.readingTime = Math.ceil(this.wordCount / 200);
@@ -213,11 +322,51 @@ export class ContentViewComponent implements OnInit, OnDestroy {
         });
       },
       error: () => {
-        this.error = 'Failed to load file. Please try again.';
+        this.error = this.i18n.t('blog.content.loadFailed');
         this.loading = false;
         this.cdr.markForCheck();
       }
     });
+  }
+
+  /** Hand the sheet to the browser. Everything print-specific is done in CSS, not by cloning DOM. */
+  print(): void {
+    window.print();
+  }
+
+  /** The rail shows titles, falling back to the filename-derived label for untitled documents. */
+  docLabel(node: FileNode): string {
+    return node.title || parseDocName(node.name).title;
+  }
+
+  /**
+   * Fill in whatever the downloaded file has not supplied: sibling documents for the rail, plus
+   * tags and a title for a document with no front matter. Runs on both the route change and the
+   * structure arriving, because either can land first.
+   */
+  private applyStructureMetadata(): void {
+    if (!this.structure.length || !this.currentPath) return;
+
+    const slash = this.currentPath.lastIndexOf('/');
+    const folderPath = slash > 0 ? this.currentPath.slice(0, slash) : '';
+    const folder = folderPath
+      ? this.contentService.findNodeByPath(folderPath, this.structure)
+      : null;
+
+    this.folderName = folder?.name ?? folderPath.split('/').pop() ?? '';
+    this.siblings = (folder?.children ?? []).filter(child => !child.isDirectory);
+
+    const node = this.contentService.findNodeByPath(this.currentPath, this.structure);
+    if (!node) return;
+    if (!this.docTitle && node.title) this.docTitle = node.title;
+    if (!this.updated && node.updated) this.updated = node.updated;
+    if (!this.tags.length && node.tags?.length) {
+      this.tags = node.tags.map(tag => this.toChip(tag));
+    }
+  }
+
+  private toChip(label: string): TagChip {
+    return { label, slug: ContentService.tagSlug(label) };
   }
 
   private show(markdown: string): void {
@@ -284,7 +433,10 @@ export class ContentViewComponent implements OnInit, OnDestroy {
   private useHeadingAsBreadcrumbLabel(): void {
     const heading = this.contentDiv?.nativeElement.querySelector('h1');
     const title = heading?.textContent?.trim();
+    this.hasOwnHeading = !!title;
     if (!title || !this.breadcrumbs.length) return;
+
+    if (!this.docTitle) this.docTitle = title;
 
     const last = this.breadcrumbs[this.breadcrumbs.length - 1];
     this.breadcrumbs = [...this.breadcrumbs.slice(0, -1), { ...last, label: title, exact: true }];
@@ -366,10 +518,10 @@ export class ContentViewComponent implements OnInit, OnDestroy {
       const wrapper = document.createElement('div');
       wrapper.className = 'code-block-wrapper';
       const actions = document.createElement('div');
-      actions.className = 'code-actions';
+      actions.className = 'code-actions no-print';
       const copyBtn = document.createElement('button');
       copyBtn.className = 'copy-btn';
-      copyBtn.setAttribute('aria-label', 'Copy code');
+      copyBtn.setAttribute('aria-label', this.i18n.t('blog.content.copyCode'));
       this.setCopyBtnState(copyBtn, 'idle');
       copyBtn.addEventListener('click', () => {
         if (!window.isSecureContext || !navigator.clipboard) {
@@ -398,7 +550,9 @@ export class ContentViewComponent implements OnInit, OnDestroy {
       state === 'idle' ? 'fas fa-copy' :
       state === 'success' ? 'fas fa-check' : 'fas fa-times';
     const text = document.createTextNode(
-      state === 'idle' ? ' Copy' : state === 'success' ? ' Copied!' : ' Failed'
+      state === 'idle' ? ` ${this.i18n.t('blog.content.copy')}` :
+      state === 'success' ? ` ${this.i18n.t('blog.content.copied')}` :
+      ` ${this.i18n.t('blog.content.copyFailed')}`
     );
     btn.replaceChildren(icon, text);
   }

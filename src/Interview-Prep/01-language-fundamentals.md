@@ -1,3 +1,10 @@
+---
+title: Language Fundamentals
+summary: Core C# / .NET type system, generics, delegates and LINQ, records, pattern matching and CLR internals.
+tags: [C#, .NET, CLR, Interview-Prep, Generics, LINQ]
+updated: 2026-08-22
+---
+
 # Language Fundamentals
 
 > Core C# / .NET type system, generics, delegates & LINQ, records, pattern matching and CLR internals — the building blocks every senior engineer must explain cold.

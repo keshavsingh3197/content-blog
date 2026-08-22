@@ -46,6 +46,39 @@ python generate_structure.py          # one-off
 python generate_structure.py --watch  # auto-regenerate on change
 ```
 
+### Front matter and tags
+
+A markdown file may open with an optional YAML block. The generator lifts it into
+`structure.json`, so listings and the tag index can show a real title without downloading every
+document, and the reader strips the block before rendering it:
+
+```markdown
+---
+title: Language Fundamentals
+summary: Type system, generics, LINQ and CLR internals.
+tags: [C#, .NET, CLR, Interview-Prep]
+updated: 2026-08-22
+---
+
+# Language Fundamentals
+```
+
+- `tags` takes either the inline `[a, b]` form or a YAML `- item` list.
+- Everything is optional. With no `title` the document's first `# heading` is used; **with no
+  `tags` the folders the file lives in become its tags**, so every page is reachable from
+  [`/#/tags`](https://blog.keshavsingh.in/#/tags) whether or not anyone has annotated it.
+- Tags are matched case-insensitively (`C#` and `c#` are one tag), and each links to the tag
+  index. Nothing here calls an API — tags work on the static site exactly as they do locally.
+
+Adding tags to a document is therefore: edit the block, re-run `generate_structure.py`, commit.
+
+### Printing
+
+Every document page has a **Print** button. The print stylesheet drops the navigation, contents
+rail and buttons, forces the light palette (a dark-theme reader would otherwise print black
+pages), wraps code that scrolls sideways on screen, turns the scrolling tables back into real
+tables, and prints external link targets in brackets. The source URL is printed under the title.
+
 ### Links between content files
 
 Write them as ordinary **relative markdown links** and they just work:
