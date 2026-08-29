@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { forkJoin, of, catchError } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminApiService } from '../services/admin-api.service';
 import { AuthService } from '../services/auth.service';
 
@@ -24,19 +25,23 @@ import { AuthService } from '../services/auth.service';
     <div class="stat-grid">
       <div class="stat-tile a">
         <span class="stat-ico"><i class="fas fa-file-lines"></i></span>
-        <div><span class="stat-value">{{ contentCount() }}</span><span class="stat-name">Topics</span></div>
+        <div><span class="stat-value">{{ contentError() ? '—' : contentCount() }}</span><span class="stat-name">Topics</span>
+          <small class="muted stat-status" *ngIf="contentError()">unavailable</small></div>
       </div>
       <div class="stat-tile b">
         <span class="stat-ico"><i class="fas fa-circle-check"></i></span>
-        <div><span class="stat-value">{{ publishedCount() }}</span><span class="stat-name">Published</span></div>
+        <div><span class="stat-value">{{ contentError() ? '—' : publishedCount() }}</span><span class="stat-name">Published</span>
+          <small class="muted stat-status" *ngIf="contentError()">unavailable</small></div>
       </div>
       <div class="stat-tile c">
         <span class="stat-ico"><i class="fas fa-images"></i></span>
-        <div><span class="stat-value">{{ mediaCount() }}</span><span class="stat-name">Media files</span></div>
+        <div><span class="stat-value">{{ mediaError() ? '—' : mediaCount() }}</span><span class="stat-name">Media files</span>
+          <small class="muted stat-status" *ngIf="mediaError()">unavailable</small></div>
       </div>
       <div class="stat-tile d" *ngIf="isAdmin()">
         <span class="stat-ico"><i class="fas fa-users"></i></span>
-        <div><span class="stat-value">{{ userCount() }}</span><span class="stat-name">Users</span></div>
+        <div><span class="stat-value">{{ userError() ? '—' : userCount() }}</span><span class="stat-name">Users</span>
+          <small class="muted stat-status" *ngIf="userError()">unavailable</small></div>
       </div>
       <div class="stat-tile" [class.ok]="twoFa()" [class.warn]="!twoFa()">
         <span class="stat-ico"><i class="fas" [class.fa-lock]="twoFa()" [class.fa-lock-open]="!twoFa()"></i></span>
@@ -114,11 +119,17 @@ import { AuthService } from '../services/auth.service';
 export class DashboardComponent implements OnInit {
   private api = inject(AdminApiService);
   private auth = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
 
   contentCount = signal(0);
   publishedCount = signal(0);
   mediaCount = signal(0);
   userCount = signal(0);
+
+  /** A source that failed to load reads as unavailable rather than a plausible 0. */
+  readonly contentError = signal(false);
+  readonly mediaError = signal(false);
+  readonly userError = signal(false);
 
   /** Central identity provider — users, roles, security/2FA and settings are managed there. */
   readonly idpUrl = 'https://admin.keshavsingh.in';
@@ -130,14 +141,24 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     forkJoin({
-      content: this.api.listContent().pipe(catchError(() => of([]))),
-      media: this.api.listMedia().pipe(catchError(() => of([]))),
-      users: this.isAdmin() ? this.api.listUsers().pipe(catchError(() => of([]))) : of([]),
-    }).subscribe(({ content, media, users }) => {
-      this.contentCount.set(content.length);
-      this.publishedCount.set(content.filter(c => c.published).length);
-      this.mediaCount.set(media.length);
-      this.userCount.set(users.length);
-    });
+      content: this.api.listContent().pipe(catchError(() => {
+        this.contentError.set(true);
+        return of([]);
+      })),
+      media: this.api.listMedia().pipe(catchError(() => {
+        this.mediaError.set(true);
+        return of([]);
+      })),
+      users: this.isAdmin() ? this.api.listUsers().pipe(catchError(() => {
+        this.userError.set(true);
+        return of([]);
+      })) : of([]),
+    }).pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ content, media, users }) => {
+        this.contentCount.set(content.length);
+        this.publishedCount.set(content.filter(c => c.published).length);
+        this.mediaCount.set(media.length);
+        this.userCount.set(users.length);
+      });
   }
 }

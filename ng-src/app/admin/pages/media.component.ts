@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminApiService } from '../services/admin-api.service';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
@@ -58,6 +59,7 @@ export class MediaComponent implements OnInit {
   private api = inject(AdminApiService);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
   items = signal<MediaListItem[]>([]);
   loading = signal(true);
@@ -70,10 +72,12 @@ export class MediaComponent implements OnInit {
 
   load(): void {
     this.loading.set(true);
-    this.api.listMedia().subscribe({
-      next: m => { this.items.set(m); this.loading.set(false); },
-      error: e => { this.loading.set(false); this.toast.fromError(e); },
-    });
+    this.api.listMedia()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: m => { this.items.set(m); this.loading.set(false); },
+        error: e => { this.loading.set(false); this.toast.fromError(e); },
+      });
   }
 
   onDragOver(e: DragEvent): void { e.preventDefault(); this.dragging.set(true); }
@@ -94,22 +98,30 @@ export class MediaComponent implements OnInit {
   private upload(file: File): void {
     if (file.size > 5 * 1024 * 1024) { this.toast.error('File exceeds the 5 MB limit.'); return; }
     this.uploading.set(true);
-    this.api.uploadMedia(file).subscribe({
-      next: () => { this.uploading.set(false); this.toast.success('Uploaded.'); this.load(); },
-      error: e => { this.uploading.set(false); this.toast.fromError(e); },
-    });
+    this.api.uploadMedia(file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => { this.uploading.set(false); this.toast.success('Uploaded.'); this.load(); },
+        error: e => { this.uploading.set(false); this.toast.fromError(e); },
+      });
   }
 
   remove(m: MediaListItem): void {
     if (!confirm(`Delete ${m.fileName}?`)) return;
-    this.api.deleteMedia(m.id).subscribe({
-      next: () => { this.toast.success('Deleted.'); this.load(); },
-      error: e => this.toast.fromError(e),
-    });
+    this.api.deleteMedia(m.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => { this.toast.success('Deleted.'); this.load(); },
+        error: e => this.toast.fromError(e),
+      });
   }
 
   copy(m: MediaListItem): void {
-    navigator.clipboard?.writeText(this.url(m)).then(
+    if (!window.isSecureContext || !navigator.clipboard) {
+      this.toast.error('Clipboard is unavailable in this browser context.');
+      return;
+    }
+    navigator.clipboard.writeText(this.url(m)).then(
       () => this.toast.success('URL copied.'),
       () => this.toast.error('Could not copy.'));
   }

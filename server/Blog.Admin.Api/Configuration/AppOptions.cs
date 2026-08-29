@@ -42,16 +42,12 @@ public sealed class MediaOptions
         { "image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml" };
 }
 
-public sealed class SeedOptions
+public sealed class SettingsRefreshOptions
 {
-    public const string Section = "Seed";
-    public string AdminEmail { get; set; } = string.Empty;
-    public string AdminDisplayName { get; set; } = "Administrator";
-    public string AdminPassword { get; set; } = string.Empty;
+    public const string Section = "SettingsRefresh";
+    // How often the cached settings are re-read from Mongo so edits made by the central admin
+    // console (or another instance) take effect here within this interval.
+    public int IntervalSeconds { get; set; } = 30;
 }
-
-public sealed class CorsOptions
-{
-    public const string Section = "Cors";
-    public string[] AllowedOrigins { get; set; } = Array.Empty<string>();
-}
+// Note: CORS is configured via a named policy in Program.cs (CorsPolicy); there is deliberately no
+// CorsOptions binding here.

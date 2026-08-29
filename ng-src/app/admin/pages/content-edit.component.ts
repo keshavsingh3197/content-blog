@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MarkdownModule } from 'ngx-markdown';
 import { AdminApiService } from '../services/admin-api.service';
 import { ToastService } from '../services/toast.service';
@@ -86,6 +87,7 @@ export class ContentEditComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
   id: string | null = null;
   title = '';
@@ -97,21 +99,34 @@ export class ContentEditComponent implements OnInit {
   body = '';
   view: 'write' | 'preview' | 'split' = 'split';
   busy = signal(false);
+  /** True once an existing topic's content is fully loaded; stays false if that load failed. */
+  contentLoaded = false;
+  /** True when loading an existing topic failed, preventing a save that would blank the topic. */
+  loadFailed = false;
   private slugTouched = false;
 
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get('id');
-    if (this.id) {
-      this.api.getContent(this.id).subscribe({
+    if (!this.id) return;
+    this.busy.set(true);
+    this.api.getContent(this.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: c => {
           this.title = c.title; this.slug = c.slug; this.folder = c.folder;
           this.tags = (c.tags ?? []).join(', '); this.order = c.order;
           this.published = c.published; this.body = c.body ?? '';
           this.slugTouched = true;
+          this.contentLoaded = true;
+          this.busy.set(false);
         },
-        error: e => this.toast.fromError(e),
+        error: e => {
+          this.busy.set(false);
+          // A failed load leaves the form empty; don't let a save PUT a blank body over the topic.
+          this.loadFailed = true;
+          this.toast.fromError(e, 'Could not load this topic.');
+        },
       });
-    }
   }
 
   onTitle(): void {
@@ -122,6 +137,12 @@ export class ContentEditComponent implements OnInit {
   }
 
   save(): void {
+    if (this.busy()) return;
+    // Editing an existing topic but the load failed → the form is empty; never overwrite blindly.
+    if (this.id && this.loadFailed) {
+      this.toast.error('The topic failed to load. Refresh before saving.');
+      return;
+    }
     if (!this.title.trim()) { this.toast.error('A title is required.'); return; }
     this.busy.set(true);
     const body = {
@@ -134,9 +155,10 @@ export class ContentEditComponent implements OnInit {
       published: this.published,
     };
     const req = this.id ? this.api.updateContent(this.id, body) : this.api.createContent(body);
-    req.subscribe({
-      next: () => { this.toast.success('Saved.'); this.router.navigate(['/admin/content']); },
-      error: e => { this.busy.set(false); this.toast.fromError(e); },
-    });
+    req.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => { this.toast.success('Saved.'); this.router.navigate(['/admin/content']); },
+        error: e => { this.busy.set(false); this.toast.fromError(e); },
+      });
   }
 }

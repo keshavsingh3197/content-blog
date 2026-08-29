@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommentBan, CommentsService, ModeratedComment } from '../../services/comments.service';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
@@ -143,6 +144,7 @@ export class AdminCommentsComponent implements OnInit {
   private readonly api = inject(CommentsService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     this.reload();
@@ -151,16 +153,18 @@ export class AdminCommentsComponent implements OnInit {
 
   reload(): void {
     this.loading.set(true);
-    this.api.moderationList(this.pathFilter.trim() || undefined).subscribe({
-      next: rows => {
-        this.comments.set(rows);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.toast.error('Could not load comments.');
-        this.loading.set(false);
-      },
-    });
+    this.api.moderationList(this.pathFilter.trim() || undefined)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: rows => {
+          this.comments.set(rows);
+          this.loading.set(false);
+        },
+        error: (e) => {
+          this.toast.fromError(e, 'Could not load comments.');
+          this.loading.set(false);
+        },
+      });
   }
 
   isBanned(userId: string): boolean {
@@ -169,35 +173,41 @@ export class AdminCommentsComponent implements OnInit {
 
   hide(c: ModeratedComment): void {
     const reason = prompt('Why is this being hidden? (optional, for the record)') ?? undefined;
-    this.api.hide(c.id, reason).subscribe({
-      next: () => {
-        this.patch(c.id, { isHidden: true, hiddenReason: reason ?? null });
-        this.toast.success('Comment hidden.');
-      },
-      error: () => this.toast.error('Could not hide that comment.'),
-    });
+    this.api.hide(c.id, reason)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.patch(c.id, { isHidden: true, hiddenReason: reason ?? null });
+          this.toast.success('Comment hidden.');
+        },
+        error: (e) => this.toast.fromError(e, 'Could not hide that comment.'),
+      });
   }
 
   unhide(c: ModeratedComment): void {
-    this.api.unhide(c.id).subscribe({
-      next: () => {
-        this.patch(c.id, { isHidden: false, hiddenReason: null });
-        this.toast.success('Comment restored.');
-      },
-      error: () => this.toast.error('Could not restore that comment.'),
-    });
+    this.api.unhide(c.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.patch(c.id, { isHidden: false, hiddenReason: null });
+          this.toast.success('Comment restored.');
+        },
+        error: (e) => this.toast.fromError(e, 'Could not restore that comment.'),
+      });
   }
 
   remove(c: ModeratedComment): void {
     if (!confirm(`Delete this comment by ${c.displayName}? The text cannot be recovered.`)) return;
 
-    this.api.remove(c.id).subscribe({
-      next: () => {
-        this.patch(c.id, { isDeleted: true, body: '' });
-        this.toast.success('Comment deleted.');
-      },
-      error: () => this.toast.error('Could not delete that comment.'),
-    });
+    this.api.remove(c.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.patch(c.id, { isDeleted: true, body: '' });
+          this.toast.success('Comment deleted.');
+        },
+        error: (e) => this.toast.fromError(e, 'Could not delete that comment.'),
+      });
   }
 
   ban(c: ModeratedComment): void {
@@ -208,33 +218,39 @@ export class AdminCommentsComponent implements OnInit {
     if (!confirm(`Stop ${c.displayName} from posting new comments?`)) return;
 
     const reason = prompt('Reason (optional, for the record)') ?? undefined;
-    this.api.ban(c.userId, reason).subscribe({
-      next: ban => {
-        this.bans.set([ban, ...this.bans().filter(b => b.userId !== ban.userId)]);
-        this.toast.success(`${ban.displayName} can no longer comment.`);
-      },
-      error: () => this.toast.error('Could not block that account.'),
-    });
+    this.api.ban(c.userId, reason)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ban => {
+          this.bans.set([ban, ...this.bans().filter(b => b.userId !== ban.userId)]);
+          this.toast.success(`${ban.displayName} can no longer comment.`);
+        },
+        error: (e) => this.toast.fromError(e, 'Could not block that account.'),
+      });
   }
 
   unban(userId: string): void {
-    this.api.unban(userId).subscribe({
-      next: () => {
-        this.bans.set(this.bans().filter(b => b.userId !== userId));
-        this.toast.success('Account unblocked.');
-      },
-      error: () => this.toast.error('Could not unblock that account.'),
-    });
+    this.api.unban(userId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.bans.set(this.bans().filter(b => b.userId !== userId));
+          this.toast.success('Account unblocked.');
+        },
+        error: (e) => this.toast.fromError(e, 'Could not unblock that account.'),
+      });
   }
 
   trackId = (_: number, c: ModeratedComment) => c.id;
   trackBan = (_: number, b: CommentBan) => b.userId;
 
   private loadBans(): void {
-    this.api.bans().subscribe({
-      next: rows => this.bans.set(rows),
-      error: () => this.toast.error('Could not load the block list.'),
-    });
+    this.api.bans()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: rows => this.bans.set(rows),
+        error: (e) => this.toast.fromError(e, 'Could not load the block list.'),
+      });
   }
 
   private patch(id: string, changes: Partial<ModeratedComment>): void {

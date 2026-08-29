@@ -27,9 +27,17 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailO
 builder.Services.Configure<SmsOptions>(builder.Configuration.GetSection(SmsOptions.Section));
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection(SecurityOptions.Section));
 builder.Services.Configure<MediaOptions>(builder.Configuration.GetSection(MediaOptions.Section));
-builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection(SeedOptions.Section));
+builder.Services.Configure<SettingsRefreshOptions>(builder.Configuration.GetSection(SettingsRefreshOptions.Section));
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.Section).Get<JwtOptions>() ?? new JwtOptions();
+
+// Fail fast: this API validates tokens signed by the identity provider, so a missing or defaulted
+// signing key would let someone forge valid tokens (roles come straight from the token). Never fall
+// back to a placeholder key — the app must not boot in that state.
+if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey))
+    throw new InvalidOperationException(
+        "Jwt:SigningKey is not configured. It must match the identity provider's signing key. " +
+        "Provide it via user-secrets, the Jwt__SigningKey environment variable, or Key Vault.");
 
 // ---- Services ----
 builder.Services.AddSingleton<MongoContext>();
@@ -37,11 +45,13 @@ builder.Services.AddSingleton<PasswordHasher>();
 builder.Services.AddSingleton<TotpService>();
 builder.Services.AddSingleton<DataProtector>();
 builder.Services.AddSingleton<SettingsService>();
+// Keep the settings cache converged with Mongo (edits made elsewhere are picked up within the
+// refresh interval); the writing instance still updates its own cache immediately.
+builder.Services.AddHostedService<SettingsRefreshService>();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<ISmsSender, TwilioSmsSender>();
-builder.Services.AddScoped<AdminSeeder>();
 // Keyed digest of IP + user agent, used to count a reader once per page rather than once per refresh.
 builder.Services.AddSingleton<VisitorKeyService>();
 builder.Services.AddHttpContextAccessor();
@@ -66,6 +76,11 @@ builder.Services.AddKeshavAuthEngine();
 builder.Services.Configure<ForwardedHeadersOptions>(o =>
 {
     o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // Accept only a single hop from Render's edge proxy. Render's proxy addresses are not a static,
+    // enumerable range so we cannot pin KnownProxies; instead we limit the chain length so a client
+    // cannot prepend an arbitrary list of "hops" to spoof its address past rate limiting / dedup.
+    // NOTE: running with >1 upstream proxy would need KnownProxies set explicitly.
+    o.ForwardLimit = 1;
     o.KnownIPNetworks.Clear();
     o.KnownProxies.Clear();
 });
@@ -96,10 +111,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidIssuer = jwtOptions.Issuer,
             ValidAudience = jwtOptions.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(string.IsNullOrWhiteSpace(jwtOptions.SigningKey)
-                    ? new string('0', 32) // Placeholder; JwtService throws at startup if unset.
-                    : jwtOptions.SigningKey)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
+            // The IdP mints a plain "role" claim ("sub"/"role" kept verbatim via MapInboundClaims=false),
+            // so map role checks onto that claim. Without this, [Authorize(Roles = …)] and
+            // User.IsInRole(…) default to the legacy ClaimTypes.Role URI that the IdP never emits.
+            RoleClaimType = "role",
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateIssuerSigningKey = true,
@@ -113,14 +129,6 @@ builder.Services.AddAuthorization();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddPolicy("auth", context => RateLimitPartition.GetFixedWindowLimiter(
-        partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
-        factory: _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = 20,
-            Window = TimeSpan.FromMinutes(1),
-            QueueLimit = 0,
-        }));
 
     // Posting a comment is a signed-in action, so partition by user rather than by address: one
     // approved account cannot flood a thread even from many addresses.
@@ -169,6 +177,36 @@ var app = builder.Build();
 
 // ---- Pipeline ----
 app.UseForwardedHeaders(); // Must run before anything that reads scheme / client IP.
+
+// Unified error handling: map expected failures to clean JSON status codes instead of leaking
+// bare 500s / stack traces, and wrap the rest into a generic 500 (fail closed, no internals).
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (MongoDB.Driver.MongoWriteException ex)
+        when (ex.WriteError?.Category == MongoDB.Driver.ServerErrorCategory.DuplicateKey)
+    {
+        // A concurrent create raced the pre-check (or a reuse slipped through): surface as a
+        // clean conflict rather than an unhandled duplicate-key 500.
+        context.Response.StatusCode = StatusCodes.Status409Conflict;
+        await context.Response.WriteAsJsonAsync(new { error = "That value is already in use." });
+    }
+    catch (InvalidOperationException) when (!app.Environment.IsDevelopment())
+    {
+        // e.g. malformed settings import. In development rethrow so the stack is visible.
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { error = "The request was not valid." });
+    }
+    catch (System.Text.Json.JsonException)
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { error = "The request was not valid JSON." });
+    }
+});
+
 app.UseKeshavAuthExceptionHandling();
 
 // Baseline security headers.

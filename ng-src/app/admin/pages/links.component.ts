@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminApiService } from '../services/admin-api.service';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
@@ -133,6 +134,7 @@ export class LinksComponent implements OnInit {
   private api = inject(AdminApiService);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
   links = signal<Link[]>([]);
   loading = signal(true);
@@ -146,10 +148,12 @@ export class LinksComponent implements OnInit {
 
   load(): void {
     this.loading.set(true);
-    this.api.listLinks().subscribe({
-      next: l => { this.links.set(l); this.loading.set(false); },
-      error: e => { this.loading.set(false); this.toast.fromError(e); },
-    });
+    this.api.listLinks()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: l => { this.links.set(l); this.loading.set(false); },
+        error: e => { this.loading.set(false); this.toast.fromError(e); },
+      });
   }
 
   openCreate(): void { this.model = this.blank(); this.editing.set(true); }
@@ -181,15 +185,18 @@ export class LinksComponent implements OnInit {
     const done = () => { this.busy.set(false); this.editing.set(false); this.load(); };
     const fail = (e: any) => { this.busy.set(false); this.toast.fromError(e); };
     const req = this.model.id ? this.api.updateLink(this.model.id, body) : this.api.createLink(body);
-    req.subscribe({ next: () => { this.toast.success('Saved.'); done(); }, error: fail });
+    req.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: () => { this.toast.success('Saved.'); done(); }, error: fail });
   }
 
   remove(l: Link): void {
     if (!confirm(`Delete "${l.title}"?`)) return;
-    this.api.deleteLink(l.id).subscribe({
-      next: () => { this.toast.success('Link deleted.'); this.load(); },
-      error: e => this.toast.fromError(e),
-    });
+    this.api.deleteLink(l.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => { this.toast.success('Link deleted.'); this.load(); },
+        error: e => this.toast.fromError(e),
+      });
   }
 
   trackId = (_: number, l: Link) => l.id;

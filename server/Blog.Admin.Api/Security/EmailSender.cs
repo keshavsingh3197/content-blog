@@ -14,11 +14,13 @@ public sealed class SmtpEmailSender : IEmailSender
 {
     private readonly SettingsService _settings;
     private readonly ILogger<SmtpEmailSender> _logger;
+    private readonly IWebHostEnvironment _env;
 
-    public SmtpEmailSender(SettingsService settings, ILogger<SmtpEmailSender> logger)
+    public SmtpEmailSender(SettingsService settings, ILogger<SmtpEmailSender> logger, IWebHostEnvironment env)
     {
         _settings = settings;
         _logger = logger;
+        _env = env;
     }
 
     public async Task SendOtpAsync(string toEmail, string code, CancellationToken ct = default)
@@ -26,8 +28,10 @@ public sealed class SmtpEmailSender : IEmailSender
         var s = _settings.Current;
         if (!s.EmailEnabled || string.IsNullOrWhiteSpace(s.EmailHost))
         {
-            // Dev fallback: surface the code in logs only. Never do this in production.
-            _logger.LogWarning("Email disabled — OTP for {Email} is {Code} (valid briefly).", toEmail, code);
+            // Dev-only fallback: surface the code in the logs so local sign-in stays testable.
+            // Never log a live OTP outside development.
+            if (_env.IsDevelopment())
+                _logger.LogWarning("Email disabled — OTP for {Email} is {Code} (valid briefly).", toEmail, code);
             return;
         }
 
