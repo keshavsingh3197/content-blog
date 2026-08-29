@@ -41,7 +41,9 @@ public sealed class MongoContext
     {
         // Unique email, but only among ACTIVE records. A soft-deleted user must not permanently
         // block reuse of their email/username (the app's own pre-checks only consider !IsDeleted).
-        // Existing deployments need this index recreated (drop the old "ux_user_email") once.
+        // The pre-M-6 "ux_user_email" was non-partial; drop a same-named index of an older shape so
+        // the recreated partial one can be installed on an existing deployment.
+        DropIndexIfExists(Users, "ux_user_email");
         Users.Indexes.CreateOne(new CreateIndexModel<User>(
             Builders<User>.IndexKeys.Ascending(u => u.Email),
             new CreateIndexOptions<User>
@@ -53,6 +55,7 @@ public sealed class MongoContext
 
         // Unique username, but only for ACTIVE records that actually have one — so a soft-deleted
         // user's username can be reused, and null usernames never collide.
+        DropIndexIfExists(Users, "ux_user_username");
         Users.Indexes.CreateOne(new CreateIndexModel<User>(
             Builders<User>.IndexKeys.Ascending(u => u.Username),
             new CreateIndexOptions<User>
@@ -107,5 +110,22 @@ public sealed class MongoContext
         PageViewHits.Indexes.CreateOne(new CreateIndexModel<PageViewHit>(
             Builders<PageViewHit>.IndexKeys.Ascending(h => h.SeenAt),
             new CreateIndexOptions { Name = "ttl_page_view_hit", ExpireAfter = TimeSpan.FromHours(12) }));
+    }
+
+    /// <summary>
+    /// Drops an index by name if it exists, tolerating a missing index or an uninitialised
+    /// collection. Used when an index's definition changes under a stable name, so the recreated
+    /// index can be installed on an existing deployment (Mongo forbids two indexes sharing a name
+    /// but differing in shape).
+    /// </summary>
+    private static void DropIndexIfExists<T>(IMongoCollection<T> collection, string name)
+    {
+        try
+        {
+            collection.Indexes.DropOne(name);
+        }
+        catch (MongoCommandException ex) when (ex.CodeName == "IndexNotFound" || ex.CodeName == "NamespaceNotFound")
+        {
+        }
     }
 }
