@@ -51,15 +51,25 @@ public sealed class CommentsController : ControllerBase
         if (!ContentPath.TryNormalize(path, out var contentPath))
             return BadRequest(new { error = "Unknown document path." });
 
+        // A thread is displayed oldest-first, but an ascending sort with a limit would silently
+        // drop the NEWEST comments once a thread exceeds MaxThreadSize. Query the newest tail
+        // (descending, capped), then reverse into chronological display order — so a long thread
+        // keeps its newest comments instead of losing them.
         var comments = await _db.Comments
             .Find(c => c.Path == contentPath && !c.IsHidden && !c.IsDeleted)
-            .SortBy(c => c.CreatedAt)
+            .SortByDescending(c => c.CreatedAt)
             .Limit(MaxThreadSize)
             .ToListAsync(ct);
+        comments.Reverse();
+
+        // Report the true count of visible comments (not just how many we returned), so the client
+        // can tell a long thread has more than the returned tail.
+        var total = await _db.Comments
+            .CountDocumentsAsync(c => c.Path == contentPath && !c.IsHidden && !c.IsDeleted, cancellationToken: ct);
 
         var callerId = CurrentUserId();
         var dtos = comments.Select(c => ToDto(c, callerId)).ToList();
-        return Ok(new CommentThreadDto(contentPath, dtos.Count, dtos));
+        return Ok(new CommentThreadDto(contentPath, (int)total, dtos));
     }
 
     /// <summary>Post a comment. Requires a signed-in, non-banned account.</summary>
@@ -111,6 +121,11 @@ public sealed class CommentsController : ControllerBase
         // One 404 for "no such comment" and "not yours": a probe must not be able to tell them apart.
         if (comment is null || comment.UserId != userId) return NotFound();
 
+        // A banned account must not keep editing its comments.
+        if (await IsBannedAsync(userId, ct))
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new { error = "Commenting is disabled for this account." });
+
         if (DateTime.UtcNow - comment.CreatedAt > EditWindow)
             return StatusCode(StatusCodes.Status403Forbidden,
                 new { error = "Comments can only be edited within 30 minutes of posting." });
@@ -137,6 +152,11 @@ public sealed class CommentsController : ControllerBase
 
         var comment = await _db.Comments.Find(c => c.Id == id && !c.IsDeleted).FirstOrDefaultAsync(ct);
         if (comment is null || (!isAdmin && comment.UserId != userId)) return NotFound();
+
+        // A banned account may not delete its own comments either (admins still moderate).
+        if (!isAdmin && await IsBannedAsync(userId, ct))
+            return StatusCode(StatusCodes.Status403Forbidden,
+                new { error = "Commenting is disabled for this account." });
 
         // Soft delete, and the body goes: the row is kept for audit, the text is not needed for it.
         await _db.Comments.UpdateOneAsync(c => c.Id == id,
@@ -222,10 +242,11 @@ public sealed class CommentsController : ControllerBase
 
     [HttpGet("bans")]
     [Authorize(Roles = Roles.Admin)]
-    public async Task<ActionResult<IReadOnlyList<CommentBanDto>>> Bans(CancellationToken ct)
+    public async Task<ActionResult<IReadOnlyList<CommentBanDto>>> Bans([FromQuery] int limit = 200, CancellationToken ct = default)
     {
         var bans = await _db.CommentBans.Find(Builders<CommentBan>.Filter.Empty)
-            .SortByDescending(b => b.CreatedAt).ToListAsync(ct);
+            .SortByDescending(b => b.CreatedAt)
+            .Limit(Math.Clamp(limit, 1, 1000)).ToListAsync(ct);
         return Ok(bans.Select(b => new CommentBanDto(b.UserId, b.DisplayName, b.Reason, b.CreatedAt)).ToList());
     }
 

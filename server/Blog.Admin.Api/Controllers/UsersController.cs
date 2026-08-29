@@ -37,10 +37,11 @@ public sealed class UsersController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = Roles.Admin)]
-    public async Task<ActionResult<IReadOnlyList<UserListItem>>> List()
+    public async Task<ActionResult<IReadOnlyList<UserListItem>>> List([FromQuery] int limit = 1000)
     {
         var users = await _db.Users.Find(u => !u.IsDeleted)
-            .SortBy(u => u.Email).ToListAsync();
+            .SortBy(u => u.Email)
+            .Limit(Math.Clamp(limit, 1, 1000)).ToListAsync();
         return Ok(users.Select(Map).ToList());
     }
 
@@ -111,18 +112,24 @@ public sealed class UsersController : ControllerBase
             update = update.Set(u => u.Roles, roles);
         }
 
+        var deactivating = false;
         if (request.IsActive is { } active)
         {
             update = update.Set(u => u.IsActive, active);
-            // Deactivating a user immediately kills their sessions.
-            if (!active)
-                await _db.RefreshTokens.UpdateManyAsync(r => r.UserId == id && r.RevokedAt == null,
-                    Builders<RefreshToken>.Update.Set(r => r.RevokedAt, DateTime.UtcNow));
+            deactivating = !active;
         }
 
+        // Apply the authoritative user-state write first; only after it commits do we revoke any
+        // lingering sessions. Deactivating kills new sessions at the IsActive gate, and the revoke
+        // below clears old ones, so the order keeps the source of truth consistent.
         var user = await _db.Users.FindOneAndUpdateAsync<User>(u => u.Id == id, update,
             new FindOneAndUpdateOptions<User> { ReturnDocument = ReturnDocument.After });
-        return user is null ? NotFound() : Ok(Map(user));
+        if (user is null) return NotFound();
+
+        if (deactivating)
+            await _db.RefreshTokens.UpdateManyAsync(r => r.UserId == id && r.RevokedAt == null,
+                Builders<RefreshToken>.Update.Set(r => r.RevokedAt, DateTime.UtcNow));
+        return Ok(Map(user));
     }
 
     [HttpPost("{id}/reset-password")]
@@ -131,6 +138,9 @@ public sealed class UsersController : ControllerBase
     {
         var result = await _db.Users.UpdateOneAsync(u => u.Id == id, Builders<User>.Update
             .Set(u => u.PasswordHash, _passwords.Hash(request.NewPassword))
+            // Admin-set/known passwords: force the user to set their own on next login, matching
+            // the Create path's intent for temporary passwords.
+            .Set(u => u.MustChangePassword, true)
             .Set(u => u.UpdatedAt, DateTime.UtcNow));
         if (result.MatchedCount == 0) return NotFound();
 

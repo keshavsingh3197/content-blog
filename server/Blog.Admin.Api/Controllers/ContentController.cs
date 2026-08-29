@@ -12,16 +12,21 @@ namespace Blog.Admin.Api.Controllers;
 
 [ApiController]
 [Route("api/content")]
-[Authorize] // Any signed-in user may read; writes require Editor or Admin.
+[Authorize] // Default: any signed-in user may read; writes require Editor or Admin.
 public sealed partial class ContentController : ControllerBase
 {
+    // "Viewer or above": the admin console's read-only role. Any SSO-family token that is merely
+    // authenticated (e.g. a sibling app's user with no console role) must not see drafts.
+    private const string CanRead = $"{Roles.Viewer},{Roles.Editor},{Roles.Admin}";
     private const string CanWrite = $"{Roles.Admin},{Roles.Editor}";
     private readonly MongoContext _db;
 
     public ContentController(MongoContext db) => _db = db;
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ContentListItem>>> List([FromQuery] string? folder, [FromQuery] string? q)
+    [Authorize(Roles = CanRead)]
+    public async Task<ActionResult<IReadOnlyList<ContentListItem>>> List(
+        [FromQuery] string? folder, [FromQuery] string? q, [FromQuery] int limit = 500)
     {
         var filter = Builders<ContentTopic>.Filter.Empty;
         if (!string.IsNullOrWhiteSpace(folder))
@@ -34,12 +39,15 @@ public sealed partial class ContentController : ControllerBase
                 new MongoDB.Bson.BsonRegularExpression(safe, "i"));
         }
 
+        // Cap the response so the collection cannot return an unbounded, in-memory-sorted payload.
         var items = await _db.Content.Find(filter)
-            .SortBy(c => c.Folder).ThenBy(c => c.Order).ThenBy(c => c.Title).ToListAsync();
+            .SortBy(c => c.Folder).ThenBy(c => c.Order).ThenBy(c => c.Title)
+            .Limit(Math.Clamp(limit, 1, 1000)).ToListAsync();
         return Ok(items.Select(Map).ToList());
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles = CanRead)]
     public async Task<ActionResult<ContentTopic>> Get(string id)
     {
         var item = await _db.Content.Find(c => c.Id == id).FirstOrDefaultAsync();
@@ -87,6 +95,19 @@ public sealed partial class ContentController : ControllerBase
         if (request.Tags is not null) update = update.Set(c => c.Tags, CleanTags(request.Tags));
         if (request.Order is { } order) update = update.Set(c => c.Order, order);
         if (request.Published is { } pub) update = update.Set(c => c.Published, pub);
+
+        // Moving a topic into a folder/slug that another (live) topic already occupies must be a
+        // 409, not an unhandled duplicate-key 500 from the unique index.
+        if (request.Folder is not null || request.Slug is not null)
+        {
+            var folder = (request.Folder is not null ? request.Folder.Trim().Trim('/') : null)
+                ?? (await _db.Content.Find(c => c.Id == id).Project(c => c.Folder).FirstOrDefaultAsync());
+            var slug = (request.Slug is not null ? Slugify(request.Slug) : null)
+                ?? (await _db.Content.Find(c => c.Id == id).Project(c => c.Slug).FirstOrDefaultAsync());
+            var clash = await _db.Content
+                .Find(c => c.Folder == folder && c.Slug == slug && c.Id != id).AnyAsync();
+            if (clash) return Conflict(new { error = "A topic with that slug already exists in this folder." });
+        }
 
         var item = await _db.Content.FindOneAndUpdateAsync<ContentTopic>(c => c.Id == id, update,
             new FindOneAndUpdateOptions<ContentTopic> { ReturnDocument = ReturnDocument.After });

@@ -13,19 +13,24 @@ namespace Blog.Admin.Api.Controllers;
 public sealed class LinksController : ControllerBase
 {
     private const string CanWrite = $"{Roles.Admin},{Roles.Editor}";
+    // "Viewer or above": a plain SSO-family token with no console role must not see hidden links.
+    private const string CanRead = $"{Roles.Viewer},{Roles.Editor},{Roles.Admin}";
     private readonly MongoContext _db;
 
     public LinksController(MongoContext db) => _db = db;
 
     /// <summary>
-    /// Public list of visible links for the blog. Authenticated callers may pass
+    /// Public list of visible links for the blog. Callers with a console role (Viewer+) may pass
     /// ?all=true to also see hidden links (for management).
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<IReadOnlyList<Link>>> List([FromQuery] bool all = false)
     {
-        var includeHidden = all && (User.Identity?.IsAuthenticated ?? false);
+        var hasConsoleRole = User.Identity?.IsAuthenticated == true &&
+            (User.IsInRole(Roles.Viewer) || User.IsInRole(Roles.Editor) || User.IsInRole(Roles.Admin));
+        var includeHidden = all && hasConsoleRole;
+        if (all && !includeHidden) return Forbid();
         var filter = includeHidden ? Builders<Link>.Filter.Empty
                                    : Builders<Link>.Filter.Eq(l => l.Visible, true);
 
@@ -35,7 +40,7 @@ public sealed class LinksController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize]
+    [Authorize(Roles = CanRead)]
     public async Task<ActionResult<Link>> Get(string id)
     {
         var link = await _db.Links.Find(l => l.Id == id).FirstOrDefaultAsync();

@@ -108,9 +108,6 @@ dotnet user-secrets set "Jwt:SigningKey" "$(openssl rand -base64 48)"
 
 # Base64 of exactly 32 bytes -> AES-256 key for encrypting TOTP secrets
 dotnet user-secrets set "Encryption:DataKey" "$(openssl rand -base64 32)"
-
-# First-run admin (rotate the password after first login)
-dotnet user-secrets set "Seed:AdminPassword" "change-me-now-please"
 ```
 
 > On Windows PowerShell, generate keys with:
@@ -124,7 +121,10 @@ dotnet run
 # Swagger:  http://localhost:5080/swagger
 ```
 
-On first run it seeds an `Admin` user from `Seed:AdminEmail` / `Seed:AdminPassword`.
+The console uses centralized identity (SSO) via the identity provider; there is no local
+`Admin` password seed. The first SSO user to sign in becomes an Admin, or an operator grants
+the `Admin` role at the IdP. After signing in open **Security & 2FA** to enroll your
+authenticator and save your backup codes.
 
 ### 4. Run the Angular app
 
@@ -133,9 +133,6 @@ On first run it seeds an `Admin` user from `Seed:AdminEmail` / `Seed:AdminPasswo
 npm start
 # open http://localhost:4200/#/admin/login
 ```
-
-Sign in with the seeded admin, then open **Security & 2FA** to enroll your authenticator and
-save your backup codes.
 
 ### Pointing the UI at a different API
 The base URL defaults to `http://localhost:5080/api`. Override without rebuilding by setting

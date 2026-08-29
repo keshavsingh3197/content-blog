@@ -12,6 +12,10 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withHashLocation()),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideAnimations(),
+    // Rendered markdown — including the admin preview bound with [data] — is sanitized by default:
+    // ngx-markdown's default `sanitize` is SecurityContext.HTML, which runs DOMpurify over the HTML
+    // before it is bound, so content cannot inject raw HTML/script. Left at that default on purpose
+    // (the option is a DI token here, not a plain enum), so keep it default-on if this ever returns.
     provideMarkdown({ loader: HttpClient }),
   ]
 };

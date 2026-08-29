@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, shareReplay } from 'rxjs';
 import { ADMIN_APP_URL, IDP_BASE } from '../api.config';
 import { EnrollStartResponse, Role, SsoSession, UserProfile } from '../admin.models';
 
@@ -36,16 +36,19 @@ export class AuthService {
 
   // ---- Session (silent SSO) ----
 
-  /** Exchange the shared SSO cookie for a fresh access token. 401 => not signed in. */
-  refresh(): Observable<SsoSession> {
-    return this.http
-      .post<SsoSession>(`${this.idp}/sso/session`, {}, { withCredentials: true })
-      .pipe(tap(session => this.setSession(session)));
-  }
+  /** Replay the most recent (in-flight or completed) exchange so concurrent callers share it. */
+  private readonly sharedRefresh: Observable<SsoSession> = this.http
+    .post<SsoSession>(`${this.idp}/sso/session`, {}, { withCredentials: true })
+    .pipe(
+      tap(session => this.setSession(session)),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
 
-  /** The refresh token is an HttpOnly cookie we cannot read, so always attempt a silent session. */
-  hasStoredSession(): boolean {
-    return true;
+  /** Exchange the shared SSO cookie for a fresh access token. 401 => not signed in.
+   *  Single-flight: concurrent callers (e.g. several 401s at once in the interceptor) share one
+   *  /sso/session request via the replay above, instead of racing and clobbering each other's token. */
+  refresh(): Observable<SsoSession> {
+    return this.sharedRefresh;
   }
 
   logout(): Observable<void> {

@@ -39,18 +39,29 @@ public sealed class MongoContext
 
     private void EnsureIndexes()
     {
+        // Unique email, but only among ACTIVE records. A soft-deleted user must not permanently
+        // block reuse of their email/username (the app's own pre-checks only consider !IsDeleted).
+        // Existing deployments need this index recreated (drop the old "ux_user_email") once.
         Users.Indexes.CreateOne(new CreateIndexModel<User>(
             Builders<User>.IndexKeys.Ascending(u => u.Email),
-            new CreateIndexOptions { Unique = true, Name = "ux_user_email" }));
+            new CreateIndexOptions<User>
+            {
+                Unique = true,
+                Name = "ux_user_email",
+                PartialFilterExpression = Builders<User>.Filter.Eq(u => u.IsDeleted, false),
+            }));
 
-        // Unique username, but only enforced on documents that actually have one.
+        // Unique username, but only for ACTIVE records that actually have one — so a soft-deleted
+        // user's username can be reused, and null usernames never collide.
         Users.Indexes.CreateOne(new CreateIndexModel<User>(
             Builders<User>.IndexKeys.Ascending(u => u.Username),
             new CreateIndexOptions<User>
             {
                 Unique = true,
                 Name = "ux_user_username",
-                PartialFilterExpression = Builders<User>.Filter.Type(u => u.Username!, BsonType.String),
+                PartialFilterExpression = Builders<User>.Filter.And(
+                    Builders<User>.Filter.Type(u => u.Username!, BsonType.String),
+                    Builders<User>.Filter.Eq(u => u.IsDeleted, false)),
             }));
 
         Content.Indexes.CreateOne(new CreateIndexModel<ContentTopic>(
@@ -79,6 +90,11 @@ public sealed class MongoContext
         Comments.Indexes.CreateOne(new CreateIndexModel<Comment>(
             Builders<Comment>.IndexKeys.Descending(c => c.CreatedAt),
             new CreateIndexOptions { Name = "ix_comment_created" }));
+
+        // Ban display-name lookups query comments by UserId (and the author-identity joins).
+        Comments.Indexes.CreateOne(new CreateIndexModel<Comment>(
+            Builders<Comment>.IndexKeys.Ascending(c => c.UserId).Descending(c => c.CreatedAt),
+            new CreateIndexOptions { Name = "ix_comment_user_created" }));
 
         // This unique index IS the view de-duplication: a second insert for the same reader and
         // page fails, and the counter is only incremented when the insert succeeds.

@@ -15,13 +15,15 @@ public sealed class TwilioSmsSender : ISmsSender
     private readonly SettingsService _settings;
     private readonly IHttpClientFactory _httpFactory;
     private readonly ILogger<TwilioSmsSender> _logger;
+    private readonly IWebHostEnvironment _env;
 
     public TwilioSmsSender(SettingsService settings, IHttpClientFactory httpFactory,
-        ILogger<TwilioSmsSender> logger)
+        ILogger<TwilioSmsSender> logger, IWebHostEnvironment env)
     {
         _settings = settings;
         _httpFactory = httpFactory;
         _logger = logger;
+        _env = env;
     }
 
     public async Task SendOtpAsync(string toPhone, string code, CancellationToken ct = default)
@@ -29,7 +31,10 @@ public sealed class TwilioSmsSender : ISmsSender
         var s = _settings.Current;
         if (!s.SmsEnabled || string.IsNullOrWhiteSpace(s.SmsAccountSid))
         {
-            _logger.LogWarning("SMS disabled — OTP for {Phone} is {Code} (valid briefly).", toPhone, code);
+            // Dev-only fallback: surface the code in the logs so local sign-in stays testable.
+            // Never log a live OTP outside development.
+            if (_env.IsDevelopment())
+                _logger.LogWarning("SMS disabled — OTP for {Phone} is {Code} (valid briefly).", toPhone, code);
             return;
         }
 

@@ -154,9 +154,6 @@ dotnet user-secrets set "Jwt:SigningKey" "$(openssl rand -base64 48)"
 
 # AES-256 key for encrypting TOTP secrets (Base64 of exactly 32 bytes)
 dotnet user-secrets set "Encryption:DataKey" "$(openssl rand -base64 32)"
-
-# First-run admin password (rotate after first login)
-dotnet user-secrets set "Seed:AdminPassword" "change-me-now-please"
 ```
 
 **Windows PowerShell** — generate a Base64 key with:
@@ -165,8 +162,9 @@ dotnet user-secrets set "Seed:AdminPassword" "change-me-now-please"
 [Convert]::ToBase64String((1..32 | % { Get-Random -Max 256 }))
 ```
 
-The seeded admin email defaults to `admin@example.com` (change it in
-[appsettings.json](server/Blog.Admin.Api/appsettings.json) under `Seed:AdminEmail`).
+The console uses centralized identity (SSO) via the identity provider — there is no local
+seeded admin. The first SSO user to sign in becomes an Admin, or an operator grants the
+`Admin` role at the IdP.
 
 ### Step 2 — start the API
 
@@ -177,7 +175,6 @@ dotnet run
 
 - API base: `http://localhost:5080`
 - Swagger (dev): `http://localhost:5080/swagger`
-- On first run it seeds an **Admin** user from your `Seed:*` settings.
 
 ### Step 3 — start the frontend (separate terminal)
 
@@ -186,8 +183,8 @@ dotnet run
 npm start
 ```
 
-Open <http://localhost:4200/#/admin/login> and sign in with the seeded admin. Then go to
-**Security & 2FA** to enroll your authenticator app and save your backup codes.
+Open <http://localhost:4200/#/admin/login> and sign in via SSO. Then go to **Security & 2FA**
+to enroll your authenticator app and save your backup codes.
 
 ### Pointing the UI at a different API
 

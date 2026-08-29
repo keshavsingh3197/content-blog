@@ -95,6 +95,18 @@ public sealed class SettingsService : IAuthSettings, IWhatsAppSettings
         _current = seeded;
     }
 
+    /// <summary>
+    /// Re-reads the singleton from Mongo and swaps the cache. Called by the background refresh so
+    /// settings edited elsewhere (the central admin console, or another instance) converge here
+    /// within the poll interval. Only swaps when Mongo actually has a document, so a transient read
+    /// failure or a not-yet-seeded store never wipes the settings the app is already running on.
+    /// </summary>
+    public async Task ReloadAsync()
+    {
+        var existing = await _db.Settings.Find(s => s.Id == AppSettings.SingletonId).FirstOrDefaultAsync();
+        if (existing is not null) _current = existing;
+    }
+
     // ---- Decrypted accessors for senders ----
     public string? EmailPassword => Decrypt(_current.EmailPasswordEncrypted);
     public string? SmsAuthToken => Decrypt(_current.SmsAuthTokenEncrypted);
@@ -136,11 +148,15 @@ public sealed class SettingsService : IAuthSettings, IWhatsAppSettings
         if (r.EmailFromAddress is not null) s.EmailFromAddress = r.EmailFromAddress.Trim();
         if (r.EmailFromName is not null) s.EmailFromName = r.EmailFromName.Trim();
         if (r.EmailUsername is not null) s.EmailUsername = r.EmailUsername.Trim();
-        if (!string.IsNullOrEmpty(r.EmailPassword)) s.EmailPasswordEncrypted = _protector.Encrypt(r.EmailPassword);
+        // Secret semantics: null = leave unchanged, empty string = CLEAR it, non-empty = replace.
+        if (r.EmailPassword is not null)
+            s.EmailPasswordEncrypted = string.IsNullOrEmpty(r.EmailPassword) ? null : _protector.Encrypt(r.EmailPassword);
 
         if (r.SmsEnabled is { } se) s.SmsEnabled = se;
         if (r.SmsAccountSid is not null) s.SmsAccountSid = r.SmsAccountSid.Trim();
-        if (!string.IsNullOrEmpty(r.SmsAuthToken)) s.SmsAuthTokenEncrypted = _protector.Encrypt(r.SmsAuthToken);
+        // Secret semantics: null = leave unchanged, empty string = CLEAR it, non-empty = replace.
+        if (r.SmsAuthToken is not null)
+            s.SmsAuthTokenEncrypted = string.IsNullOrEmpty(r.SmsAuthToken) ? null : _protector.Encrypt(r.SmsAuthToken);
         if (r.SmsFromNumber is not null) s.SmsFromNumber = r.SmsFromNumber.Trim();
 
         if (r.MaxFailedLoginAttempts is { } mfa) s.MaxFailedLoginAttempts = mfa;
@@ -149,7 +165,10 @@ public sealed class SettingsService : IAuthSettings, IWhatsAppSettings
         if (r.BackupCodeCount is { } bcc) s.BackupCodeCount = bcc;
 
         if (r.WhatsAppAlertsEnabled is { } wae) s.WhatsAppAlertsEnabled = wae;
-        if (!string.IsNullOrEmpty(r.WhatsAppAccessToken)) s.WhatsAppAccessTokenEncrypted = _protector.Encrypt(r.WhatsAppAccessToken);
+        // Secret semantics: null = leave unchanged, empty string = CLEAR it, non-empty = replace.
+        if (r.WhatsAppAccessToken is not null)
+            s.WhatsAppAccessTokenEncrypted = string.IsNullOrEmpty(r.WhatsAppAccessToken)
+                ? null : _protector.Encrypt(r.WhatsAppAccessToken);
         if (r.WhatsAppPhoneNumberId is not null) s.WhatsAppPhoneNumberId = r.WhatsAppPhoneNumberId.Trim();
         if (r.WhatsAppAlertToNumber is not null) s.WhatsAppAlertToNumber = r.WhatsAppAlertToNumber.Trim();
 
@@ -166,6 +185,19 @@ public sealed class SettingsService : IAuthSettings, IWhatsAppSettings
     {
         var imported = JsonSerializer.Deserialize<AppSettings>(json)
             ?? throw new InvalidOperationException("Invalid settings file.");
+
+        // Import bypasses the [Range] validation on the update DTO, so clamp the security-sensitive
+        // values to the same sane ranges a hand edit must obey. Never let a malformed backup set an
+        // absurd or zero lockout/failure threshold that silently weakens security.
+        imported.MaxFailedLoginAttempts = Math.Clamp(imported.MaxFailedLoginAttempts, 3, 20);
+        imported.LockoutMinutes = Math.Clamp(imported.LockoutMinutes, 1, 1440);
+        imported.EmailOtpMinutes = Math.Clamp(imported.EmailOtpMinutes, 1, 60);
+        imported.BackupCodeCount = Math.Clamp(imported.BackupCodeCount, 4, 20);
+        imported.EmailPort = Math.Clamp(imported.EmailPort, 1, 65535);
+        imported.AccessTokenMinutes = Math.Max(imported.AccessTokenMinutes, 1);
+        imported.RefreshTokenDays = Math.Max(imported.RefreshTokenDays, 1);
+        imported.TwoFactorTokenMinutes = Math.Max(imported.TwoFactorTokenMinutes, 1);
+
         imported.Id = AppSettings.SingletonId;
         imported.UpdatedAt = DateTime.UtcNow;
         await SaveAsync(imported);

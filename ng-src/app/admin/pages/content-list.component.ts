@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminApiService } from '../services/admin-api.service';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
@@ -65,10 +66,11 @@ import { ContentListItem } from '../admin.models';
     animate('220ms ease-out', style({ opacity: 1, transform: 'none' })),
   ])])],
 })
-export class ContentListComponent implements OnInit {
+export class ContentListComponent implements OnInit, OnDestroy {
   private api = inject(AdminApiService);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
   items = signal<ContentListItem[]>([]);
   loading = signal(true);
@@ -79,12 +81,16 @@ export class ContentListComponent implements OnInit {
 
   ngOnInit(): void { this.load(); }
 
+  ngOnDestroy(): void { clearTimeout(this.debounce); }
+
   load(): void {
     this.loading.set(true);
-    this.api.listContent(this.query.trim() || undefined).subscribe({
-      next: c => { this.items.set(c); this.loading.set(false); },
-      error: e => { this.loading.set(false); this.toast.fromError(e); },
-    });
+    this.api.listContent(this.query.trim() || undefined)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: c => { this.items.set(c); this.loading.set(false); },
+        error: e => { this.loading.set(false); this.toast.fromError(e); },
+      });
   }
 
   search(): void {
@@ -94,10 +100,12 @@ export class ContentListComponent implements OnInit {
 
   remove(c: ContentListItem): void {
     if (!confirm(`Delete "${c.title}"?`)) return;
-    this.api.deleteContent(c.id).subscribe({
-      next: () => { this.toast.success('Topic deleted.'); this.load(); },
-      error: e => this.toast.fromError(e),
-    });
+    this.api.deleteContent(c.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => { this.toast.success('Topic deleted.'); this.load(); },
+        error: e => this.toast.fromError(e),
+      });
   }
 
   trackId = (_: number, c: ContentListItem) => c.id;

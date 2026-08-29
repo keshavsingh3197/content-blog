@@ -17,6 +17,9 @@ namespace Blog.Admin.Api.Controllers;
 public sealed class MediaController : ControllerBase
 {
     private const string CanWrite = $"{Roles.Admin},{Roles.Editor}";
+    // The media inventory (every upload) is only useful inside the console, so any console
+    // viewer may see it, but a bare SSO-family token with no role must not.
+    private const string CanRead = $"{Roles.Viewer},{Roles.Editor},{Roles.Admin}";
     private static readonly Dictionary<string, string> ExtByType = new(StringComparer.OrdinalIgnoreCase)
     {
         ["image/png"] = ".png",
@@ -39,10 +42,12 @@ public sealed class MediaController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<MediaListItem>>> List()
+    [Authorize(Roles = CanRead)]
+    public async Task<ActionResult<IReadOnlyList<MediaListItem>>> List([FromQuery] int limit = 200)
     {
         var items = await _db.Media.Find(FilterDefinition<MediaAsset>.Empty)
-            .SortByDescending(m => m.CreatedAt).ToListAsync();
+            .SortByDescending(m => m.CreatedAt)
+            .Limit(Math.Clamp(limit, 1, 1000)).ToListAsync();
         return Ok(items.Select(Map).ToList());
     }
 
@@ -66,6 +71,15 @@ public sealed class MediaController : ControllerBase
         await using (var stream = System.IO.File.Create(fullPath))
             await file.CopyToAsync(stream);
 
+        // The declared ContentType alone is spoofable; verify the bytes on disk really are the
+        // format it claims (raster types). SVG is text/XML and has no fixed magic — it is accepted
+        // on the content allowlist and served with a sandboxing CSP header instead.
+        if (ext != ".svg" && !MatchesImageSignature(fullPath, file.ContentType))
+        {
+            System.IO.File.Delete(fullPath);
+            return BadRequest(new { error = "File contents do not match the declared image type." });
+        }
+
         var asset = new MediaAsset
         {
             FileName = Path.GetFileName(file.FileName), // Display only; stripped of any path.
@@ -74,7 +88,16 @@ public sealed class MediaController : ControllerBase
             Size = file.Length,
             UploadedByUserId = User.GetUserId(),
         };
-        await _db.Media.InsertOneAsync(asset);
+        try
+        {
+            await _db.Media.InsertOneAsync(asset);
+        }
+        catch
+        {
+            // A failed insert would otherwise leak an orphan file on disk.
+            System.IO.File.Delete(fullPath);
+            throw;
+        }
         return CreatedAtAction(nameof(Raw), new { id = asset.Id }, Map(asset));
     }
 
@@ -92,9 +115,12 @@ public sealed class MediaController : ControllerBase
         if (asset is null) return NotFound();
 
         var fullPath = Path.Combine(_storageRoot, asset.StoredName);
-        // Defence in depth: ensure the resolved path stays inside the storage root.
-        if (!Path.GetFullPath(fullPath).StartsWith(Path.GetFullPath(_storageRoot), StringComparison.Ordinal)
-            || !System.IO.File.Exists(fullPath))
+        // Defence in depth: ensure the resolved path stays inside the storage root. GetRelativePath
+        // is exact (no sibling-prefix false positive like StartsWith had).
+        var fullRoot = Path.GetFullPath(_storageRoot);
+        var relative = Path.GetRelativePath(fullRoot, Path.GetFullPath(fullPath));
+        if (relative == ".." || relative.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+            || Path.IsPathRooted(relative) || !System.IO.File.Exists(fullPath))
             return NotFound();
 
         // Neutralise any script embedded in an uploaded SVG if opened directly.
@@ -112,10 +138,45 @@ public sealed class MediaController : ControllerBase
         var asset = await _db.Media.Find(m => m.Id == id).FirstOrDefaultAsync();
         if (asset is null) return NotFound();
 
-        var fullPath = Path.Combine(_storageRoot, asset.StoredName);
-        if (System.IO.File.Exists(fullPath)) System.IO.File.Delete(fullPath);
+        // Remove the authoritative DB row first, then best-effort the file. Leaving an orphan file
+        // (file delete fails) is harmless; leaving a dangling row pointing at a deleted file is not.
         await _db.Media.DeleteOneAsync(m => m.Id == id);
+        try
+        {
+            var fullPath = Path.Combine(_storageRoot, asset.StoredName);
+            if (System.IO.File.Exists(fullPath)) System.IO.File.Delete(fullPath);
+        }
+        catch
+        {
+            // Orphan file only; the media inventory no longer references it.
+        }
         return NoContent();
+    }
+
+    /// <summary>
+    /// Cheap magic-byte check for the fixed-signature raster formats we accept. Returns false if
+    /// the leading bytes don't match the declared MIME type, so a spoofed ContentType (e.g. an
+    /// HTML payload uploaded as "image/png") is rejected rather than served.
+    /// </summary>
+    private static bool MatchesImageSignature(string path, string contentType)
+    {
+        Span<byte> head = stackalloc byte[16];
+        int read;
+        using (var stream = System.IO.File.OpenRead(path))
+            read = stream.Read(head);
+        if (read < 8) return false;
+
+        static bool HasPrefix(ReadOnlySpan<byte> data, ReadOnlySpan<byte> sig) =>
+            data.Length >= sig.Length && data[..sig.Length].SequenceEqual(sig);
+
+        return contentType switch
+        {
+            "image/png" => HasPrefix(head, new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }),
+            "image/jpeg" => HasPrefix(head, new byte[] { 0xFF, 0xD8, 0xFF }),
+            "image/gif" => HasPrefix(head, new byte[] { 0x47, 0x49, 0x46, 0x38 }), // "GIF8"
+            "image/webp" => read >= 12 && HasPrefix(head[..4], "RIFF"u8) && HasPrefix(head.Slice(8, 4), "WEBP"u8),
+            _ => true, // svg and anything else: allowlist already filtered it.
+        };
     }
 
     private MediaListItem Map(MediaAsset m) =>
