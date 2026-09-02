@@ -1031,16 +1031,248 @@
           ]
         },
         {
+          "name": "SQL",
+          "path": "src/Interview/SQL",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "01-relational-foundations.md",
+              "path": "src/Interview/SQL/01-relational-foundations.md",
+              "isDirectory": false,
+              "title": "Relational Foundations & SQL Sublanguages",
+              "summary": "What SQL actually is, the relational vocabulary interviewers expect you to use precisely, the five command sublanguages (DDL/DML/DQL/DCL/TCL), and the DELETE vs TRUNCATE vs DROP answer.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "RDBMS",
+                "DDL",
+                "DML",
+                "Interview",
+                "Database"
+              ]
+            },
+            {
+              "name": "02-data-types-and-constraints.md",
+              "path": "src/Interview/SQL/02-data-types-and-constraints.md",
+              "isDirectory": false,
+              "title": "Data Types & Constraints",
+              "summary": "SQL data type families with their .NET mappings, CHAR vs VARCHAR vs NVARCHAR, DECIMAL vs FLOAT for money, the six constraints, key vocabulary, and three-valued NULL logic.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "Data-Types",
+                "Constraints",
+                "NULL",
+                "Interview",
+                "Database"
+              ]
+            },
+            {
+              "name": "03-querying-and-logical-order.md",
+              "path": "src/Interview/SQL/03-querying-and-logical-order.md",
+              "isDirectory": false,
+              "title": "Querying & Logical Processing Order",
+              "summary": "The logical order of SELECT clauses and why it explains half of all SQL errors, every operator family, LIKE/BETWEEN/IN, CASE, CAST vs CONVERT, DISTINCT and paging — plus a dialect cheat-sheet.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "SELECT",
+                "Operators",
+                "Paging",
+                "Interview",
+                "Database"
+              ]
+            },
+            {
+              "name": "04-joins.md",
+              "path": "src/Interview/SQL/04-joins.md",
+              "isDirectory": false,
+              "title": "Joins",
+              "summary": "Every join type with runnable data and expected output — inner, left, right, full, cross, self and the two anti-join patterns — plus the ON-vs-WHERE trap, join algorithms, and multi-table join order.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "Joins",
+                "Query",
+                "Interview",
+                "Database"
+              ]
+            },
+            {
+              "name": "05-aggregation-and-window-functions.md",
+              "path": "src/Interview/SQL/05-aggregation-and-window-functions.md",
+              "isDirectory": false,
+              "title": "Aggregation & Window Functions",
+              "summary": "GROUP BY and HAVING, then window functions in depth — ROW_NUMBER vs RANK vs DENSE_RANK vs NTILE, PARTITION BY, frame clauses, LAG/LEAD and running totals — with real output for every query.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "Aggregation",
+                "Window-Functions",
+                "GROUP-BY",
+                "Interview",
+                "Database"
+              ]
+            },
+            {
+              "name": "06-subqueries-ctes-and-recursion.md",
+              "path": "src/Interview/SQL/06-subqueries-ctes-and-recursion.md",
+              "isDirectory": false,
+              "title": "Subqueries, CTEs & Recursion",
+              "summary": "Scalar, correlated and derived-table subqueries, IN vs EXISTS vs JOIN, CTEs and why they beat nested subqueries, recursive CTEs for hierarchies, and CROSS/OUTER APPLY.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "Subqueries",
+                "CTE",
+                "Recursion",
+                "APPLY",
+                "Interview",
+                "Database"
+              ]
+            },
+            {
+              "name": "07-normalization-and-modelling.md",
+              "path": "src/Interview/SQL/07-normalization-and-modelling.md",
+              "isDirectory": false,
+              "title": "Normalization & Data Modelling",
+              "summary": "The three anomalies normalization exists to prevent, 1NF through 5NF worked on one table, functional dependencies, when to denormalize, and OLTP vs star-schema modelling.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "Normalization",
+                "Data-Modelling",
+                "Database",
+                "Interview"
+              ]
+            },
+            {
+              "name": "08-indexing-and-query-performance.md",
+              "path": "src/Interview/SQL/08-indexing-and-query-performance.md",
+              "isDirectory": false,
+              "title": "Indexing & Query Performance",
+              "summary": "How a B-tree index works, clustered vs non-clustered, covering indexes and key order, SARGability, reading an execution plan, statistics and parameter sniffing — the senior differentiator.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "Indexing",
+                "Performance",
+                "Execution-Plan",
+                "Interview",
+                "Database"
+              ]
+            },
+            {
+              "name": "09-transactions-and-concurrency.md",
+              "path": "src/Interview/SQL/09-transactions-and-concurrency.md",
+              "isDirectory": false,
+              "title": "Transactions & Concurrency",
+              "summary": "ACID with concrete failure modes, the four isolation levels against the three read phenomena, snapshot and RCSI, locking vs blocking vs deadlock, the NOLOCK conversation, and optimistic concurrency.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "Transactions",
+                "ACID",
+                "Isolation",
+                "Concurrency",
+                "Deadlock",
+                "Interview"
+              ]
+            },
+            {
+              "name": "10-views-procedures-functions-triggers.md",
+              "path": "src/Interview/SQL/10-views-procedures-functions-triggers.md",
+              "isDirectory": false,
+              "title": "Views, Procedures, Functions & Triggers",
+              "summary": "Views and indexed views, stored procedure vs function (and why scalar UDFs kill performance), trigger types and their traps, cursors and the set-based rewrite, and dynamic SQL injection safety.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "Views",
+                "Stored-Procedures",
+                "Triggers",
+                "Cursors",
+                "Security",
+                "Interview"
+              ]
+            },
+            {
+              "name": "11-sql-from-dotnet.md",
+              "path": "src/Interview/SQL/11-sql-from-dotnet.md",
+              "isDirectory": false,
+              "title": "SQL from .NET",
+              "summary": "ADO.NET parameterisation and connection pooling, EF Core query translation, the N+1 problem, tracking vs no-tracking, split queries, bulk operations, TVPs and Dapper — the questions a .NET interview asks about SQL.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                ".NET",
+                "EF-Core",
+                "ADO.NET",
+                "Dapper",
+                "Performance",
+                "Interview"
+              ]
+            },
+            {
+              "name": "12-query-drills.md",
+              "path": "src/Interview/SQL/12-query-drills.md",
+              "isDirectory": false,
+              "title": "Query Drills",
+              "summary": "Sixteen whiteboard problems that come up again and again — Nth highest salary, top-N per group, duplicates, gaps and islands, running totals, pivot, median, consecutive days — each with multiple solutions and the trade-off between them.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "Practice",
+                "Window-Functions",
+                "Interview",
+                "Database"
+              ]
+            },
+            {
+              "name": "13-schema-change-and-migrations.md",
+              "path": "src/Interview/SQL/13-schema-change-and-migrations.md",
+              "isDirectory": false,
+              "title": "Schema Change & Migrations",
+              "summary": "Database-first vs code-first, baselining an existing database in EF Core (and why -IgnoreChanges is EF6, not EF Core), the expand/contract pattern for zero-downtime deploys, and migrations in CI/CD.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "EF-Core",
+                "Migrations",
+                "DevOps",
+                "Zero-Downtime",
+                "Interview"
+              ]
+            },
+            {
+              "name": "readme.md",
+              "path": "src/Interview/SQL/readme.md",
+              "isDirectory": false,
+              "title": "SQL Interview Hub",
+              "summary": "A 13-chapter, hands-on SQL interview track for .NET developers — foundations to window functions, indexing, concurrency and migrations — with a runnable practice database, the 12 answers to have word-perfect, and a self-test.",
+              "updated": "2026-09-02",
+              "tags": [
+                "SQL",
+                "Database",
+                "Interview",
+                "T-SQL",
+                "Performance"
+              ]
+            }
+          ]
+        },
+        {
           "name": "readme.md",
           "path": "src/Interview/readme.md",
           "isDirectory": false,
           "title": "Interview Prep",
-          "summary": "One home for both interview tracks — a 10-chapter C# / .NET deep dive and an 18-chapter senior/architect track — with a map of which track owns which topic.",
+          "summary": "One home for three interview tracks — a 10-chapter C# / .NET deep dive, a 13-chapter SQL track and an 18-chapter senior/architect track — with a map of which track owns which topic.",
           "updated": "2026-09-02",
           "tags": [
             "Interview",
             "C#",
             ".NET",
+            "SQL",
             "Architecture",
             "System-Design"
           ]
@@ -1075,31 +1307,6 @@
           "title": "Networking",
           "tags": [
             "Networking"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "SQL",
-      "path": "src/SQL",
-      "isDirectory": true,
-      "children": [
-        {
-          "name": "migration.md",
-          "path": "src/SQL/migration.md",
-          "isDirectory": false,
-          "title": "Migration",
-          "tags": [
-            "SQL"
-          ]
-        },
-        {
-          "name": "sql.md",
-          "path": "src/SQL/sql.md",
-          "isDirectory": false,
-          "title": "SQL",
-          "tags": [
-            "SQL"
           ]
         }
       ]

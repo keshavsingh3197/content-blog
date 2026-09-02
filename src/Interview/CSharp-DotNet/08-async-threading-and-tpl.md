@@ -10,7 +10,7 @@ updated: 2026-09-02
 > **Scope:** sync vs async explained so it actually lands, `Task` vs `Thread` vs TPL,
 > `CancellationToken`, `lock` and the modern `Lock` type, deadlocks and the classic mistakes.
 > Broader concurrency theory:
-> [Interview-Prep 05 — Concurrency](../Architecture/05-concurrency-and-multithreading.md).
+> [Architecture 05 — Concurrency](../Architecture/05-concurrency-and-multithreading.md).
 
 ---
 

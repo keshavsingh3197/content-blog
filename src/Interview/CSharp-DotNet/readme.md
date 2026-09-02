@@ -140,5 +140,5 @@ Give yourself 30 seconds each. Anything you stumble on, open the linked chapter.
 GC & profiling, databases, REST, messaging, microservices, security, cloud, testing, DevOps,
 observability and NFRs ·
 [GOF patterns](../../GOF/GOF.md) ·
-[SQL](../../SQL/sql.md) ·
+[SQL track](../SQL/readme.md) ·
 [API design](../../API/API.md)
