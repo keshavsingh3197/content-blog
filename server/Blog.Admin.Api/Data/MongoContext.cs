@@ -74,4 +74,21 @@ public sealed class MongoContext
             Builders<PageViewHit>.IndexKeys.Ascending(h => h.SeenAt),
             new CreateIndexOptions { Name = "ttl_page_view_hit", ExpireAfter = TimeSpan.FromHours(12) }));
     }
+
+    /// <summary>
+    /// Drops an index by name if it exists, tolerating a missing index or an uninitialised
+    /// collection. Used when an index's definition changes under a stable name, so the recreated
+    /// index can be installed on an existing deployment (Mongo forbids two indexes sharing a name
+    /// but differing in shape).
+    /// </summary>
+    private static void DropIndexIfExists<T>(IMongoCollection<T> collection, string name)
+    {
+        try
+        {
+            collection.Indexes.DropOne(name);
+        }
+        catch (MongoCommandException ex) when (ex.CodeName == "IndexNotFound" || ex.CodeName == "NamespaceNotFound")
+        {
+        }
+    }
 }
