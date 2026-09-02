@@ -8,6 +8,7 @@ using KeshavSingh.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Blog.Admin.Api.Controllers;
@@ -109,7 +110,7 @@ public sealed class CommentsController : ControllerBase
     }
 
     /// <summary>Edit your own comment, for a short while after posting.</summary>
-    [HttpPut("{id}")]
+    [HttpPut("{id:objectid}")]
     public async Task<ActionResult<CommentDto>> Update(string id, UpdateCommentRequest request, CancellationToken ct)
     {
         var body = NormalizeBody(request.Body);
@@ -144,7 +145,7 @@ public sealed class CommentsController : ControllerBase
     }
 
     /// <summary>Delete a comment — the author's own, or any comment if you are an admin.</summary>
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:objectid}")]
     public async Task<IActionResult> Delete(string id, CancellationToken ct)
     {
         var userId = User.GetUserId();
@@ -178,7 +179,11 @@ public sealed class CommentsController : ControllerBase
 
     // ---- Moderation ----
 
-    /// <summary>Every comment, including hidden and deleted ones, newest first.</summary>
+    /// <summary>
+    /// Every comment, including hidden and deleted ones, newest first. <paramref name="path"/> may
+    /// be a whole document or just a folder ("CSharp"), which is what a moderator scanning a
+    /// section actually wants to type.
+    /// </summary>
     [HttpGet("moderation")]
     [Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<IReadOnlyList<ModeratedCommentDto>>> Moderation(
@@ -187,9 +192,11 @@ public sealed class CommentsController : ControllerBase
         var filter = Builders<Comment>.Filter.Empty;
         if (!string.IsNullOrWhiteSpace(path))
         {
-            if (!ContentPath.TryNormalize(path, out var contentPath))
-                return BadRequest(new { error = "Unknown document path." });
-            filter = Builders<Comment>.Filter.Eq(c => c.Path, contentPath);
+            if (!ContentPath.TryNormalizeFilter(path, out var contentPath))
+                return BadRequest(new { error = "Not a document or folder path." });
+            // Escaped and anchored by ToFilterPattern, so the typed value cannot act as a regex.
+            filter = Builders<Comment>.Filter.Regex(c => c.Path,
+                new BsonRegularExpression(ContentPath.ToFilterPattern(contentPath)));
         }
 
         var comments = await _db.Comments.Find(filter)
@@ -203,7 +210,7 @@ public sealed class CommentsController : ControllerBase
     }
 
     /// <summary>Take a comment off the page without destroying it.</summary>
-    [HttpPost("{id}/hide")]
+    [HttpPost("{id:objectid}/hide")]
     [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> Hide(string id, HideCommentRequest request, CancellationToken ct)
     {
@@ -223,7 +230,7 @@ public sealed class CommentsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("{id}/unhide")]
+    [HttpPost("{id:objectid}/unhide")]
     [Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> Unhide(string id, CancellationToken ct)
     {
@@ -326,6 +333,6 @@ public sealed class CommentsController : ControllerBase
     }
 
     private static CommentDto ToDto(Comment c, string? callerId) => new(
-        c.Id, c.Path, c.UserId, c.DisplayName, c.Body, c.CreatedAt, c.EditedAt,
+        c.Id, c.Path, c.DisplayName, c.Body, c.CreatedAt, c.EditedAt,
         callerId is not null && c.UserId == callerId);
 }

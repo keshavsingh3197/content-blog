@@ -20,12 +20,14 @@ public sealed class LinksController : ControllerBase
     public LinksController(MongoContext db) => _db = db;
 
     /// <summary>
-    /// Public list of visible links for the blog. Callers with a console role (Viewer+) may pass
-    /// ?all=true to also see hidden links (for management).
+    /// Public list of visible links for the blog, projected to <see cref="LinkDto"/>. Callers with
+    /// a console role (Viewer+) may pass ?all=true to also see hidden links, and get the full
+    /// documents back for management.
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<IReadOnlyList<Link>>> List([FromQuery] bool all = false)
+    [ProducesResponseType(typeof(IReadOnlyList<LinkDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult> List([FromQuery] bool all = false)
     {
         var hasConsoleRole = User.Identity?.IsAuthenticated == true &&
             (User.IsInRole(Roles.Viewer) || User.IsInRole(Roles.Editor) || User.IsInRole(Roles.Admin));
@@ -36,10 +38,13 @@ public sealed class LinksController : ControllerBase
 
         var links = await _db.Links.Find(filter)
             .SortBy(l => l.Category).ThenBy(l => l.Order).ThenBy(l => l.Title).ToListAsync();
-        return Ok(links);
+
+        // The management view needs visibility and the audit trail; the anonymous one must not
+        // hand out identity-provider user ids, so it only ever sees the projection.
+        return includeHidden ? Ok(links) : Ok(links.Select(ToDto).ToList());
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:objectid}")]
     [Authorize(Roles = CanRead)]
     public async Task<ActionResult<Link>> Get(string id)
     {
@@ -67,7 +72,7 @@ public sealed class LinksController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = link.Id }, link);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:objectid}")]
     [Authorize(Roles = CanWrite)]
     public async Task<ActionResult<Link>> Update(string id, UpdateLinkRequest request)
     {
@@ -88,7 +93,7 @@ public sealed class LinksController : ControllerBase
         return link is null ? NotFound() : Ok(link);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:objectid}")]
     [Authorize(Roles = CanWrite)]
     public async Task<IActionResult> Delete(string id)
     {
@@ -98,4 +103,7 @@ public sealed class LinksController : ControllerBase
 
     private static string? Clean(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static LinkDto ToDto(Link l) =>
+        new(l.Id, l.Title, l.Url, l.Category, l.Description, l.Icon, l.Order);
 }

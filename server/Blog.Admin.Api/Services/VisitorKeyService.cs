@@ -30,12 +30,13 @@ public sealed class VisitorKeyService
     /// <summary>The digest for the current request. Never null — an unknown client still gets a key.</summary>
     public string For(HttpRequest request)
     {
-        // Behind Render's proxy the socket address is the proxy; the left-most forwarded entry is
-        // the client. UseForwardedHeaders has already run, but read the header defensively.
-        var ip = request.Headers.TryGetValue("X-Forwarded-For", out var forwarded) &&
-                 !string.IsNullOrWhiteSpace(forwarded.ToString())
-            ? forwarded.ToString().Split(',')[0].Trim()
-            : request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        // Use the connection address only. UseForwardedHeaders (Program.cs, ForwardLimit = 1) has
+        // already replaced it with the single hop Render's edge proxy vouched for, so this IS the
+        // observed client address. Reading X-Forwarded-For here instead would take the left-most
+        // entry — the part the *client* sends — and a caller varying that header would get a fresh
+        // key on every request, so the unique (Path, VisitorKey) index would never dedupe and view
+        // counts would be inflatable in a shell loop.
+        var ip = request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
         var agent = request.Headers.UserAgent.ToString();
         var material = Encoding.UTF8.GetBytes($"{ip}|{agent}");

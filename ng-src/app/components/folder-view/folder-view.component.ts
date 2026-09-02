@@ -7,6 +7,7 @@ import { ContentService } from '../../services/content.service';
 import { FileNode } from '../../models/file-node.model';
 import { BreadcrumbComponent, BreadcrumbItem } from '../breadcrumb/breadcrumb.component';
 import { parseDocName } from '../../utils/doc-name';
+import { normalizeFolderPath } from '../../services/content-path';
 
 const FOLDER_COLORS: string[] = [
   'linear-gradient(135deg,#667eea,#764ba2)',
@@ -109,7 +110,9 @@ export class FolderViewComponent implements OnInit, OnDestroy {
     this.route.queryParams.pipe(
       takeUntil(this.destroy$),
       switchMap(params => {
-        const path = params['path'] || '';
+        // Same trust boundary as the document route: only paths shaped like a node of the content
+        // tree get as far as the lookup, so nothing arbitrary reaches the breadcrumbs.
+        const path = normalizeFolderPath(params['path']) ?? '';
         this.buildBreadcrumbs(path);
         return this.contentService.getStructure().pipe(
           map(nodes => ({ path, nodes }))

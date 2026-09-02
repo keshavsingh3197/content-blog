@@ -24,7 +24,7 @@ import { MediaListItem } from '../admin.models';
         <input type="file" hidden accept="image/*" (change)="onPick($event)">
         <span class="dz-ico"><i class="fas fa-cloud-arrow-up"></i></span>
         <strong>Drop an image here or click to upload</strong>
-        <small class="muted">PNG, JPG, GIF, WebP or SVG · up to 5 MB</small>
+        <small class="muted">PNG, JPG, GIF or WebP · up to 5 MB</small>
         <span class="dz-progress" *ngIf="uploading()"><i class="fas fa-spinner fa-spin"></i> Uploading…</span>
       </label>
     </div>

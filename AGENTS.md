@@ -4,12 +4,12 @@ Repo with **two independently deployable halves**, both built from the root:
 
 | Part | What | Runs on | Needs |
 | --- | --- | --- | --- |
-| **Public blog** | Angular 22 static site rendering markdown in `src/` → `dist/` | repo root | Node 18+ |
+| **Public blog** | Angular 22 static site rendering markdown in `src/` → `dist/` | repo root | Node 20+ (CI uses 22) |
 | **Admin console** | Angular `/admin` UI + .NET Web API + MongoDB | `server/Blog.Admin.Api` | .NET + MongoDB |
 
-Note: `readme.md` / `server/README.md` say ".NET 8", but the executable sources are authoritative:
-`Blog.Admin.Api.csproj` targets **`net10.0`** and `server/Dockerfile` uses `sdk:10.0` / `aspnet:10.0`.
-Use .NET 10.
+The target framework is **`net10.0`** (`Blog.Admin.Api.csproj`, and `server/Dockerfile` uses
+`sdk:10.0` / `aspnet:10.0`). The prose docs used to say ".NET 8"; they no longer do, but the
+executable sources stay authoritative either way.
 
 ## Commands
 
@@ -74,5 +74,5 @@ override local defaults; they are **public URLs, safe to commit/deploy**. The AP
 ## Deploy
 
 - **Frontend → GitHub Pages** (workflow triggers on `master`/`main`): build with `--base-href /`, publish `dist/browser`, CI copies `index.html → 404.html`. Keep `CNAME` for a custom domain.
-- **Backend → Render**: `server/Dockerfile`, build root `server`, binds `$PORT` (default 10000), runs as `$APP_UID`. Only 3 app secrets needed in env: `Mongo__ConnectionString`, `Jwt__SigningKey`, `Encryption__DataKey` (the AES key decrypting everything else). Media writes to `App_Data/media` which Render **wipes every deploy/restart** — mount a Render Disk at `/app/App_Data` for durable media.
+- **Backend → Render**: `server/Dockerfile`, build root `server`, binds `$PORT` (default 10000), runs as `$APP_UID`. There is no `render.yaml` in this repo — the service is configured in the Render dashboard; point its health check at `/health` (which pings MongoDB). Only 3 app secrets needed in env: `Mongo__ConnectionString`, `Jwt__SigningKey`, `Encryption__DataKey` (the AES key decrypting everything else). Media writes to `App_Data/media` which Render **wipes every deploy/restart** — mount a Render Disk at `/app/App_Data` for durable media.
 - Deep dives: admin architecture/API/security in `server/README.md`.

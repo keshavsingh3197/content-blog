@@ -365,3 +365,9 @@ FodyWeavers.xsd
 dist/
 node_modules/
 .angular/
+
+# Locally uploaded media. The API stores files here at runtime (Media:StoragePath); on Render this
+# path is a mounted Disk. Either way the bytes are data, not source — .dockerignore already skips
+# them for the image build, and this keeps them out of git status.
+App_Data/
+server/Blog.Admin.Api/App_Data/

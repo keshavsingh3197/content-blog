@@ -2,41 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE } from '../api.config';
-import {
-  ContentListItem, ContentTopic, Link, MediaListItem, Role,
-  SettingsView, UpdateSettings, UserListItem,
-} from '../admin.models';
+import { ContentListItem, ContentTopic, Link, MediaListItem } from '../admin.models';
 
 @Injectable({ providedIn: 'root' })
 export class AdminApiService {
   private http = inject(HttpClient);
   private base = inject(API_BASE);
 
-  // ---- Users & roles ----
-  listUsers(): Observable<UserListItem[]> {
-    return this.http.get<UserListItem[]>(`${this.base}/users`);
-  }
-  createUser(body: {
-    email: string; username?: string | null; displayName: string;
-    phoneNumber?: string | null; password: string; roles: Role[];
-  }) {
-    return this.http.post<UserListItem>(`${this.base}/users`, body);
-  }
-  updateUser(id: string, body: {
-    username?: string | null; displayName?: string; phoneNumber?: string | null;
-    roles?: Role[]; isActive?: boolean;
-  }) {
-    return this.http.put<UserListItem>(`${this.base}/users/${id}`, body);
-  }
-  resetPassword(id: string, newPassword: string) {
-    return this.http.post<void>(`${this.base}/users/${id}/reset-password`, { newPassword });
-  }
-  deleteUser(id: string) {
-    return this.http.delete<void>(`${this.base}/users/${id}`);
-  }
-  listRoles(): Observable<Role[]> {
-    return this.http.get<Role[]>(`${this.base}/roles`);
-  }
+  // No user, role or settings methods: those endpoints are gone from the API. Accounts and roles
+  // are managed at the identity provider, which the console links out to.
 
   // ---- Content ----
   listContent(q?: string): Observable<ContentListItem[]> {
@@ -81,20 +55,6 @@ export class AdminApiService {
   }
   deleteLink(id: string) {
     return this.http.delete<void>(`${this.base}/links/${id}`);
-  }
-
-  // ---- Settings ----
-  getSettings(): Observable<SettingsView> {
-    return this.http.get<SettingsView>(`${this.base}/settings`);
-  }
-  updateSettings(body: UpdateSettings): Observable<SettingsView> {
-    return this.http.put<SettingsView>(`${this.base}/settings`, body);
-  }
-  exportSettings(): Observable<Blob> {
-    return this.http.get(`${this.base}/settings/export`, { responseType: 'blob' });
-  }
-  importSettings(json: string): Observable<SettingsView> {
-    return this.http.post<SettingsView>(`${this.base}/settings/import`, { json });
   }
 
   mediaUrl(url: string): string {

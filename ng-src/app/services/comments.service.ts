@@ -6,7 +6,6 @@ import { API_BASE } from '../admin/api.config';
 export interface Comment {
   id: string;
   path: string;
-  userId: string;
   displayName: string;
   body: string;
   createdAt: string;

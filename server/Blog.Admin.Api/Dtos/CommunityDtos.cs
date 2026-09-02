@@ -4,11 +4,15 @@ namespace Blog.Admin.Api.Dtos;
 
 // ---- Comments ----
 
-/// <summary>What a reader sees. Deliberately omits the author's email and the moderation fields.</summary>
+/// <summary>
+/// What a reader sees. Deliberately omits the author's email, the moderation fields and the
+/// author's identity-provider id: the thread read is anonymous, so carrying the id would let any
+/// visitor harvest a stable internal identifier for everyone who has ever commented. The UI needs
+/// only <c>IsMine</c>, which the server computes.
+/// </summary>
 public sealed record CommentDto(
     string Id,
     string Path,
-    string UserId,
     string DisplayName,
     string Body,
     DateTime CreatedAt,
@@ -16,7 +20,10 @@ public sealed record CommentDto(
     // True when the signed-in caller wrote this comment, so the UI can offer edit/delete.
     bool IsMine);
 
-/// <summary>The moderator's view: everything above plus why a comment is not on the page.</summary>
+/// <summary>
+/// The moderator's view: everything above, plus the author id (needed for the ban flow) and why a
+/// comment is not on the page. Admin-only.
+/// </summary>
 public sealed record ModeratedCommentDto(
     string Id,
     string Path,

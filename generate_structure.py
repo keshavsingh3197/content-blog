@@ -174,8 +174,13 @@ def read_document_metadata(path, base_path):
     meta['tags'] = unique
     return meta
 
-def create_structure_item(path, base_path):
-    """Create a structure item from a file or directory path."""
+def create_structure_item(path, base_path, prefix):
+    """Create a structure item from a file or directory path.
+
+    `prefix` is the scanned directory as the app sees it ("src" by default). Emitted paths are
+    what the site fetches, so the prefix has to come from the directory actually scanned — a
+    hardcoded "src" would silently produce unresolvable paths under a non-default --src.
+    """
     relative_path = path.relative_to(base_path)
     # Convert path to forward slashes
     path_str = str(relative_path).replace('\\', '/')
@@ -183,7 +188,7 @@ def create_structure_item(path, base_path):
     if path.is_file():
         item = {
             "name": path.name,
-            "path": f"src/{path_str}",  # Add src/ prefix
+            "path": f"{prefix}/{path_str}",
             "isDirectory": False
         }
         item.update(read_document_metadata(path, base_path))
@@ -196,9 +201,9 @@ def create_structure_item(path, base_path):
 
             for item in items:
                 if item.is_file() and should_include_file(item):
-                    children.append(create_structure_item(item, base_path))
+                    children.append(create_structure_item(item, base_path, prefix))
                 elif item.is_dir() and should_include_directory(item.name):
-                    child_structure = create_structure_item(item, base_path)
+                    child_structure = create_structure_item(item, base_path, prefix)
                     if child_structure["children"]:  # Only include directories with content
                         children.append(child_structure)
         except PermissionError:
@@ -206,7 +211,7 @@ def create_structure_item(path, base_path):
 
         return {
             "name": path.name,
-            "path": f"src/{path_str}",  # Add src/ prefix
+            "path": f"{prefix}/{path_str}",
             "isDirectory": True,
             "children": children
         }
@@ -225,10 +230,13 @@ def generate_structure_json(src_dir="src", output_file="structure.json"):
 
     print(f"Scanning directory: {base_path.absolute()}")
 
+    # The prefix every emitted path carries, taken from the directory being scanned.
+    prefix = base_path.as_posix().strip('/')
+
     # Create the root structure
     structure = {
-        "name": "src",
-        "path": "src",  # Add src path for root
+        "name": base_path.name,
+        "path": prefix,
         "isDirectory": True,
         "children": []
     }
@@ -239,9 +247,9 @@ def generate_structure_json(src_dir="src", output_file="structure.json"):
 
         for item in items:
             if item.is_file() and should_include_file(item):
-                structure["children"].append(create_structure_item(item, base_path))
+                structure["children"].append(create_structure_item(item, base_path, prefix))
             elif item.is_dir() and should_include_directory(item.name):
-                child_structure = create_structure_item(item, base_path)
+                child_structure = create_structure_item(item, base_path, prefix)
                 if child_structure["children"]:  # Only include directories with content
                     structure["children"].append(child_structure)
     except PermissionError:
@@ -291,7 +299,10 @@ def watch_directory(src_dir="src", output_file="structure.json", interval=2):
     def get_dir_hash(path):
         """Hash the directory structure AND each file's mtime, so an edited tag list
         regenerates the output just like an added document does."""
-        hash_md5 = hashlib.md5()
+        # Change detection only — nothing here is a security decision. Named explicitly because
+        # MD5 is banned outright by the security baseline and scanners flag it either way; blake2b
+        # is in the standard library and costs nothing.
+        digest = hashlib.blake2b(digest_size=16)
         try:
             for root, dirs, files in os.walk(path):
                 # Sort for consistent hashing
@@ -301,19 +312,19 @@ def watch_directory(src_dir="src", output_file="structure.json", interval=2):
                 for name in files:
                     file_path = Path(root) / name
                     if should_include_file(file_path):
-                        hash_md5.update(f"{root}/{name}".encode('utf-8'))
+                        digest.update(f"{root}/{name}".encode('utf-8'))
                         try:
-                            hash_md5.update(str(file_path.stat().st_mtime_ns).encode('utf-8'))
+                            digest.update(str(file_path.stat().st_mtime_ns).encode('utf-8'))
                         except OSError:
                             pass
 
                 for name in dirs:
                     if should_include_directory(name):
-                        hash_md5.update(f"{root}/{name}/".encode('utf-8'))
+                        digest.update(f"{root}/{name}/".encode('utf-8'))
         except Exception as e:
             print(f"Error calculating hash: {e}")
 
-        return hash_md5.hexdigest()
+        return digest.hexdigest()
 
     print(f"Watching {src_dir} for changes (Ctrl+C to stop)...")
 

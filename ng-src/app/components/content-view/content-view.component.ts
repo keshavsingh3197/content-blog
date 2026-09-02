@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { Subject } from 'rxjs';
+import { EMPTY, Subject } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
 import { MarkdownModule, MermaidAPI } from 'ngx-markdown';
 import { ContentService } from '../../services/content.service';
@@ -16,6 +16,7 @@ import { FileNode } from '../../models/file-node.model';
 import { BreadcrumbComponent, BreadcrumbItem } from '../breadcrumb/breadcrumb.component';
 import { CommentsComponent } from '../comments/comments.component';
 import { parseDocName } from '../../utils/doc-name';
+import { normalizeContentPath } from '../../services/content-path';
 
 export interface TocItem {
   level: number;
@@ -283,18 +284,20 @@ export class ContentViewComponent implements OnInit, OnDestroy {
     this.route.queryParams.pipe(
       takeUntil(this.destroy$),
       switchMap(params => {
-        const path = params['path'] || '';
+        // `path` comes from the query string, so it is a trust boundary: without this check a
+        // crafted link (`?path=https://evil.example/pwn.md`) would have the blog fetch and render
+        // someone else's markdown inside its own chrome. Same predicate as the API's ContentPath.
+        const path = normalizeContentPath(params['path']);
+        if (!path) {
+          this.resetDocumentState();
+          this.error = this.i18n.t('blog.content.loadFailed');
+          this.loading = false;
+          this.cdr.markForCheck();
+          return EMPTY;
+        }
         this.loading = true;
-        this.error = '';
-        this.content = '';
-        this.toc = [];
-        this.tags = [];
-        this.docTitle = '';
-        this.updated = '';
-        this.hasOwnHeading = false;
-        this.views = null;
+        this.resetDocumentState();
         this.trackView(path);
-        this.tocOpen = false;
         this.currentPath = path;
         this.buildBreadcrumbs(path);
         this.fileName = path.split('/').pop() || path;
@@ -342,6 +345,22 @@ export class ContentViewComponent implements OnInit, OnDestroy {
     });
   }
 
+
+  /** Clear everything that belongs to the previously rendered document. */
+  private resetDocumentState(): void {
+    this.error = '';
+    this.content = '';
+    this.toc = [];
+    this.tags = [];
+    this.docTitle = '';
+    this.updated = '';
+    this.hasOwnHeading = false;
+    this.views = null;
+    this.tocOpen = false;
+    this.currentPath = '';
+    this.fileName = '';
+    this.breadcrumbs = [];
+  }
   /**
    * Count this read and show the running total. The server decides whether it counts — a refresh by
    * the same reader inside the de-duplication window does not — so this fires on every navigation.

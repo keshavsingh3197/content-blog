@@ -25,11 +25,9 @@ python generate_structure.py --watch
 python generate_structure.py --watch --interval 5
 ```
 
-### Method 3: Browser-based Monitoring
-The website now includes automatic structure change detection:
-- Checks for changes every 30 seconds
-- Updates the file tree automatically when changes are detected
-- Click the "🔄 Refresh" button to manually check for changes
+> **Note:** there is no browser-side polling. The site fetches `structure.json` once per load, so a
+> regenerated file shows up on the next page load — there is no refresh button and no `structure-updater.js`.
+> (An earlier revision of this document described such a feature; it was never part of `ng-src/`.)
 
 ## 📁 File Structure Generator
 
@@ -141,16 +139,15 @@ python generate_structure.py --watch &
 # Make changes to src/
 echo "# New Article" > src/test.md
 
-# structure.json updates automatically
-# Browser refreshes tree automatically (if monitoring is enabled)
+# structure.json updates automatically (watch mode); reload the page to see the new tree
 ```
 
 ## ⚙️ Configuration
 
-### Change Detection Interval
-Modify the check interval in `structure-updater.js`:
-```javascript
-this.checkInterval = 30000; // 30 seconds (default)
+### Watch Interval
+Pass `--interval` to watch mode (seconds between directory scans):
+```bash
+python generate_structure.py --watch --interval 5
 ```
 
 ### File Type Filtering
@@ -172,15 +169,10 @@ excluded_dirs = {'.git', '.vscode', '__pycache__', 'node_modules', 'bin', 'obj'}
 - Verify file permissions
 - Run with verbose output: add debug prints to the script
 
-### Console Errors
-- Check browser console for specific error messages
-- Verify all script files are loaded correctly
-- Ensure querySelector selectors are valid
-
-### File Tree Not Refreshing
-- Check if `structure-updater.js` is loaded
-- Verify the browser monitoring is started
-- Check console for error messages
+### File Tree Not Showing New Content
+- Confirm `structure.json` actually changed (`git diff structure.json`)
+- Reload the page — the tree is fetched once per load, not polled
+- Commit the regenerated `structure.json`; CI fails if the committed copy is stale
 
 ---
 

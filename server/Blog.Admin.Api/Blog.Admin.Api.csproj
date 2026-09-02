@@ -25,9 +25,6 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
     <!-- API documentation for the admin API surface. -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
-    <!-- Server-side QR generation for TOTP enrollment. Keeps the shared secret
-         on the server instead of leaking it to a third-party QR service. -->
-    <PackageReference Include="QRCoder" Version="1.8.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(SkipPrivatePackages)' != 'true'">
@@ -38,7 +35,6 @@
     <PackageReference Include="KeshavSingh.Security" Version="0.5.0" />
     <PackageReference Include="KeshavSingh.Auth" Version="0.7.0" />
     <PackageReference Include="KeshavSingh.Mongo.NoSql" Version="0.3.0" />
-    <PackageReference Include="KeshavSingh.Realtime" Version="0.7.0" />
     <PackageReference Include="KeshavSingh.Core" Version="0.5.0" />
   </ItemGroup>
 
@@ -46,7 +42,6 @@
     <ProjectReference Include="..\..\..\shared-security\src\KeshavSingh.Security\KeshavSingh.Security.csproj" />
     <ProjectReference Include="..\..\..\shared-security\src\KeshavSingh.Auth\KeshavSingh.Auth.csproj" />
     <ProjectReference Include="..\..\..\KeshavSingh-Packages-Nosql\src\KeshavSingh.Mongo.NoSql\KeshavSingh.Mongo.NoSql.csproj" />
-    <ProjectReference Include="..\..\..\KeshavSingh-Packages-Realtime\src\KeshavSingh.Realtime\KeshavSingh.Realtime.csproj" />
     <ProjectReference Include="..\..\..\KeshavSingh-Packages-Core\src\KeshavSingh.Core\KeshavSingh.Core.csproj" />
   </ItemGroup>
 
