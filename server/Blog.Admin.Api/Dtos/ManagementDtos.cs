@@ -66,6 +66,20 @@ public sealed record ContentListItem(
 
 // ---- Links ----
 
+/// <summary>
+/// What an anonymous caller gets from the public link list: what the blog needs to render a link
+/// and nothing else. The stored document also carries who created/updated it and when, which is of
+/// no use to a reader — so it is projected away rather than served to the world.
+/// </summary>
+public sealed record LinkDto(
+    string Id,
+    string Title,
+    string Url,
+    string? Category,
+    string? Description,
+    string? Icon,
+    int Order);
+
 public sealed record CreateLinkRequest(
     [Required, MaxLength(160)] string Title,
     [Required, Url, MaxLength(2048)] string Url,

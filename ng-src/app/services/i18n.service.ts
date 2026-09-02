@@ -1,4 +1,4 @@
-import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, computed, effect, inject, signal } from '@angular/core';
 import { Observable, from } from 'rxjs';
 import { LocalizationClient, PublicLocale, TranslationBundle } from '@keshavsingh3197/web-config';
 import { IDP_BASE } from '../admin/api.config';
@@ -48,6 +48,16 @@ export class I18nService {
   });
 
   constructor() {
+    // Keep the document in step with the bundle's direction. Without this an RTL locale enabled in
+    // the config renders right-to-left text left-to-right — the signal existed but nothing applied
+    // it. `lang` moves with it, which is what screen readers and hyphenation read.
+    effect(() => {
+      const root = document.documentElement;
+      root.setAttribute('dir', this.direction());
+      const locale = this.locale();
+      if (locale) root.setAttribute('lang', locale);
+    });
+
     const off = this.client.onChange((value) => this.bundle.set(value));
     inject(DestroyRef).onDestroy(() => {
       off();

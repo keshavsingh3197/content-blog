@@ -5,6 +5,7 @@ import { forkJoin, of, catchError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminApiService } from '../services/admin-api.service';
 import { AuthService } from '../services/auth.service';
+import { ADMIN_APP_URL } from '../api.config';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -38,11 +39,11 @@ import { AuthService } from '../services/auth.service';
         <div><span class="stat-value">{{ mediaError() ? '—' : mediaCount() }}</span><span class="stat-name">Media files</span>
           <small class="muted stat-status" *ngIf="mediaError()">unavailable</small></div>
       </div>
-      <div class="stat-tile d" *ngIf="isAdmin()">
-        <span class="stat-ico"><i class="fas fa-users"></i></span>
-        <div><span class="stat-value">{{ userError() ? '—' : userCount() }}</span><span class="stat-name">Users</span>
-          <small class="muted stat-status" *ngIf="userError()">unavailable</small></div>
-      </div>
+      <!--
+        No "Users" tile. It used to render the row count of this app's own users collection, which
+        no authentication path reads any more — a number that looked authoritative and was not.
+        Accounts live at the identity provider; the quick action below links straight to them.
+      -->
       <div class="stat-tile" [class.ok]="twoFa()" [class.warn]="!twoFa()">
         <span class="stat-ico"><i class="fas" [class.fa-lock]="twoFa()" [class.fa-lock-open]="!twoFa()"></i></span>
         <div>
@@ -68,8 +69,8 @@ import { AuthService } from '../services/auth.service';
         </div>
         <div class="arch-node gate">
           <i class="fas fa-shield-halved"></i>
-          <strong>Auth + 2FA</strong>
-          <small>TOTP · email · backup</small>
+          <strong>Identity provider</strong>
+          <small>sign-in · roles · 2FA</small>
         </div>
         <div class="arch-flow">
           <span class="arch-label">validated</span>
@@ -87,7 +88,7 @@ import { AuthService } from '../services/auth.service';
         <div class="arch-node db">
           <i class="fas fa-database"></i>
           <strong>MongoDB</strong>
-          <small>users · content · media</small>
+          <small>content · media · comments</small>
         </div>
       </div>
     </div>
@@ -124,15 +125,16 @@ export class DashboardComponent implements OnInit {
   contentCount = signal(0);
   publishedCount = signal(0);
   mediaCount = signal(0);
-  userCount = signal(0);
 
   /** A source that failed to load reads as unavailable rather than a plausible 0. */
   readonly contentError = signal(false);
   readonly mediaError = signal(false);
-  readonly userError = signal(false);
 
-  /** Central identity provider — users, roles, security/2FA and settings are managed there. */
-  readonly idpUrl = 'https://admin.keshavsingh.in';
+  /**
+   * Central identity provider — users, roles, security/2FA and settings are managed there.
+   * Injected, so a local console does not link a developer to production.
+   */
+  readonly idpUrl = inject(ADMIN_APP_URL);
 
   firstName = computed(() => (this.auth.user()?.displayName ?? '').split(' ')[0] || 'there');
   isAdmin = computed(() => this.auth.hasRole('Admin'));
@@ -149,16 +151,11 @@ export class DashboardComponent implements OnInit {
         this.mediaError.set(true);
         return of([]);
       })),
-      users: this.isAdmin() ? this.api.listUsers().pipe(catchError(() => {
-        this.userError.set(true);
-        return of([]);
-      })) : of([]),
     }).pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(({ content, media, users }) => {
+      .subscribe(({ content, media }) => {
         this.contentCount.set(content.length);
         this.publishedCount.set(content.filter(c => c.published).length);
         this.mediaCount.set(media.length);
-        this.userCount.set(users.length);
       });
   }
 }

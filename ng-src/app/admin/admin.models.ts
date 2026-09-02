@@ -1,4 +1,7 @@
 // Types shared across the admin UI. Mirror the API DTOs.
+//
+// Login, 2FA-enrollment and settings shapes used to live here. They belonged to endpoints this
+// app no longer has — identity is the provider's, and the settings screen is gone.
 
 export type Role = 'Admin' | 'Editor' | 'Viewer';
 
@@ -12,13 +15,6 @@ export interface UserProfile {
   mustChangePassword: boolean;
 }
 
-export interface AuthTokens {
-  accessToken: string;
-  accessTokenExpiresAt: string;
-  refreshToken: string;
-  user: UserProfile;
-}
-
 /**
  * Session returned by the central IdP's /sso/session. No refresh token here — it lives only in
  * the HttpOnly SSO cookie.
@@ -27,35 +23,6 @@ export interface SsoSession {
   accessToken: string;
   accessTokenExpiresAt: string;
   user: UserProfile;
-}
-
-export interface LoginResponse {
-  twoFactorRequired: boolean;
-  twoFactorToken?: string;
-  emailFallbackAvailable: boolean;
-  smsFallbackAvailable: boolean;
-  tokens?: AuthTokens;
-}
-
-export type TwoFactorMethod = 'Totp' | 'Email' | 'BackupCode' | 'Sms';
-
-export interface EnrollStartResponse {
-  secret: string;
-  otpAuthUri: string;
-  qrCodePngDataUrl: string;
-}
-
-export interface UserListItem {
-  id: string;
-  email: string;
-  username?: string | null;
-  displayName: string;
-  phoneNumber?: string | null;
-  roles: Role[];
-  isActive: boolean;
-  twoFactorEnabled: boolean;
-  lastLoginAt?: string;
-  createdAt: string;
 }
 
 export interface ContentListItem {
@@ -93,33 +60,3 @@ export interface Link {
   visible: boolean;
   updatedAt?: string;
 }
-
-export interface SettingsView {
-  siteTitle: string;
-  emailTwoFactorEnabled: boolean;
-  smsTwoFactorEnabled: boolean;
-  emailEnabled: boolean;
-  emailHost: string;
-  emailPort: number;
-  emailUseStartTls: boolean;
-  emailFromAddress: string;
-  emailFromName: string;
-  emailUsername: string;
-  emailPasswordSet: boolean;
-  smsEnabled: boolean;
-  smsAccountSid: string;
-  smsAuthTokenSet: boolean;
-  smsFromNumber: string;
-  maxFailedLoginAttempts: number;
-  lockoutMinutes: number;
-  emailOtpMinutes: number;
-  backupCodeCount: number;
-  updatedAt: string;
-}
-
-/** Fields sent on update — omit a secret to keep it, send a value to replace it. */
-export type UpdateSettings = Partial<Omit<SettingsView,
-  'emailPasswordSet' | 'smsAuthTokenSet' | 'updatedAt'>> & {
-  emailPassword?: string;
-  smsAuthToken?: string;
-};

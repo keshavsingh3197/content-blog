@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { tap, catchError, map, shareReplay } from 'rxjs/operators';
 import { FileNode, TagSummary } from '../models/file-node.model';
+import { normalizeContentPath } from './content-path';
 
 /** The `key: value` pairs of a markdown front-matter block, as authored. */
 export interface FrontMatter {
@@ -20,20 +21,38 @@ export class ContentService {
   /** In-memory cache: path → shared Observable<string> */
   private fileCache = new Map<string, Observable<string>>();
 
+  /** Shared in-flight/settled structure request, so simultaneous subscribers issue one fetch. */
+  private structureRequest$?: Observable<FileNode[]>;
+
   constructor(private http: HttpClient) {}
 
   getStructure(): Observable<FileNode[]> {
     if (this.structureSubject.getValue().length > 0) {
       return this.structure$;
     }
-    return this.http.get<FileNode>('structure.json').pipe(
+    // Navbar, home, search and content-view all ask for the structure during the same tick, so the
+    // request is shared: without this each of them issues its own structure.json fetch. A failure
+    // drops the shared handle so the next caller retries rather than replaying an empty tree —
+    // the same discipline getFile() applies to fileCache.
+    this.structureRequest$ ??= this.http.get<FileNode>('structure.json').pipe(
       map(root => root.children ?? []),
-      tap(data => this.structureSubject.next(data)),
-      catchError(() => of([]))
+      tap({
+        next: data => this.structureSubject.next(data),
+        error: () => { this.structureRequest$ = undefined; },
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
+      catchError(() => of([] as FileNode[]))
     );
+    return this.structureRequest$;
   }
 
   getFile(path: string): Observable<string> {
+    // The path reaches us from the query string, so re-check it here as well as at the route: this
+    // is the call that turns a string into an HTTP request, and an unanchored value would fetch
+    // (and then render) markdown from somewhere that is not this blog.
+    if (!normalizeContentPath(path)) {
+      return throwError(() => new Error('Not a content path.'));
+    }
     if (!this.fileCache.has(path)) {
       const req$ = this.http.get(path, { responseType: 'text' }).pipe(
         tap({ error: () => this.fileCache.delete(path) }),
@@ -311,15 +330,24 @@ export class ContentService {
    * real link.
    */
   private mapOutsideCode(markdown: string, transform: (segment: string) => string): string {
-    const fence = /^\s*(```|~~~)/;
-    let insideFence = false;
+    const fence = /^\s*(```+|~~~+)/;
+    // Which delimiter opened the block we are in, or null outside one. A single boolean would
+    // desync for the rest of the file the first time a ``` block is "closed" by ~~~ — or the
+    // first time a fence appears inside another fence, which the CommonMark rule below allows.
+    let openDelimiter: string | null = null;
 
     return markdown.split('\n').map(line => {
-      if (fence.test(line)) {
-        insideFence = !insideFence;
+      const marker = fence.exec(line)?.[1];
+      if (marker) {
+        if (openDelimiter === null) {
+          openDelimiter = marker;
+        } else if (marker[0] === openDelimiter[0] && marker.length >= openDelimiter.length) {
+          // A closing fence must use the same character and be at least as long as the opener.
+          openDelimiter = null;
+        }
         return line;
       }
-      if (insideFence) return line;
+      if (openDelimiter !== null) return line;
 
       // Mask inline code spans so their contents are never transformed.
       const spans: string[] = [];
@@ -337,21 +365,25 @@ export class ContentService {
   rewriteImagePaths(markdown: string, filePath: string): string {
     const lastSlash = filePath.lastIndexOf('/');
     const baseDir = lastSlash >= 0 ? filePath.substring(0, lastSlash) : '';
-    return markdown.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match, alt, src: string) => {
-      if (src.startsWith('http') || src.startsWith('data:') || src.startsWith('//')) {
-        return `![${alt}](${src})`;
-      }
-      if (src.startsWith('./')) {
-        const resolved = baseDir ? `${baseDir}/${src.slice(2)}` : src.slice(2);
+    // Prose only, like rewriteDocumentLinks: an ![alt](path) example inside a ```markdown fence is
+    // something the reader is meant to see verbatim, not a real image to resolve.
+    return this.mapOutsideCode(markdown, segment =>
+      segment.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match, alt, src: string) => {
+        if (src.startsWith('http') || src.startsWith('data:') || src.startsWith('//')) {
+          return `![${alt}](${src})`;
+        }
+        if (src.startsWith('./')) {
+          const resolved = baseDir ? `${baseDir}/${src.slice(2)}` : src.slice(2);
+          return `![${alt}](${resolved})`;
+        }
+        if (src.startsWith('/')) {
+          // Absolute path missing the 'src/' prefix (e.g. /CSharp/Asset/...)
+          return `![${alt}](src${src})`;
+        }
+        // Plain relative path without leading './'
+        const resolved = baseDir ? `${baseDir}/${src}` : src;
         return `![${alt}](${resolved})`;
-      }
-      if (src.startsWith('/')) {
-        // Absolute path missing the 'src/' prefix (e.g. /CSharp/Asset/...)
-        return `![${alt}](src${src})`;
-      }
-      // Plain relative path without leading './'
-      const resolved = baseDir ? `${baseDir}/${src}` : src;
-      return `![${alt}](${resolved})`;
-    });
+      })
+    );
   }
 }

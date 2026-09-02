@@ -56,7 +56,13 @@ import { ToastService } from '../services/toast.service';
             </label>
           </div>
           <label class="switch-row">
-            <span>Published <small class="muted">— visible on the blog</small></span>
+            <!--
+              This flag lives on the Mongo document and nothing else reads it. The public blog is
+              static: it renders markdown under src/ listed in structure.json, and never queries
+              /api/content. So the label must not promise a reader-visible effect it cannot deliver
+              — publishing to the site means committing markdown and regenerating structure.json.
+            -->
+            <span>Published <small class="muted">— marks this draft ready (does not publish to the blog)</small></span>
             <input type="checkbox" name="p" [(ngModel)]="published"><span class="switch"></span>
           </label>
         </div>

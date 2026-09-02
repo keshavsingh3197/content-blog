@@ -1,11 +1,10 @@
 using System.Text;
 using System.Threading.RateLimiting;
-using Blog.Admin.Api.Auth;
 using Blog.Admin.Api.Configuration;
 using Blog.Admin.Api.Data;
+using Blog.Admin.Api.Routing;
 using Blog.Admin.Api.Services;
 using KeshavSingh.Auth;
-using KeshavSingh.Auth.Abstractions;
 using KeshavSingh.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -23,11 +22,7 @@ if (!string.IsNullOrWhiteSpace(port))
 builder.Services.AddKeshavMongo(builder.Configuration);
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.Section));
 builder.Services.Configure<EncryptionOptions>(builder.Configuration.GetSection(EncryptionOptions.Section));
-builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.Section));
-builder.Services.Configure<SmsOptions>(builder.Configuration.GetSection(SmsOptions.Section));
-builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection(SecurityOptions.Section));
 builder.Services.Configure<MediaOptions>(builder.Configuration.GetSection(MediaOptions.Section));
-builder.Services.Configure<SettingsRefreshOptions>(builder.Configuration.GetSection(SettingsRefreshOptions.Section));
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.Section).Get<JwtOptions>() ?? new JwtOptions();
 
@@ -40,39 +35,15 @@ if (string.IsNullOrWhiteSpace(jwtOptions.SigningKey))
         "Provide it via user-secrets, the Jwt__SigningKey environment variable, or Key Vault.");
 
 // ---- Services ----
+// Deliberately short. Identity is centralized at the provider, so there is no login engine, no
+// user store, no password hasher, no token minting and no OTP delivery here — this app validates
+// bearer tokens (below) and serves content.
 builder.Services.AddSingleton<MongoContext>();
-builder.Services.AddSingleton<PasswordHasher>();
-builder.Services.AddSingleton<TotpService>();
-builder.Services.AddSingleton<DataProtector>();
-builder.Services.AddSingleton<SettingsService>();
-// Keep the settings cache converged with Mongo (edits made elsewhere are picked up within the
-// refresh interval); the writing instance still updates its own cache immediately.
-builder.Services.AddHostedService<SettingsRefreshService>();
-builder.Services.AddSingleton<JwtService>();
-builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
-builder.Services.AddHttpClient();
-builder.Services.AddSingleton<ISmsSender, TwilioSmsSender>();
 // Keyed digest of IP + user agent, used to count a reader once per page rather than once per refresh.
 builder.Services.AddSingleton<VisitorKeyService>();
-builder.Services.AddHttpContextAccessor();
 
-// ---- Shared auth engine (KeshavSingh.Auth) + this app's storage adapters ----
-// MongoRefreshTokenStore/MongoAuditSink come from KeshavSingh.Core (shared with admin). This
-// app doesn't enforce single-session-per-user, so the default (false) is used.
-builder.Services.AddScoped<IAuthUserStore, MongoAuthUserStore>();
-builder.Services.AddScoped<IRefreshTokenStore, MongoRefreshTokenStore>();
-builder.Services.AddScoped<IAuthAuditSink, MongoAuditSink>();
-builder.Services.AddSingleton<IAuthSettings>(sp => sp.GetRequiredService<SettingsService>());
-// WhatsApp security alerts (e.g. account lockout) via KeshavSingh.Core's Meta Cloud API notifier.
-builder.Services.AddSingleton<IWhatsAppSettings>(sp => sp.GetRequiredService<SettingsService>());
-builder.Services.AddSingleton<WhatsAppNotifier>();
-// Same notifier also delivers the WhatsApp-fallback 2FA OTP, to the signed-in user's own number.
-builder.Services.AddSingleton<IWhatsAppSender, WhatsAppOtpSender>();
-builder.Services.AddKeshavAuthEngine();
-
-// Behind Render's TLS-terminating proxy: honour X-Forwarded-* so the app sees the
-// real client IP (rate limiting & audit) and the original https scheme (so the
-// HTTPS redirect below doesn't loop).
+// Behind Render's TLS-terminating proxy: honour X-Forwarded-* so the app sees the real client IP
+// (rate limiting and the visitor digest both key off it) and the original https scheme.
 builder.Services.Configure<ForwardedHeadersOptions>(o =>
 {
     o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -84,6 +55,11 @@ builder.Services.Configure<ForwardedHeadersOptions>(o =>
     o.KnownIPNetworks.Clear();
     o.KnownProxies.Clear();
 });
+
+// Entity ids are Mongo ObjectIds, so `{id:objectid}` routes reject a malformed id at routing time
+// (a clean 404) instead of letting it reach the driver and throw a FormatException.
+builder.Services.Configure<RouteOptions>(o =>
+    o.ConstraintMap["objectid"] = typeof(ObjectIdRouteConstraint));
 
 builder.Services
     .AddControllers()
@@ -205,6 +181,14 @@ app.Use(async (context, next) =>
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
         await context.Response.WriteAsJsonAsync(new { error = "The request was not valid JSON." });
     }
+    catch (FormatException)
+    {
+        // Safety net for a malformed identifier that reached a Mongo filter: ObjectId serialisation
+        // throws FormatException. Controllers validate ids at the boundary and return 404, so this
+        // only catches a path that forgot to — a bad request, not a server fault.
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { error = "The request was not valid." });
+    }
 });
 
 app.UseKeshavAuthExceptionHandling();
@@ -239,12 +223,21 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// ---- Startup init ----
-using (var scope = app.Services.CreateScope())
+// ---- Liveness probe (anonymous): what the container platform's health check points at. It pings
+// Mongo so a green check means this instance can reach its data store, not just that it is
+// listening; an unreachable database reports 503 rather than a misleading OK. ----
+app.MapGet("/health", async (MongoContext mongo, CancellationToken ct) =>
 {
-    // Load/seed settings before anything that reads them. Identity is centralized at the IdP
-    // (admin.keshavsingh.in), so this app no longer seeds or stores its own login users.
-    await scope.ServiceProvider.GetRequiredService<SettingsService>().InitAsync();
-}
+    try
+    {
+        await mongo.PingAsync(ct);
+        return Results.Ok(new { status = "ok" });
+    }
+    catch (Exception)
+    {
+        return Results.Json(new { status = "degraded" },
+            statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+}).AllowAnonymous();
 
 app.Run();

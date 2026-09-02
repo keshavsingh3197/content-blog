@@ -1,15 +1,16 @@
 # Content Blog
 
-An Angular 21 content blog (markdown-driven, deployed as a static site) **plus** a secure
-full-stack **Admin Console** — Angular UI + .NET 8 Web API + MongoDB — with authenticator-first
-two-factor auth, email-code fallback, and one-time backup codes.
+An Angular 22 content blog (markdown-driven, deployed as a static site) **plus** an
+**Admin Console** — Angular UI + .NET 10 Web API + MongoDB — for managing content, media, links and
+reader comments. Sign-in, users, roles and two-factor auth live at the central identity provider
+(`admin.keshavsingh.in`); this API only validates the tokens it issues.
 
 There are two things you can run:
 
 | Part | What it is | Needs |
 | --- | --- | --- |
 | **Public blog** | The static Angular site that renders the markdown in [src/](src/) | Node only |
-| **Admin console** | `/admin` UI + .NET API + MongoDB to manage content, media, users & 2FA | Node + .NET 8 + MongoDB |
+| **Admin console** | `/admin` UI + .NET API + MongoDB to manage content, media, links & comments | Node + .NET 10 + MongoDB |
 
 > Deep dive on the admin (architecture diagrams, API reference, security design): **[server/README.md](server/README.md)**.
 
@@ -17,7 +18,7 @@ There are two things you can run:
 
 ## Prerequisites
 
-- **Node.js 18+** and npm
+- **Node.js 20+** and npm (CI uses 22; Angular 22 requires ≥ 20)
 - For the admin console only: **.NET SDK 8+** (`dotnet --version`) and a **MongoDB** (local `mongod` or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster)
 
 Install the frontend dependencies once, from the repo root:
@@ -66,7 +67,7 @@ updated: 2026-08-22
 - `tags` takes either the inline `[a, b]` form or a YAML `- item` list.
 - Everything is optional. With no `title` the document's first `# heading` is used; **with no
   `tags` the folders the file lives in become its tags**, so every page is reachable from
-  [`/#/tags`](https://blog.keshavsingh.in/#/tags) whether or not anyone has annotated it.
+  [`/#/tags`](https://git.keshavsingh.in/#/tags) whether or not anyone has annotated it.
 - Tags are matched case-insensitively (`C#` and `c#` are one tag), and each links to the tag
   index. Nothing here calls an API — tags work on the static site exactly as they do locally.
 
@@ -152,7 +153,8 @@ dotnet user-secrets set "Mongo:ConnectionString" "mongodb://localhost:27017"
 # JWT signing key (32+ bytes)
 dotnet user-secrets set "Jwt:SigningKey" "$(openssl rand -base64 48)"
 
-# AES-256 key for encrypting TOTP secrets (Base64 of exactly 32 bytes)
+# AES-256 key. Keys the visitor digest used for view de-duplication (and any value
+# the API stores encrypted). Base64 of exactly 32 bytes.
 dotnet user-secrets set "Encryption:DataKey" "$(openssl rand -base64 32)"
 ```
 
@@ -183,8 +185,9 @@ dotnet run
 npm start
 ```
 
-Open <http://localhost:4200/#/admin/login> and sign in via SSO. Then go to **Security & 2FA**
-to enroll your authenticator app and save your backup codes.
+Open <http://localhost:4200/#/admin/login>. The route redirects to the identity provider, which
+signs you in and drops the shared `ks_sso` cookie; the console then trades it for an access token.
+Your account, password and two-factor enrollment are all managed there, not here.
 
 ### Pointing the UI at a different API
 
@@ -257,19 +260,23 @@ double underscore `__`:
 | `Jwt__SigningKey` | 32+ byte random string (mark **secret**) |
 | `Encryption__DataKey` | Base64 of 32 random bytes — AES-256 key (mark **secret**) |
 | `PACKAGES_READ_TOKEN` | GitHub PAT with `read:packages` so the Docker build can restore the private `KeshavSingh.*` NuGet packages (mark **secret/build secret**) |
-| `Cors__AllowedOrigins__0` | `https://<you>.github.io` (your Pages origin, no trailing slash) |
-| `Seed__AdminEmail` | `you@example.com` |
-| `Seed__AdminPassword` | strong password, **rotate after first login** (mark **secret**) |
-| `Email__*` / `Sms__*` | **optional — only seeds first-run defaults.** Email, SMS, and security thresholds are managed in **Admin → Settings** (stored in Mongo; secrets encrypted at rest). You can leave these unset and configure them in the UI. |
+| `Jwt__Issuer` / `Jwt__Audience` | must match the identity provider (`keshavsingh-idp` / `keshavsingh-apps`) |
 
-> **The running app only needs 3 app secrets in env**: `Mongo__ConnectionString`,
-> `Jwt__SigningKey`, `Encryption__DataKey` (the AES key that decrypts everything else).
-> These can't move to the DB — the connection string is needed *to reach* the DB, and the
-> AES key must live outside the data it protects. Everything else lives in **Admin → Settings**
-> with an Export/Import JSON backup. `PACKAGES_READ_TOKEN` is additionally required during the
-> Docker build so `dotnet restore` can read the private GitHub Packages feed; the running app
-> does not use it. For plain Docker builds, pass it as a BuildKit secret (for example
-> `--secret id=PACKAGES_READ_TOKEN,env=PACKAGES_READ_TOKEN`).
+There is no `Cors__*` setting: allowed origins are a predicate over `*.keshavsingh.in`, set in
+`Program.cs`, so a new sibling app needs no configuration change. There are no `Seed__*` settings
+either — identity lives at the provider.
+
+> **The running app needs exactly 3 app secrets in env**: `Mongo__ConnectionString`,
+> `Jwt__SigningKey` and `Encryption__DataKey`. None can move into the database — the connection
+> string is needed *to reach* it, the signing key must be byte-identical to the identity
+> provider's, and the AES key must live outside the data it protects. The app refuses to start
+> without a signing key rather than defaulting to one. `PACKAGES_READ_TOKEN` is additionally
+> required during the Docker build so `dotnet restore` can read the private GitHub Packages feed;
+> the running app does not use it. For plain Docker builds, pass it as a BuildKit secret (for
+> example `--secret id=PACKAGES_READ_TOKEN,env=PACKAGES_READ_TOKEN`).
+
+> **Health check:** point Render's health check path at `/health`. It pings MongoDB, so a green
+> check means the instance can reach its data store rather than merely that it is listening.
 
 > **MongoDB Atlas:** create a database user, and under *Network Access* allow Render's egress
 > (simplest: `0.0.0.0/0` while testing, then tighten). Atlas enforces TLS by default.
@@ -297,8 +304,9 @@ double underscore `__`:
    Keep the existing `CNAME` if you use a custom domain. Routing uses hash URLs
    (`/#/admin/...`), so Pages needs no special rewrite rules.
 
-3. In Render, make sure `Cors__AllowedOrigins__0` matches the exact origin the browser uses
-   (your `github.io` subdomain **or** your custom domain).
+3. Serve the site from a `keshavsingh.in` subdomain (this repo's `CNAME` is
+   `git.keshavsingh.in`). The API's CORS predicate allows any `https://*.keshavsingh.in` origin,
+   and the shared SSO cookie is only sent to that domain.
 
 ### C. "Nothing exposed" checklist
 
@@ -306,61 +314,40 @@ double underscore `__`:
   come only from Render env vars. `.gitignore` already excludes `bin/`, `obj/`, `*.user`,
   `App_Data/`, and local secret files.
 - ✅ **No secrets in the frontend bundle** — only the public API URL is embedded.
-- ✅ **CORS is allow-listed** — only your Pages origin may call the API.
-- ✅ **Transport is encrypted** — Render serves HTTPS; Atlas requires TLS; SMTP uses STARTTLS.
-- ✅ **Secrets stay server-side** — the AES key that decrypts TOTP secrets and the JWT signing
-  key live in Render's environment, never in Mongo or the client.
-- 🔒 **Before going live:** sign in as the seeded admin, enable 2FA, then **rotate the seed
-  password**. Consider clearing `Seed__AdminPassword` afterwards so it can't re-seed.
+- ✅ **CORS is allow-listed** — a predicate over `https://*.keshavsingh.in`, never `AllowAnyOrigin`,
+  and credentialed requests are only accepted from it.
+- ✅ **Transport is encrypted** — Render serves HTTPS; Atlas requires TLS.
+- ✅ **Secrets stay server-side** — the AES key and the JWT signing key live in Render's
+  environment, never in Mongo or the client.
+- ✅ **No credentials here to leak** — this service issues no tokens and stores no passwords;
+  sign-in, password and 2FA all belong to the identity provider.
 
 ---
 
-## Seeding the admin directly in MongoDB (scripts)
+## Accounts, sign-in and 2FA
 
-Besides the built-in `Seed__*` env vars, you can insert an admin **straight into Mongo**
-using your connection string. All three variants below write the password with the exact
-PBKDF2 scheme the API verifies, create the user as **Admin** with **2FA off** (so first login
-forces authenticator setup), and won't overwrite an existing user's password.
+All of it lives at the identity provider (`admin.keshavsingh.in`), not in this repo:
 
-**PowerShell** (lightest — computes the hash natively, only needs `mongosh` on PATH):
-
-```powershell
-cd server/scripts
-./seed-admin.ps1 -Uri "mongodb+srv://user:pass@cluster.mongodb.net" `
-                 -Email admin@keshavsingh.in -Password "a-strong-password" -DisplayName "Keshav Singh"
-```
-
-**Bash** (needs `mongosh` + `python3`):
-
-```bash
-cd server/scripts
-./seed-admin.sh "mongodb+srv://user:pass@cluster.mongodb.net" admin@keshavsingh.in "a-strong-password" "Keshav Singh"
-```
-
-**Node** (self-contained — no `mongosh`, but runs `npm install` once):
-
-```bash
-cd server/scripts && npm install
-node seed-admin.mjs "mongodb+srv://user:pass@cluster.mongodb.net" admin@keshavsingh.in "a-strong-password" "Keshav Singh"
-```
-
-> `mongosh` = the [MongoDB Shell](https://www.mongodb.com/try/download/shell). The Node version
-> also prints fresh `Jwt__SigningKey` / `Encryption__DataKey` values for your Render env.
-
-## First-login onboarding (temp password + forced 2FA)
-
-- Users you create in the **Users & Roles** page get a **temporary password** and must set their
-  own on first sign-in.
-- Any user **without 2FA** is redirected to **Security & 2FA** and cannot use the rest of the
-  console until an authenticator is enrolled.
+- Accounts are created and given roles there; this API only reads the `role` claims out of a token
+  it validates.
+- Password changes, authenticator enrollment and backup codes are pages of *that* console — the
+  blog console links out to them ("Identity & account" in the sidebar foot).
+- There is nothing to seed here. Older revisions of this README described `Seed__*` environment
+  variables and `server/scripts/seed-admin.*`; both belonged to a local login this service no
+  longer implements.
 
 ---
 
 ## Roles
 
-- **Admin** — full control, including user & role management
-- **Editor** — create/edit/delete content and media
+Role names are a shared contract across the whole app family (`KeshavSingh.Core`), and they
+arrive in the token — renaming one silently breaks authorization everywhere:
+
+- **Admin** — full control of this console, including comment moderation
+- **Editor** — create/edit/delete content, media and links
 - **Viewer** — read-only access to the console
+
+Who holds which role is decided at the identity provider.
 
 ---
 
@@ -371,7 +358,7 @@ ng-src/            Angular app
   app/             public blog components + services
   app/admin/       admin console (routes, guards, interceptor, pages)
 src/               markdown content rendered by the blog
-server/            .NET 8 Web API + MongoDB (admin backend)
+server/            .NET 10 Web API + MongoDB (admin backend)
 structure.json     generated navigation tree for the blog
 ```
 
@@ -380,6 +367,13 @@ structure.json     generated navigation tree for the blog
 ## Troubleshooting
 
 - **API won't start / "Mongo:ConnectionString is not configured"** — you skipped Step 1; set the user-secrets.
+- **API won't start / "Jwt:SigningKey is not configured"** — deliberate: without a key the service
+  cannot tell a real token from a forged one, so it refuses to boot instead of defaulting.
+- **401 on every console request** — your `Jwt:SigningKey` does not match the identity provider's.
+  It must be byte-identical; the two services share one key.
 - **Login works but images don't load** — make sure the API is running; media is served from `/api/media/...`.
-- **CORS errors in the browser** — the API allows `http://localhost:4200` by default; add your origin under `Cors:AllowedOrigins` in [appsettings.json](server/Blog.Admin.Api/appsettings.json).
-- **Locked out after a lost authenticator** — sign in with a **backup code**, or use the **email** fallback (configure SMTP under `Email:*`, or read the dev code from the API logs).
+- **CORS errors in the browser** — the API allows `https://*.keshavsingh.in` plus localhost in
+  development (see `AddKeshavSsoCors` in [Program.cs](server/Blog.Admin.Api/Program.cs)); there is
+  no origin list in `appsettings.json` to edit.
+- **Locked out after a lost authenticator** — recover at the identity provider; this app has no
+  login of its own.

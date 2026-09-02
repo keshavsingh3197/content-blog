@@ -5,6 +5,7 @@ import { AuthService } from '../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { ToastService } from '../services/toast.service';
 import { ToastHostComponent } from '../components/toast-host.component';
+import { ADMIN_APP_URL } from '../api.config';
 
 interface NavLink {
   label: string;
@@ -108,8 +109,12 @@ export class AdminLayoutComponent {
     { label: 'Comments', icon: 'fa-comments', path: '/admin/comments', exact: false, roles: ['Admin'] },
   ];
 
-  /** The central identity provider where account, 2FA, users and settings are managed. */
-  readonly idpUrl = 'https://admin.keshavsingh.in';
+  /**
+   * The central identity provider where account, 2FA, users and settings are managed. Injected
+   * rather than hardcoded so a local console links to a local IdP — `window.__ADMIN_APP_URL__`
+   * carries the deployed value.
+   */
+  readonly idpUrl = inject(ADMIN_APP_URL);
 
   visibleLinks = computed(() => {
     const u = this.user();
@@ -121,7 +126,14 @@ export class AdminLayoutComponent {
     return name.split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase();
   });
 
-  topRole = computed(() => this.user()?.roles?.[0] ?? 'Viewer');
+  // Roles arrive in insertion order, so ['Editor','Admin'] would otherwise label an admin
+  // "Editor". Show the most privileged one the user actually holds.
+  private static readonly RolePrecedence = ['Admin', 'Editor', 'Viewer'] as const;
+
+  topRole = computed(() => {
+    const roles = this.user()?.roles ?? [];
+    return AdminLayoutComponent.RolePrecedence.find(r => roles.includes(r)) ?? 'Viewer';
+  });
 
   logout(): void {
     this.auth.logout().subscribe({
@@ -132,6 +144,8 @@ export class AdminLayoutComponent {
 
   private done(): void {
     this.toast.info('Signed out.');
-    this.router.navigate(['/admin/login']);
+    // Not /admin/login: that component immediately redirects to the identity provider, so there
+    // would be no signed-out resting state — you could not log out and stay on the site.
+    this.router.navigate(['/']);
   }
 }

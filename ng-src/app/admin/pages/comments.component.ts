@@ -44,7 +44,7 @@ import { ToastService } from '../services/toast.service';
         <input
           class="filter-input"
           type="search"
-          placeholder="Filter by document path, e.g. src/CSharp/csharp-interview.md"
+          placeholder="Filter by folder or document, e.g. CSharp or src/CSharp/csharp-interview.md"
           [(ngModel)]="pathFilter"
           (keyup.enter)="reload()" />
         <button class="btn-ghost" (click)="reload()">Apply</button>

@@ -46,7 +46,7 @@ public sealed partial class ContentController : ControllerBase
         return Ok(items.Select(Map).ToList());
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:objectid}")]
     [Authorize(Roles = CanRead)]
     public async Task<ActionResult<ContentTopic>> Get(string id)
     {
@@ -80,7 +80,7 @@ public sealed partial class ContentController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = topic.Id }, topic);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:objectid}")]
     [Authorize(Roles = CanWrite)]
     public async Task<ActionResult<ContentTopic>> Update(string id, UpdateContentRequest request)
     {
@@ -114,7 +114,7 @@ public sealed partial class ContentController : ControllerBase
         return item is null ? NotFound() : Ok(item);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:objectid}")]
     [Authorize(Roles = CanWrite)]
     public async Task<IActionResult> Delete(string id)
     {

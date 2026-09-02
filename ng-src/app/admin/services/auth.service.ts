@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, shareReplay } from 'rxjs';
 import { ADMIN_APP_URL, IDP_BASE } from '../api.config';
-import { EnrollStartResponse, Role, SsoSession, UserProfile } from '../admin.models';
+import { Role, SsoSession, UserProfile } from '../admin.models';
 
 /**
  * Auth client for the blog admin console. This app is an SSO CONSUMER: it does not authenticate
@@ -78,29 +78,6 @@ export class AuthService {
     this.user.set(null);
   }
 
-  // ---- Self-service against the central IdP (bearer; the interceptor attaches the token) ----
-
-  enrollStart(): Observable<EnrollStartResponse> {
-    return this.http.post<EnrollStartResponse>(`${this.idp}/auth/2fa/enroll/start`, {});
-  }
-
-  enrollConfirm(code: string): Observable<{ backupCodes: string[] }> {
-    return this.http.post<{ backupCodes: string[] }>(`${this.idp}/auth/2fa/enroll/confirm`, { code })
-      .pipe(tap(() => this.patchUser({ twoFactorEnabled: true })));
-  }
-
-  disableTwoFactor(password: string): Observable<void> {
-    return this.http.post<void>(`${this.idp}/auth/2fa/disable`, { password })
-      .pipe(tap(() => this.patchUser({ twoFactorEnabled: false })));
-  }
-
-  changePassword(currentPassword: string, newPassword: string): Observable<void> {
-    return this.http.post<void>(`${this.idp}/auth/change-password`, { currentPassword, newPassword })
-      .pipe(tap(() => this.patchUser({ mustChangePassword: false })));
-  }
-
-  private patchUser(patch: Partial<UserProfile>): void {
-    const u = this.user();
-    if (u) this.user.set({ ...u, ...patch });
-  }
+  // No 2FA-enrollment or change-password calls here: those are pages of the identity provider's
+  // own console, which this app links out to rather than proxying.
 }

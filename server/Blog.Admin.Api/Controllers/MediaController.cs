@@ -26,7 +26,12 @@ public sealed class MediaController : ControllerBase
         ["image/jpeg"] = ".jpg",
         ["image/gif"] = ".gif",
         ["image/webp"] = ".webp",
-        ["image/svg+xml"] = ".svg",
+        // No SVG. An SVG is a script-capable document, not an image: it can carry <script>, and the
+        // only thing standing between an uploaded one and stored XSS is the CSP header on Raw
+        // below. That header is a single line on a single action, and today it is load-bearing only
+        // because the API lives on a different site from *.keshavsingh.in — move this service to
+        // api.keshavsingh.in and the family SSO cookie would be in scope. Raster types have magic
+        // bytes we can verify; SVG does not. So it is off the allowlist.
     };
 
     private readonly MongoContext _db;
@@ -72,9 +77,9 @@ public sealed class MediaController : ControllerBase
             await file.CopyToAsync(stream);
 
         // The declared ContentType alone is spoofable; verify the bytes on disk really are the
-        // format it claims (raster types). SVG is text/XML and has no fixed magic — it is accepted
-        // on the content allowlist and served with a sandboxing CSP header instead.
-        if (ext != ".svg" && !MatchesImageSignature(fullPath, file.ContentType))
+        // format it claims. Every accepted type has a fixed signature (see ExtByType), so there is
+        // no exemption from this check.
+        if (!MatchesImageSignature(fullPath, file.ContentType))
         {
             System.IO.File.Delete(fullPath);
             return BadRequest(new { error = "File contents do not match the declared image type." });
@@ -107,7 +112,7 @@ public sealed class MediaController : ControllerBase
     /// id is a random ObjectId, so URLs are not guessable, and only allow-listed
     /// image types are ever stored.
     /// </summary>
-    [HttpGet("{id}/raw")]
+    [HttpGet("{id:objectid}/raw")]
     [AllowAnonymous]
     public async Task<IActionResult> Raw(string id)
     {
@@ -123,7 +128,9 @@ public sealed class MediaController : ControllerBase
             || Path.IsPathRooted(relative) || !System.IO.File.Exists(fullPath))
             return NotFound();
 
-        // Neutralise any script embedded in an uploaded SVG if opened directly.
+        // Belt and braces for anything opened directly rather than through an <img>: nothing loads,
+        // nothing scripts. SVG is no longer accepted on upload, but assets stored before that change
+        // are still served from here, so THIS HEADER IS THE CONTROL for them — do not drop it.
         Response.Headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
         // Public image meant to be embedded from the (cross-site) frontend, so relax
         // the global same-site CORP to allow <img> loads from another origin.
@@ -131,7 +138,7 @@ public sealed class MediaController : ControllerBase
         return PhysicalFile(fullPath, asset.ContentType);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:objectid}")]
     [Authorize(Roles = CanWrite)]
     public async Task<IActionResult> Delete(string id)
     {

@@ -35,6 +35,12 @@ jobs:
       - name: Regenerate structure.json
         run: python3 generate_structure.py
 
+      # structure.json is generated but committed, and the site is built from the regenerated copy.
+      # Without this check a stale commit is invisible: the deploy silently ships navigation that
+      # nobody's checkout can reproduce.
+      - name: Fail if the committed structure.json is stale
+        run: git diff --exit-code -- structure.json
+
       # The private @keshavsingh3197/* packages come from GitHub Packages. The committed .npmrc
       # references ${PACKAGES_READ_TOKEN}; without it npm sends an empty credential and the registry
       # answers 401 for every scoped package. GITHUB_TOKEN works here because this repo and the
@@ -51,6 +57,25 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist/browser
+
+  # The API is not part of the Pages bundle, and nothing else ever compiles it: without this job the
+  # only build of server/ is a Render deploy, which happens after the merge. Kept independent of the
+  # Pages deploy on purpose — a C# error should fail a check, not block publishing an article.
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Same private-feed credential as the npm step: server/nuget.config references
+      # %PACKAGES_READ_TOKEN% for the KeshavSingh.* packages.
+      - name: Build the Blog Admin API
+        env:
+          PACKAGES_READ_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN || github.token }}
+        run: dotnet build server/Blog.Admin.Api/Blog.Admin.Api.csproj -c Release
 
   deploy:
     environment:
