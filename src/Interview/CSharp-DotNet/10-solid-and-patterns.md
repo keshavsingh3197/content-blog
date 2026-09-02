@@ -1,11 +1,18 @@
+---
+title: SOLID & Design Patterns
+summary: SOLID with bad-to-good C# pairs, plus Singleton, Abstract Factory, Builder and Prototype in depth.
+tags: [C#, SOLID, Design-Patterns, Interview]
+updated: 2026-09-02
+---
+
 # 10 — SOLID & Design Patterns
 
 > **Scope:** the five SOLID principles with a *bad → good* pair each, and the creational patterns
 > the .NET Word notes cover — Singleton, Abstract Factory, Builder, Prototype — plus what a modern
 > C# answer looks like.
 > Full GOF catalogue on this blog: [GOF patterns](../../GOF/GOF.md) ·
-> [Interview-Prep 03 — SOLID](../../Interview-Prep/03-solid-and-design-principles.md) ·
-> [csharp-solid.md](../csharp-solid.md).
+> [Architecture 03 — SOLID](../Architecture/03-solid-and-design-principles.md) ·
+> [csharp-solid.md](../../CSharp/csharp-solid.md).
 
 ---
 
@@ -498,4 +505,4 @@ because collaborators are handed to it rather than constructed inside it.
 ---
 
 **Prev:** [09 — ASP.NET Core Pipeline & DI](09-aspnet-core-pipeline-and-di.md) ·
-**Up:** [Interview hub](../csharp-interview.md)
+**Up:** [Interview hub](readme.md)

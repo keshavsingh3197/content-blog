@@ -1,3 +1,10 @@
+---
+title: Memory, GC & Profiling
+summary: GC generations and algorithms, IDisposable and finalizers, dump analysis and the profilers worth knowing.
+tags: [Architecture, Memory, GC, Profiling, Interview]
+updated: 2026-09-02
+---
+
 # Memory, GC & Profiling
 
 > How the .NET runtime manages memory: stack vs heap, GC generations and algorithms,

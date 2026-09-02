@@ -1,3 +1,10 @@
+---
+title: SOLID & Design Principles
+summary: SOLID in practice plus DRY, KISS and YAGNI, and how coupling and cohesion decide whether a design survives change.
+tags: [Architecture, SOLID, Design, Interview]
+updated: 2026-09-02
+---
+
 # SOLID & Design Principles
 
 > The five SOLID principles plus the wider design maxims (DRY, KISS, YAGNI, cohesion/coupling, composition over inheritance, Law of Demeter) with short C# illustrations.

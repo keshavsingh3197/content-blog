@@ -1,9 +1,16 @@
+---
+title: Async, Threading & TPL
+summary: Sync vs async, the state machine, Thread vs Task vs TPL, CancellationToken, lock, deadlocks, Lazy and the thread-safe singleton.
+tags: [C#, Async, Threading, TPL, Interview]
+updated: 2026-09-02
+---
+
 # 08 — Async, Threading, TPL & Locking
 
 > **Scope:** sync vs async explained so it actually lands, `Task` vs `Thread` vs TPL,
 > `CancellationToken`, `lock` and the modern `Lock` type, deadlocks and the classic mistakes.
 > Broader concurrency theory:
-> [Interview-Prep 05 — Concurrency](../../Interview-Prep/05-concurrency-and-multithreading.md).
+> [Interview-Prep 05 — Concurrency](../Architecture/05-concurrency-and-multithreading.md).
 
 ---
 
@@ -345,6 +352,60 @@ public sealed class Logger2
 
 ---
 
+## `Lazy<T>` — deferred, thread-safe initialisation
+
+Lazy initialisation defers expensive work until someone actually needs the result. The point is
+**not** that it runs faster: the cost is *avoided entirely* if the value is never read, and paid
+**exactly once** if it is.
+
+```c#
+public sealed class ReportService
+{
+    // Nothing is built when ReportService is constructed...
+    private readonly Lazy<IReadOnlyList<int>> _lookup = new(() =>
+    {
+        var table = new List<int>(5_000_000);
+        for (int i = 0; i < 5_000_000; i++) table.Add(i);
+        return table;
+    });
+
+    // ...the factory runs on the FIRST read of .Value, then the result is cached.
+    public int Count => _lookup.Value.Count;
+}
+```
+
+`Lazy<T>` is **thread-safe by default** — `LazyThreadSafetyMode.ExecutionAndPublication`, meaning
+concurrent first-readers block and the factory runs once. That default is what makes it the
+cleanest thread-safe singleton in C#:
+
+```c#
+public sealed class Singleton
+{
+    private static readonly Lazy<Singleton> _instance = new(() => new Singleton());
+    public static Singleton Instance => _instance.Value;
+    private Singleton() { }
+}
+```
+
+| Mode | Factory may run | Use when |
+| --- | --- | --- |
+| `ExecutionAndPublication` (default) | once, others block | almost always |
+| `PublicationOnly` | concurrently; first result wins, others discarded | the factory is cheap and side-effect free |
+| `None` | no synchronisation at all | single-threaded access, guaranteed |
+
+> ⚠️ If the factory **throws**, `ExecutionAndPublication` caches the exception — every later
+> `.Value` rethrows the same one. Pass `LazyThreadSafetyMode.PublicationOnly` if you need retries.
+
+> ⚠️ Do not confuse this with EF Core's **lazy loading** of navigation properties. Same idea, very
+> different failure mode: there it causes N+1 queries. See
+> [Architecture 07 — Databases & ORM](../Architecture/07-databases-and-orm.md).
+
+> 🎯 **The senior answer:** "`Lazy<T>` defers construction to first use and caches the result;
+> the default thread-safety mode runs the factory exactly once even under contention, which makes
+> it the idiomatic thread-safe singleton. Just remember it caches a thrown exception too."
+
+---
+
 ## Rapid-fire Q&A
 
 **Q: Does `async` create a new thread?**
@@ -379,4 +440,4 @@ slow but the servers are bored".
 
 **Prev:** [07 — Delegates, Events & LINQ](07-delegates-events-and-linq.md) ·
 **Next:** [09 — ASP.NET Core Pipeline & DI](09-aspnet-core-pipeline-and-di.md) ·
-**Up:** [Interview hub](../csharp-interview.md)
+**Up:** [Interview hub](readme.md)

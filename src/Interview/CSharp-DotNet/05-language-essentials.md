@@ -1,3 +1,10 @@
+---
+title: Language Essentials
+summary: Keywords, operators, access modifiers, const vs static vs readonly, pattern matching, arrays and spans, indexers, exception handling, dynamic vs reflection.
+tags: [C#, Language, Pattern-Matching, Interview]
+updated: 2026-09-02
+---
+
 # 05 — Language Essentials
 
 > **Scope:** the fundamentals interviewers use as warm-up — keywords, namespaces, comments,
@@ -201,6 +208,44 @@ public class Vault
 
 ---
 
+## `const` vs `static` vs `readonly`
+
+Three modifiers that get conflated constantly. They answer **different** questions: *when is the
+value fixed*, and *who owns it*.
+
+| | `const` | `static readonly` | `readonly` | `static` |
+| --- | --- | --- | --- | --- |
+| Value fixed at | **compile** time | run time (static ctor) | run time (instance ctor) | never — reassignable |
+| Belongs to | the type (implicitly static) | the type | the **instance** | the type |
+| Can hold any type? | no — only primitives, `string`, `enum`, `null` | **yes** | **yes** | yes |
+| Baked into callers? | **yes** — this is the trap | no | no | no |
+| Typical use | `MaxRetries = 3` | `static readonly TimeSpan Timeout` | injected dependency field | counter, cache |
+
+```c#
+public class Config
+{
+    public const int MaxRetries = 3;                       // compile-time literal
+    public static readonly TimeSpan Timeout =              // computed once, per type
+        TimeSpan.FromSeconds(int.Parse("30"));
+    private readonly ILogger _log;                         // per instance, set in ctor
+    public static int RequestCount;                        // mutable type-level state
+
+    public Config(ILogger log) => _log = log;              // only place _log may be assigned
+}
+```
+
+> ⚠️ **The `const` versioning trap.** Because `const` is substituted into the **call site**, a
+> consumer that referenced `Config.MaxRetries = 3` keeps the literal `3` after you ship `4` — until
+> it is *recompiled*. For any value in a public library API that might ever change, use
+> `static readonly` instead. `const` is for values that are true by definition (`Pi`, `HttpMethods.Get`).
+
+> 🎯 **The senior answer:** "`const` is a compile-time literal inlined into callers, so changing one
+> in a published library is a breaking change unless consumers recompile. `static readonly` is
+> fixed once at run time and safe to version. Plain `readonly` is per-instance immutability
+> enforced after the constructor. `static` alone says *type-level*, not *immutable*."
+
+---
+
 ## Conditionals and switch
 
 ```c#
@@ -287,6 +332,68 @@ Span<int> span = stackalloc int[3];      // on the stack, zero heap allocation
 int[] data = [1, 2, 3, 4, 5];
 ReadOnlySpan<int> window = data.AsSpan()[1..4];   // a VIEW, no copy
 ```
+
+---
+
+## Indexers
+
+An indexer lets an object be subscripted like an array. It is a **property with parameters**:
+declared with `this[...]`, so the type keeps control of what a "key" means.
+
+```c#
+public class Settings
+{
+    private readonly Dictionary<string, string> _values = new();
+
+    // The indexer *is* the public surface — the dictionary stays private.
+    public string this[string key]
+    {
+        get => _values.TryGetValue(key, out var v) ? v : throw new KeyNotFoundException(key);
+        set => _values[key] = value;
+    }
+}
+
+var settings = new Settings();
+settings["theme"] = "dark";
+Console.WriteLine(settings["theme"]);   // dark
+```
+
+Indexers **overload on the parameter list**, like methods — so one type can be keyed several ways:
+
+```c#
+public class Grid
+{
+    private readonly int[,] _cells = new int[8, 8];
+
+    public int this[int row, int col]                    // two-dimensional
+    {
+        get => _cells[row, col];
+        set => _cells[row, col] = value;
+    }
+
+    public int this[string algebraic]                    // "e4" style
+    {
+        get => this[algebraic[1] - '1', algebraic[0] - 'a'];
+        set => this[algebraic[1] - '1', algebraic[0] - 'a'] = value;
+    }
+}
+
+var board = new Grid();
+board["e4"] = 1;
+Console.WriteLine(board[3, 4]);   // 1 — same cell, two keys
+```
+
+| Rule | Why |
+| --- | --- |
+| Cannot be `static` | An indexer accesses **instance** data; there is no `Type[...]` syntax in C#. |
+| Cannot take `ref`/`out` parameters | The accessor is a property, and property parameters are by-value. |
+| Overloads on the parameter list | Same rule as methods — `this[int]` and `this[string]` coexist. |
+| Can be declared on an interface | `IReadOnlyList<T>` is exactly this: `T this[int index] { get; }`. |
+| Named `Item` in IL | Which is why you cannot also declare a member called `Item`. |
+
+> 🎯 **The senior answer:** "An indexer is a parameterised property — `this[key]` — so a type can
+> expose array-like access while keeping its backing store private and validating the key. It
+> overloads like a method but can never be static, because it reads instance state."
 
 ---
 
@@ -485,4 +592,4 @@ No. `is` tests (and can bind a variable). `as` converts, returning `null` on fai
 
 **Prev:** [04 — Abstract vs Interface](04-abstract-vs-interface.md) ·
 **Next:** [06 — Collections & Generics](06-collections-and-generics.md) ·
-**Up:** [Interview hub](../csharp-interview.md)
+**Up:** [Interview hub](readme.md)

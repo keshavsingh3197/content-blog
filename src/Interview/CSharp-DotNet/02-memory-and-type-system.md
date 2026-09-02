@@ -1,3 +1,10 @@
+---
+title: Memory, Types & Boxing
+summary: Value vs reference types with stack-vs-heap told correctly, struct vs class, the real cost of boxing, casting, ref/out/in and weak references.
+tags: [C#, .NET, Memory, Boxing, Interview]
+updated: 2026-09-02
+---
+
 # 02 — Memory, Types, Boxing & Casting
 
 > **Scope:** value vs reference types, stack vs heap (told *correctly*), boxing costs, casting,
@@ -363,4 +370,4 @@ readonly fields — measurably faster and it documents immutability.
 
 **Prev:** [01 — Platform & CLR](01-dotnet-platform-and-clr.md) ·
 **Next:** [03 — OOP & Class Design](03-oop-and-class-design.md) ·
-**Up:** [Interview hub](../csharp-interview.md)
+**Up:** [Interview hub](readme.md)

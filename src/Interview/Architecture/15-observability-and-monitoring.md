@@ -1,3 +1,10 @@
+---
+title: Observability & Monitoring
+summary: Logs, metrics and traces, OpenTelemetry, ELK, Grafana and Prometheus, and the APM tools worth naming.
+tags: [Architecture, Observability, OpenTelemetry, Monitoring, Interview]
+updated: 2026-09-02
+---
+
 # Observability & Monitoring
 
 > The three pillars and four golden signals, structured logging in .NET, OpenTelemetry,

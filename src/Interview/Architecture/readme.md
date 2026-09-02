@@ -1,6 +1,13 @@
-# Interview & Promotion Prep
+---
+title: Architecture & Senior Track
+summary: An 18-chapter senior/architect interview track — language fundamentals, design, data, distributed systems, cloud, delivery and NFRs, all in C# / .NET 10.
+tags: [Interview, Architecture, System-Design, .NET, Azure]
+updated: 2026-09-02
+---
 
-> A senior/architect-level study track, mapped from a competency framework covering
+# Architecture & Senior Track
+
+> An 18-chapter senior/architect-level study track, mapped from a competency framework covering
 > language fundamentals, design, data, distributed systems, cloud and delivery.
 > Code examples target **C# / .NET 10**; Java-specific terms from the source list are
 > mapped to their .NET equivalents (e.g. `CompletableFuture` → `Task`,
@@ -35,6 +42,7 @@ jump to a weak area.
 - [09 — Messaging & Eventing](09-messaging-and-eventing.md) — pub/sub vs queue, durability, tracing, schemas, AMQP/Kafka, broker internals, event-driven.
 - [10 — Microservices Patterns](10-microservices-patterns.md) — orchestration vs choreography, DDD & bounded context, Saga/compensation, CQRS, event sourcing, DB strategies.
 - [17 — Architecture & NFRs](17-architecture-and-nfrs.md) — NFRs, data at rest/in motion/in use, multi-tenancy, multi-geo/brand, scale, layering, views, deployment checklist, canary.
+- [18 — NFR Deep Dive](18-nfr-deep-dive.md) — the eight NFRs one level deeper: measurable targets, the .NET/Azure lever for each, RTO/RPO, and a worked e-commerce example.
 
 ### Platform & Delivery
 - [12 — Cloud Architecture](12-cloud-architecture.md) — deployment models, serverless & storage, IaC (Terraform/Bicep/ARM), cloud-native web & data integration, networking, monitoring.
@@ -42,4 +50,4 @@ jump to a weak area.
 - [15 — Observability & Monitoring](15-observability-and-monitoring.md) — logs/metrics/traces, OpenTelemetry, ELK, Grafana/Prometheus, APM/COTS tools.
 - [16 — Web & Frontend](16-web-and-frontend.md) — HTTP/WebSockets, full-stack, SPA design, advanced React & Angular.
 
-> Related deep-dives already in this blog: [C#](../CSharp/csharp.md), [Modern C#](../CSharp/modern-csharp.md), [GOF patterns](../GOF/GOF.md), [SQL](../SQL/sql.md), [Azure](../Azure/azure.md), [AWS](../AWS/aws.md), [Containerization](../Containerization/K8/k8.md).
+> Related deep-dives already in this blog: [C#](../CSharp-DotNet/readme.md), [Modern C#](../../CSharp/modern-csharp.md), [GOF patterns](../../GOF/GOF.md), [SQL](../../SQL/sql.md), [Azure](../../Azure/azure.md), [AWS](../../AWS/aws.md), [Containerization](../../Containerization/K8/k8.md).

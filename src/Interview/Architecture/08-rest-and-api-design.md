@@ -1,3 +1,10 @@
+---
+title: REST & API Design
+summary: REST principles, OpenAPI and contract-first, versioning, pagination, mocking and code generation.
+tags: [Architecture, REST, API, OpenAPI, Interview]
+updated: 2026-09-02
+---
+
 # REST & API Design
 
 > REST constraints, correct verbs/status codes, versioning, pagination, OpenAPI, contract-first, mocking and error handling — designing HTTP APIs that scale and last.

@@ -1,3 +1,10 @@
+---
+title: API Security
+summary: Basic, client-credentials and JWT, authorization code with PKCE, OIDC, IAM, and API gateway policies.
+tags: [Architecture, Security, OAuth, JWT, Interview]
+updated: 2026-09-02
+---
+
 # API Security
 
 > AuthN vs AuthZ, OAuth 2.0 grants, JWT/OIDC, IAM providers, ASP.NET Core setup, and API gateway security — protecting APIs in service-to-service and interactive scenarios.

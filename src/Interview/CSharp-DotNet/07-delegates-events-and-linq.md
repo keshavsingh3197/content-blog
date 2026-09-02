@@ -1,8 +1,15 @@
+---
+title: Delegates, Events & LINQ
+summary: Delegates, Func/Action/Predicate, multicast pitfalls, the event subscription leak, closures and the LINQ execution model.
+tags: [C#, Delegates, Events, LINQ, Interview]
+updated: 2026-09-02
+---
+
 # 07 — Delegates, Events & LINQ
 
 > **Scope:** delegates from first principles, `Func`/`Action`/`Predicate`, multicast behaviour,
 > events and the leak they cause, plus the LINQ built on top of all of it.
-> Companion deep-dive already on this blog: [csharp-delegate.md](../csharp-delegate.md).
+> Companion deep-dive already on this blog: [csharp-delegate.md](../../CSharp/csharp-delegate.md).
 
 ---
 
@@ -392,4 +399,4 @@ No, most operators are deferred. Nothing runs until you enumerate or call a mate
 
 **Prev:** [06 — Collections & Generics](06-collections-and-generics.md) ·
 **Next:** [08 — Async, Threading & TPL](08-async-threading-and-tpl.md) ·
-**Up:** [Interview hub](../csharp-interview.md)
+**Up:** [Interview hub](readme.md)

@@ -1,3 +1,10 @@
+---
+title: Concurrency & Multithreading
+summary: Threads, Task and async, the TPL and parallel work, deadlocks and locks, ThreadLocal, PLINQ and lazy streams.
+tags: [Architecture, Concurrency, Threading, Interview]
+updated: 2026-09-02
+---
+
 # Concurrency & Multithreading
 
 > How .NET runs work in parallel: `Thread` vs `ThreadPool` vs `Task`, `async`/`await`,

@@ -1,3 +1,10 @@
+---
+title: DevOps & CI/CD
+summary: CI/CD pipelines, MSBuild, quality gates, Docker and Kubernetes, configuration management, branching and multi-geography delivery.
+tags: [Architecture, DevOps, CI-CD, Docker, Kubernetes, Interview]
+updated: 2026-09-02
+---
+
 # DevOps & CI/CD
 
 > Continuous integration/delivery/deployment, pipeline stages, .NET build tooling,

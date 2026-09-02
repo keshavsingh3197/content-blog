@@ -63,7 +63,7 @@ import { FileNode } from '../../models/file-node.model';
           </button>
         </div>
         <div class="navbar-collapse order-lg-2" [class.collapse]="navCollapsed">
-          <ul class="navbar-nav me-auto">
+          <ul class="navbar-nav me-auto" (scroll)="closeDropdown()">
             <li class="nav-item dropdown" *ngFor="let node of topNodes">
               <a
                 class="nav-link dropdown-toggle"
@@ -73,7 +73,12 @@ import { FileNode } from '../../models/file-node.model';
               >
                 <i class="fas fa-folder me-1"></i>{{ node.name }}
               </a>
-              <ul class="dropdown-menu" [class.show]="openDropdown === node.name">
+              <ul
+                class="dropdown-menu"
+                [class.show]="openDropdown === node.name"
+                [style.top.px]="dropdownTop"
+                [style.left.px]="dropdownLeft"
+              >
                 <li>
                   <a class="dropdown-item fw-semibold" href="#" (click)="navigateToFolder($event, node)">
                     <i class="fas fa-folder-open me-2"></i>{{ i18n.t('blog.nav.browseFolder', { name: node.name }) }}
@@ -103,6 +108,22 @@ import { FileNode } from '../../models/file-node.model';
     }
     /* Options render in the OS palette, so they need explicit colours to stay readable. */
     .lang-picker option { color:#111; background:#fff; }
+
+    /*
+      The topic strip is a horizontal scroller (styles.scss sets overflow-x:auto/overflow-y:hidden
+      on .navbar-nav so the topics never wrap onto a second row). Any overflow other than visible
+      clips absolutely positioned descendants, and Bootstrap's .dropdown-menu is positioned against
+      .nav-item.dropdown *inside* that scroller — so the menu opened but was clipped to nothing.
+      Anchoring it to the viewport takes it out of the clipping box; the coordinates come from the
+      toggle's own rect in toggleDropdown(). Only >=lg needs this: below that breakpoint Bootstrap
+      makes .navbar-nav .dropdown-menu position:static and the scroller does not exist.
+    */
+    @media (min-width: 992px) {
+      .navbar .navbar-nav .dropdown-menu.show {
+        position: fixed;
+        margin-top: 0;
+      }
+    }
   `]
 })
 export class NavbarComponent implements OnInit {
@@ -112,6 +133,9 @@ export class NavbarComponent implements OnInit {
   topNodes: FileNode[] = [];
   openDropdown: string | null = null;
   navCollapsed = true;
+  /** Viewport coordinates of the open menu; see the position:fixed note in `styles`. */
+  dropdownTop: number | null = null;
+  dropdownLeft: number | null = null;
 
   constructor(
     public themeService: ThemeService,
@@ -134,14 +158,26 @@ export class NavbarComponent implements OnInit {
 
   toggleDropdown(e: Event, name: string): void {
     e.preventDefault();
+    // Without this the document:click handler below runs in the same bubble and closes the menu
+    // we are opening.
     e.stopPropagation();
-    this.openDropdown = this.openDropdown === name ? null : name;
+    if (this.openDropdown === name) {
+      this.closeDropdown();
+      return;
+    }
+    this.openDropdown = name;
+    // Read the toggle's position now: the menu is viewport-anchored at >=lg, so it needs absolute
+    // coordinates rather than an offset from a parent that clips it.
+    const toggle = e.currentTarget as HTMLElement | null;
+    const rect = toggle?.getBoundingClientRect();
+    this.dropdownTop = rect ? Math.round(rect.bottom + 8) : null;
+    this.dropdownLeft = rect ? Math.round(rect.left) : null;
     this.cdr.markForCheck();
   }
 
   navigateToFolder(e: Event, node: FileNode): void {
     e.preventDefault();
-    this.openDropdown = null;
+    this.closeDropdown();
     this.navCollapsed = true;
     this.cdr.markForCheck();
     this.router.navigate(['/folder'], { queryParams: { path: node.path } });
@@ -149,7 +185,7 @@ export class NavbarComponent implements OnInit {
 
   navigateToFile(e: Event, node: FileNode): void {
     e.preventDefault();
-    this.openDropdown = null;
+    this.closeDropdown();
     this.navCollapsed = true;
     this.cdr.markForCheck();
     if (node.isDirectory) {
@@ -160,10 +196,12 @@ export class NavbarComponent implements OnInit {
   }
 
   @HostListener('document:click')
+  @HostListener('window:resize')
   closeDropdown(): void {
-    if (this.openDropdown !== null) {
-      this.openDropdown = null;
-      this.cdr.markForCheck();
-    }
+    if (this.openDropdown === null) return;
+    this.openDropdown = null;
+    this.dropdownTop = null;
+    this.dropdownLeft = null;
+    this.cdr.markForCheck();
   }
 }

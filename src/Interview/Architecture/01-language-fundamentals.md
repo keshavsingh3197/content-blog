@@ -1,7 +1,7 @@
 ---
 title: Language Fundamentals
 summary: Core C# / .NET type system, generics, delegates and LINQ, records, pattern matching and CLR internals.
-tags: [C#, .NET, CLR, Interview-Prep, Generics, LINQ]
+tags: [C#, .NET, CLR, Architecture, Generics, LINQ, Interview]
 updated: 2026-08-22
 ---
 

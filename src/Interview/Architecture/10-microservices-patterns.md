@@ -1,3 +1,10 @@
+---
+title: Microservices Patterns
+summary: Orchestration vs choreography, DDD and bounded contexts, Saga and compensation, CQRS, event sourcing and database strategies.
+tags: [Architecture, Microservices, DDD, CQRS, Interview]
+updated: 2026-09-02
+---
+
 # Microservices Patterns
 
 > Coordinating independent services: orchestration vs choreography, DDD building blocks,

@@ -276,7 +276,7 @@ namespace Tutlane
 
 > Executed endpoint many time but static cons called only one time.
 
-![Static Constructor](/CSharp/Asset/static_constructor.png)
+![Static Constructor](Asset/static_constructor.png)
 
 ![static constructor](https://www.tutlane.com/images/csharp/csharp_static_constructor_example_result.PNG)
 

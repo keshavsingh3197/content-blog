@@ -1,3 +1,10 @@
+---
+title: Abstract Classes vs Interfaces
+summary: The full comparison at C# 14 including default interface methods and static abstract members — and why the right answer is often "both".
+tags: [C#, OOP, Interfaces, Interview]
+updated: 2026-09-02
+---
+
 # 04 — Abstract Classes vs Interfaces
 
 > **Scope:** the single most-asked C# design question, answered at .NET 10 / C# 14 level — where
@@ -309,4 +316,4 @@ Ambiguity — the class must provide its own implementation, or explicitly imple
 
 **Prev:** [03 — OOP & Class Design](03-oop-and-class-design.md) ·
 **Next:** [05 — Language Essentials](05-language-essentials.md) ·
-**Up:** [Interview hub](../csharp-interview.md)
+**Up:** [Interview hub](readme.md)

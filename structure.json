@@ -290,15 +290,6 @@
               ]
             },
             {
-              "name": "aws.k8.md",
-              "path": "src/Containerization/K8/aws.k8.md",
-              "isDirectory": false,
-              "tags": [
-                "Containerization",
-                "K8"
-              ]
-            },
-            {
               "name": "azure.k8.md",
               "path": "src/Containerization/K8/azure.k8.md",
               "isDirectory": false,
@@ -424,54 +415,10 @@
           "isDirectory": true,
           "children": [
             {
-              "name": "Implementation",
-              "path": "src/CSharp/Filters/Implementation",
-              "isDirectory": true,
-              "children": [
-                {
-                  "name": "filter.implementation.md",
-                  "path": "src/CSharp/Filters/Implementation/filter.implementation.md",
-                  "isDirectory": false,
-                  "tags": [
-                    "CSharp",
-                    "Filters",
-                    "Implementation"
-                  ]
-                }
-              ]
-            },
-            {
               "name": "action.filter.md",
               "path": "src/CSharp/Filters/action.filter.md",
               "isDirectory": false,
               "title": "Action Filter",
-              "tags": [
-                "CSharp",
-                "Filters"
-              ]
-            },
-            {
-              "name": "authorization.filter.md",
-              "path": "src/CSharp/Filters/authorization.filter.md",
-              "isDirectory": false,
-              "tags": [
-                "CSharp",
-                "Filters"
-              ]
-            },
-            {
-              "name": "endpoint.fIlter.md",
-              "path": "src/CSharp/Filters/endpoint.fIlter.md",
-              "isDirectory": false,
-              "tags": [
-                "CSharp",
-                "Filters"
-              ]
-            },
-            {
-              "name": "exception.filter.md",
-              "path": "src/CSharp/Filters/exception.filter.md",
-              "isDirectory": false,
               "tags": [
                 "CSharp",
                 "Filters"
@@ -486,132 +433,6 @@
                 "CSharp",
                 "Filters"
               ]
-            },
-            {
-              "name": "resource.filter.md",
-              "path": "src/CSharp/Filters/resource.filter.md",
-              "isDirectory": false,
-              "tags": [
-                "CSharp",
-                "Filters"
-              ]
-            },
-            {
-              "name": "result.filter.md",
-              "path": "src/CSharp/Filters/result.filter.md",
-              "isDirectory": false,
-              "title": "Result filter",
-              "tags": [
-                "CSharp",
-                "Filters"
-              ]
-            }
-          ]
-        },
-        {
-          "name": "Interview",
-          "path": "src/CSharp/Interview",
-          "isDirectory": true,
-          "children": [
-            {
-              "name": "01-dotnet-platform-and-clr.md",
-              "path": "src/CSharp/Interview/01-dotnet-platform-and-clr.md",
-              "isDirectory": false,
-              "title": "01 — .NET Platform, CLR & Compilation",
-              "tags": [
-                "CSharp",
-                "Interview"
-              ]
-            },
-            {
-              "name": "02-memory-and-type-system.md",
-              "path": "src/CSharp/Interview/02-memory-and-type-system.md",
-              "isDirectory": false,
-              "title": "02 — Memory, Types, Boxing & Casting",
-              "tags": [
-                "CSharp",
-                "Interview"
-              ]
-            },
-            {
-              "name": "03-oop-and-class-design.md",
-              "path": "src/CSharp/Interview/03-oop-and-class-design.md",
-              "isDirectory": false,
-              "title": "03 — OOP, Inheritance & Class Design",
-              "tags": [
-                "CSharp",
-                "Interview"
-              ]
-            },
-            {
-              "name": "04-abstract-vs-interface.md",
-              "path": "src/CSharp/Interview/04-abstract-vs-interface.md",
-              "isDirectory": false,
-              "title": "04 — Abstract Classes vs Interfaces",
-              "tags": [
-                "CSharp",
-                "Interview"
-              ]
-            },
-            {
-              "name": "05-language-essentials.md",
-              "path": "src/CSharp/Interview/05-language-essentials.md",
-              "isDirectory": false,
-              "title": "05 — Language Essentials",
-              "tags": [
-                "CSharp",
-                "Interview"
-              ]
-            },
-            {
-              "name": "06-collections-and-generics.md",
-              "path": "src/CSharp/Interview/06-collections-and-generics.md",
-              "isDirectory": false,
-              "title": "06 — Collections & Generics",
-              "tags": [
-                "CSharp",
-                "Interview"
-              ]
-            },
-            {
-              "name": "07-delegates-events-and-linq.md",
-              "path": "src/CSharp/Interview/07-delegates-events-and-linq.md",
-              "isDirectory": false,
-              "title": "07 — Delegates, Events & LINQ",
-              "tags": [
-                "CSharp",
-                "Interview"
-              ]
-            },
-            {
-              "name": "08-async-threading-and-tpl.md",
-              "path": "src/CSharp/Interview/08-async-threading-and-tpl.md",
-              "isDirectory": false,
-              "title": "08 — Async, Threading, TPL & Locking",
-              "tags": [
-                "CSharp",
-                "Interview"
-              ]
-            },
-            {
-              "name": "09-aspnet-core-pipeline-and-di.md",
-              "path": "src/CSharp/Interview/09-aspnet-core-pipeline-and-di.md",
-              "isDirectory": false,
-              "title": "09 — ASP.NET Core: Middleware, DI, Routing & Filters",
-              "tags": [
-                "CSharp",
-                "Interview"
-              ]
-            },
-            {
-              "name": "10-solid-and-patterns.md",
-              "path": "src/CSharp/Interview/10-solid-and-patterns.md",
-              "isDirectory": false,
-              "title": "10 — SOLID & Design Patterns",
-              "tags": [
-                "CSharp",
-                "Interview"
-              ]
             }
           ]
         },
@@ -625,46 +446,10 @@
           ]
         },
         {
-          "name": "csharp-interview.md",
-          "path": "src/CSharp/csharp-interview.md",
-          "isDirectory": false,
-          "title": "C# & .NET 10 — Interview Prep Hub",
-          "tags": [
-            "CSharp"
-          ]
-        },
-        {
-          "name": "csharp-old.md",
-          "path": "src/CSharp/csharp-old.md",
-          "isDirectory": false,
-          "title": "C_Sharp",
-          "tags": [
-            "CSharp"
-          ]
-        },
-        {
           "name": "csharp-solid.md",
           "path": "src/CSharp/csharp-solid.md",
           "isDirectory": false,
           "title": "Solid Prinicipal",
-          "tags": [
-            "CSharp"
-          ]
-        },
-        {
-          "name": "csharp.md",
-          "path": "src/CSharp/csharp.md",
-          "isDirectory": false,
-          "title": "C SHARP INTERVIEW QUESTIONS",
-          "tags": [
-            "CSharp"
-          ]
-        },
-        {
-          "name": "CSHARP_NEW.md",
-          "path": "src/CSharp/CSHARP_NEW.md",
-          "isDirectory": false,
-          "title": "C# & .NET 10 — Interview Prep Hub",
           "tags": [
             "CSharp"
           ]
@@ -767,193 +552,497 @@
           "name": "GOF.md",
           "path": "src/GOF/GOF.md",
           "isDirectory": false,
-          "title": "GOF",
+          "title": "GOF Pattern Index",
+          "summary": "All 23 Gang of Four patterns grouped by intent, each pointing at the chapter that works it through in C# — plus which of the four every .NET interview actually asks about.",
+          "updated": "2026-09-02",
           "tags": [
-            "GOF"
+            "Design-Patterns",
+            "GOF",
+            "C#",
+            "Architecture"
           ]
         }
       ]
     },
     {
-      "name": "Interview-Prep",
-      "path": "src/Interview-Prep",
+      "name": "Interview",
+      "path": "src/Interview",
       "isDirectory": true,
       "children": [
         {
-          "name": "01-language-fundamentals.md",
-          "path": "src/Interview-Prep/01-language-fundamentals.md",
-          "isDirectory": false,
-          "title": "Language Fundamentals",
-          "summary": "Core C# / .NET type system, generics, delegates and LINQ, records, pattern matching and CLR internals.",
-          "updated": "2026-08-22",
-          "tags": [
-            "C#",
-            ".NET",
-            "CLR",
-            "Interview-Prep",
-            "Generics",
-            "LINQ"
+          "name": "Architecture",
+          "path": "src/Interview/Architecture",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "01-language-fundamentals.md",
+              "path": "src/Interview/Architecture/01-language-fundamentals.md",
+              "isDirectory": false,
+              "title": "Language Fundamentals",
+              "summary": "Core C# / .NET type system, generics, delegates and LINQ, records, pattern matching and CLR internals.",
+              "updated": "2026-08-22",
+              "tags": [
+                "C#",
+                ".NET",
+                "CLR",
+                "Architecture",
+                "Generics",
+                "LINQ",
+                "Interview"
+              ]
+            },
+            {
+              "name": "02-collections-and-data-structures.md",
+              "path": "src/Interview/Architecture/02-collections-and-data-structures.md",
+              "isDirectory": false,
+              "title": "Collections & Data Structures",
+              "summary": "Collection types and their trade-offs, Big-O to recite, and the internals of the advanced and concurrent collections.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "Collections",
+                "Data-Structures",
+                "Interview"
+              ]
+            },
+            {
+              "name": "03-solid-and-design-principles.md",
+              "path": "src/Interview/Architecture/03-solid-and-design-principles.md",
+              "isDirectory": false,
+              "title": "SOLID & Design Principles",
+              "summary": "SOLID in practice plus DRY, KISS and YAGNI, and how coupling and cohesion decide whether a design survives change.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "SOLID",
+                "Design",
+                "Interview"
+              ]
+            },
+            {
+              "name": "04-design-patterns-gof.md",
+              "path": "src/Interview/Architecture/04-design-patterns-gof.md",
+              "isDirectory": false,
+              "title": "GOF Design Patterns",
+              "summary": "All 23 Gang of Four patterns grouped creational, structural and behavioural, each with the standard C# solution.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "Design-Patterns",
+                "GOF",
+                "Interview"
+              ]
+            },
+            {
+              "name": "05-concurrency-and-multithreading.md",
+              "path": "src/Interview/Architecture/05-concurrency-and-multithreading.md",
+              "isDirectory": false,
+              "title": "Concurrency & Multithreading",
+              "summary": "Threads, Task and async, the TPL and parallel work, deadlocks and locks, ThreadLocal, PLINQ and lazy streams.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "Concurrency",
+                "Threading",
+                "Interview"
+              ]
+            },
+            {
+              "name": "06-memory-gc-and-profiling.md",
+              "path": "src/Interview/Architecture/06-memory-gc-and-profiling.md",
+              "isDirectory": false,
+              "title": "Memory, GC & Profiling",
+              "summary": "GC generations and algorithms, IDisposable and finalizers, dump analysis and the profilers worth knowing.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "Memory",
+                "GC",
+                "Profiling",
+                "Interview"
+              ]
+            },
+            {
+              "name": "07-databases-and-orm.md",
+              "path": "src/Interview/Architecture/07-databases-and-orm.md",
+              "isDirectory": false,
+              "title": "Databases & ORM",
+              "summary": "RDBMS vs NoSQL, joins and indexing, EF Core, entity modelling, aggregates and change data capture.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "Databases",
+                "EF-Core",
+                "SQL",
+                "Interview"
+              ]
+            },
+            {
+              "name": "08-rest-and-api-design.md",
+              "path": "src/Interview/Architecture/08-rest-and-api-design.md",
+              "isDirectory": false,
+              "title": "REST & API Design",
+              "summary": "REST principles, OpenAPI and contract-first, versioning, pagination, mocking and code generation.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "REST",
+                "API",
+                "OpenAPI",
+                "Interview"
+              ]
+            },
+            {
+              "name": "09-messaging-and-eventing.md",
+              "path": "src/Interview/Architecture/09-messaging-and-eventing.md",
+              "isDirectory": false,
+              "title": "Messaging & Eventing",
+              "summary": "Pub/sub vs queue, durability, tracing, schemas, AMQP and Kafka, broker internals and event-driven design.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "Messaging",
+                "Kafka",
+                "Service-Bus",
+                "Interview"
+              ]
+            },
+            {
+              "name": "10-microservices-patterns.md",
+              "path": "src/Interview/Architecture/10-microservices-patterns.md",
+              "isDirectory": false,
+              "title": "Microservices Patterns",
+              "summary": "Orchestration vs choreography, DDD and bounded contexts, Saga and compensation, CQRS, event sourcing and database strategies.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "Microservices",
+                "DDD",
+                "CQRS",
+                "Interview"
+              ]
+            },
+            {
+              "name": "11-api-security.md",
+              "path": "src/Interview/Architecture/11-api-security.md",
+              "isDirectory": false,
+              "title": "API Security",
+              "summary": "Basic, client-credentials and JWT, authorization code with PKCE, OIDC, IAM, and API gateway policies.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "Security",
+                "OAuth",
+                "JWT",
+                "Interview"
+              ]
+            },
+            {
+              "name": "12-cloud-architecture.md",
+              "path": "src/Interview/Architecture/12-cloud-architecture.md",
+              "isDirectory": false,
+              "title": "Cloud Architecture",
+              "summary": "Deployment models, serverless and storage, IaC with Terraform/Bicep/ARM, cloud-native web and data integration, networking and monitoring.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "Cloud",
+                "Azure",
+                "AWS",
+                "IaC",
+                "Interview"
+              ]
+            },
+            {
+              "name": "13-testing-and-quality.md",
+              "path": "src/Interview/Architecture/13-testing-and-quality.md",
+              "isDirectory": false,
+              "title": "Testing & Quality",
+              "summary": "TDD, unit vs functional vs integration testing, BDD, automation across SIT/security/production, and the tooling.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "Testing",
+                "TDD",
+                "Quality",
+                "Interview"
+              ]
+            },
+            {
+              "name": "14-devops-and-cicd.md",
+              "path": "src/Interview/Architecture/14-devops-and-cicd.md",
+              "isDirectory": false,
+              "title": "DevOps & CI/CD",
+              "summary": "CI/CD pipelines, MSBuild, quality gates, Docker and Kubernetes, configuration management, branching and multi-geography delivery.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "DevOps",
+                "CI-CD",
+                "Docker",
+                "Kubernetes",
+                "Interview"
+              ]
+            },
+            {
+              "name": "15-observability-and-monitoring.md",
+              "path": "src/Interview/Architecture/15-observability-and-monitoring.md",
+              "isDirectory": false,
+              "title": "Observability & Monitoring",
+              "summary": "Logs, metrics and traces, OpenTelemetry, ELK, Grafana and Prometheus, and the APM tools worth naming.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "Observability",
+                "OpenTelemetry",
+                "Monitoring",
+                "Interview"
+              ]
+            },
+            {
+              "name": "16-web-and-frontend.md",
+              "path": "src/Interview/Architecture/16-web-and-frontend.md",
+              "isDirectory": false,
+              "title": "Web & Frontend",
+              "summary": "HTTP and WebSockets, full-stack concerns, SPA design, and advanced React and Angular topics.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "Web",
+                "Frontend",
+                "Angular",
+                "React",
+                "Interview"
+              ]
+            },
+            {
+              "name": "17-architecture-and-nfrs.md",
+              "path": "src/Interview/Architecture/17-architecture-and-nfrs.md",
+              "isDirectory": false,
+              "title": "Architecture & NFRs",
+              "summary": "The NFR catalogue, securing data in three states, multi-tenancy, multi-geo and residency, scaling, architecture views, layering and the deployment checklist.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "NFR",
+                "System-Design",
+                "Interview"
+              ]
+            },
+            {
+              "name": "18-nfr-deep-dive.md",
+              "path": "src/Interview/Architecture/18-nfr-deep-dive.md",
+              "isDirectory": false,
+              "title": "NFR Deep Dive",
+              "summary": "The eight non-functional requirements that drive architecture, each with a measurable example, the .NET/Azure lever that delivers it and the answer to give out loud.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Architecture",
+                "NFR",
+                "Azure",
+                ".NET",
+                "System-Design",
+                "Interview"
+              ]
+            },
+            {
+              "name": "readme.md",
+              "path": "src/Interview/Architecture/readme.md",
+              "isDirectory": false,
+              "title": "Architecture & Senior Track",
+              "summary": "An 18-chapter senior/architect interview track — language fundamentals, design, data, distributed systems, cloud, delivery and NFRs, all in C# / .NET 10.",
+              "updated": "2026-09-02",
+              "tags": [
+                "Interview",
+                "Architecture",
+                "System-Design",
+                ".NET",
+                "Azure"
+              ]
+            }
           ]
         },
         {
-          "name": "02-collections-and-data-structures.md",
-          "path": "src/Interview-Prep/02-collections-and-data-structures.md",
-          "isDirectory": false,
-          "title": "Collections & Data Structures",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "03-solid-and-design-principles.md",
-          "path": "src/Interview-Prep/03-solid-and-design-principles.md",
-          "isDirectory": false,
-          "title": "SOLID & Design Principles",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "04-design-patterns-gof.md",
-          "path": "src/Interview-Prep/04-design-patterns-gof.md",
-          "isDirectory": false,
-          "title": "GOF Design Patterns",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "05-concurrency-and-multithreading.md",
-          "path": "src/Interview-Prep/05-concurrency-and-multithreading.md",
-          "isDirectory": false,
-          "title": "Concurrency & Multithreading",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "06-memory-gc-and-profiling.md",
-          "path": "src/Interview-Prep/06-memory-gc-and-profiling.md",
-          "isDirectory": false,
-          "title": "Memory, GC & Profiling",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "07-databases-and-orm.md",
-          "path": "src/Interview-Prep/07-databases-and-orm.md",
-          "isDirectory": false,
-          "title": "Databases & ORM",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "08-rest-and-api-design.md",
-          "path": "src/Interview-Prep/08-rest-and-api-design.md",
-          "isDirectory": false,
-          "title": "REST & API Design",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "09-messaging-and-eventing.md",
-          "path": "src/Interview-Prep/09-messaging-and-eventing.md",
-          "isDirectory": false,
-          "title": "Messaging & Eventing",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "10-microservices-patterns.md",
-          "path": "src/Interview-Prep/10-microservices-patterns.md",
-          "isDirectory": false,
-          "title": "Microservices Patterns",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "11-api-security.md",
-          "path": "src/Interview-Prep/11-api-security.md",
-          "isDirectory": false,
-          "title": "API Security",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "12-cloud-architecture.md",
-          "path": "src/Interview-Prep/12-cloud-architecture.md",
-          "isDirectory": false,
-          "title": "Cloud Architecture",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "13-testing-and-quality.md",
-          "path": "src/Interview-Prep/13-testing-and-quality.md",
-          "isDirectory": false,
-          "title": "Testing & Quality",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "14-devops-and-cicd.md",
-          "path": "src/Interview-Prep/14-devops-and-cicd.md",
-          "isDirectory": false,
-          "title": "DevOps & CI/CD",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "15-observability-and-monitoring.md",
-          "path": "src/Interview-Prep/15-observability-and-monitoring.md",
-          "isDirectory": false,
-          "title": "Observability & Monitoring",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "16-web-and-frontend.md",
-          "path": "src/Interview-Prep/16-web-and-frontend.md",
-          "isDirectory": false,
-          "title": "Web & Frontend",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "17-architecture-and-nfrs.md",
-          "path": "src/Interview-Prep/17-architecture-and-nfrs.md",
-          "isDirectory": false,
-          "title": "Architecture & NFRs",
-          "tags": [
-            "Interview-Prep"
-          ]
-        },
-        {
-          "name": "NFR.md",
-          "path": "src/Interview-Prep/NFR.md",
-          "isDirectory": false,
-          "tags": [
-            "Interview-Prep"
+          "name": "CSharp-DotNet",
+          "path": "src/Interview/CSharp-DotNet",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "01-dotnet-platform-and-clr.md",
+              "path": "src/Interview/CSharp-DotNet/01-dotnet-platform-and-clr.md",
+              "isDirectory": false,
+              "title": ".NET Platform, CLR & Compilation",
+              "summary": "What .NET actually is, how C# becomes machine code through IL and the JIT, Native AOT, the runtime acronyms, assembly metadata and the manifest.",
+              "updated": "2026-09-02",
+              "tags": [
+                "C#",
+                ".NET",
+                "CLR",
+                "JIT",
+                "IL",
+                "Interview"
+              ]
+            },
+            {
+              "name": "02-memory-and-type-system.md",
+              "path": "src/Interview/CSharp-DotNet/02-memory-and-type-system.md",
+              "isDirectory": false,
+              "title": "Memory, Types & Boxing",
+              "summary": "Value vs reference types with stack-vs-heap told correctly, struct vs class, the real cost of boxing, casting, ref/out/in and weak references.",
+              "updated": "2026-09-02",
+              "tags": [
+                "C#",
+                ".NET",
+                "Memory",
+                "Boxing",
+                "Interview"
+              ]
+            },
+            {
+              "name": "03-oop-and-class-design.md",
+              "path": "src/Interview/CSharp-DotNet/03-oop-and-class-design.md",
+              "isDirectory": false,
+              "title": "OOP & Class Design",
+              "summary": "The four pillars, association vs composition vs aggregation, access modifiers under inheritance, constructor chaining and sealed/static/abstract/partial.",
+              "updated": "2026-09-02",
+              "tags": [
+                "C#",
+                "OOP",
+                "Inheritance",
+                "Interview"
+              ]
+            },
+            {
+              "name": "04-abstract-vs-interface.md",
+              "path": "src/Interview/CSharp-DotNet/04-abstract-vs-interface.md",
+              "isDirectory": false,
+              "title": "Abstract Classes vs Interfaces",
+              "summary": "The full comparison at C# 14 including default interface methods and static abstract members — and why the right answer is often \"both\".",
+              "updated": "2026-09-02",
+              "tags": [
+                "C#",
+                "OOP",
+                "Interfaces",
+                "Interview"
+              ]
+            },
+            {
+              "name": "05-language-essentials.md",
+              "path": "src/Interview/CSharp-DotNet/05-language-essentials.md",
+              "isDirectory": false,
+              "title": "Language Essentials",
+              "summary": "Keywords, operators, access modifiers, const vs static vs readonly, pattern matching, arrays and spans, indexers, exception handling, dynamic vs reflection.",
+              "updated": "2026-09-02",
+              "tags": [
+                "C#",
+                "Language",
+                "Pattern-Matching",
+                "Interview"
+              ]
+            },
+            {
+              "name": "06-collections-and-generics.md",
+              "path": "src/Interview/CSharp-DotNet/06-collections-and-generics.md",
+              "isDirectory": false,
+              "title": "Collections & Generics",
+              "summary": "Array vs ArrayList vs List, choosing a collection, Big-O, the IEnumerable/ICollection/IList ladder, constraints, variance and deferred execution.",
+              "updated": "2026-09-02",
+              "tags": [
+                "C#",
+                "Collections",
+                "Generics",
+                "LINQ",
+                "Interview"
+              ]
+            },
+            {
+              "name": "07-delegates-events-and-linq.md",
+              "path": "src/Interview/CSharp-DotNet/07-delegates-events-and-linq.md",
+              "isDirectory": false,
+              "title": "Delegates, Events & LINQ",
+              "summary": "Delegates, Func/Action/Predicate, multicast pitfalls, the event subscription leak, closures and the LINQ execution model.",
+              "updated": "2026-09-02",
+              "tags": [
+                "C#",
+                "Delegates",
+                "Events",
+                "LINQ",
+                "Interview"
+              ]
+            },
+            {
+              "name": "08-async-threading-and-tpl.md",
+              "path": "src/Interview/CSharp-DotNet/08-async-threading-and-tpl.md",
+              "isDirectory": false,
+              "title": "Async, Threading & TPL",
+              "summary": "Sync vs async, the state machine, Thread vs Task vs TPL, CancellationToken, lock, deadlocks, Lazy and the thread-safe singleton.",
+              "updated": "2026-09-02",
+              "tags": [
+                "C#",
+                "Async",
+                "Threading",
+                "TPL",
+                "Interview"
+              ]
+            },
+            {
+              "name": "09-aspnet-core-pipeline-and-di.md",
+              "path": "src/Interview/CSharp-DotNet/09-aspnet-core-pipeline-and-di.md",
+              "isDirectory": false,
+              "title": "ASP.NET Core Pipeline & DI",
+              "summary": "Middleware order, custom middleware, DI lifetimes and captive dependencies, routing, filters and ActionResult.",
+              "updated": "2026-09-02",
+              "tags": [
+                "ASP.NET-Core",
+                ".NET",
+                "DI",
+                "Middleware",
+                "Interview"
+              ]
+            },
+            {
+              "name": "10-solid-and-patterns.md",
+              "path": "src/Interview/CSharp-DotNet/10-solid-and-patterns.md",
+              "isDirectory": false,
+              "title": "SOLID & Design Patterns",
+              "summary": "SOLID with bad-to-good C# pairs, plus Singleton, Abstract Factory, Builder and Prototype in depth.",
+              "updated": "2026-09-02",
+              "tags": [
+                "C#",
+                "SOLID",
+                "Design-Patterns",
+                "Interview"
+              ]
+            },
+            {
+              "name": "readme.md",
+              "path": "src/Interview/CSharp-DotNet/readme.md",
+              "isDirectory": false,
+              "title": "C# & .NET Interview Hub",
+              "summary": "The 10-chapter C# / .NET 10 interview track, the 12 answers to have word-perfect, a 20-question self-test and the corrections the older notes got wrong.",
+              "updated": "2026-09-02",
+              "tags": [
+                "C#",
+                ".NET",
+                "Interview",
+                "CLR"
+              ]
+            }
           ]
         },
         {
           "name": "readme.md",
-          "path": "src/Interview-Prep/readme.md",
+          "path": "src/Interview/readme.md",
           "isDirectory": false,
-          "title": "Interview & Promotion Prep",
+          "title": "Interview Prep",
+          "summary": "One home for both interview tracks — a 10-chapter C# / .NET deep dive and an 18-chapter senior/architect track — with a map of which track owns which topic.",
+          "updated": "2026-09-02",
           "tags": [
-            "Interview-Prep"
+            "Interview",
+            "C#",
+            ".NET",
+            "Architecture",
+            "System-Design"
           ]
         }
       ]

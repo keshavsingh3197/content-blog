@@ -1,3 +1,10 @@
+---
+title: Messaging & Eventing
+summary: Pub/sub vs queue, durability, tracing, schemas, AMQP and Kafka, broker internals and event-driven design.
+tags: [Architecture, Messaging, Kafka, Service-Bus, Interview]
+updated: 2026-09-02
+---
+
 # Messaging & Eventing
 
 > Asynchronous communication between services: brokers, delivery guarantees, ordering,

@@ -1,3 +1,10 @@
+---
+title: OOP & Class Design
+summary: The four pillars, association vs composition vs aggregation, access modifiers under inheritance, constructor chaining and sealed/static/abstract/partial.
+tags: [C#, OOP, Inheritance, Interview]
+updated: 2026-09-02
+---
+
 # 03 — OOP, Inheritance & Class Design
 
 > **Scope:** the four pillars with code that proves them, the four class relationships (drawn as
@@ -536,4 +543,4 @@ Yes. That is a perfectly valid way to say "this is a base class, never instantia
 
 **Prev:** [02 — Memory & Types](02-memory-and-type-system.md) ·
 **Next:** [04 — Abstract vs Interface](04-abstract-vs-interface.md) ·
-**Up:** [Interview hub](../csharp-interview.md)
+**Up:** [Interview hub](readme.md)

@@ -1,3 +1,10 @@
+---
+title: Cloud Architecture
+summary: Deployment models, serverless and storage, IaC with Terraform/Bicep/ARM, cloud-native web and data integration, networking and monitoring.
+tags: [Architecture, Cloud, Azure, AWS, IaC, Interview]
+updated: 2026-09-02
+---
+
 # Cloud Architecture
 
 > Cloud service & deployment models, the shared-responsibility line, serverless & storage,

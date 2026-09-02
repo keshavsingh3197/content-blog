@@ -1,3 +1,10 @@
+---
+title: Databases & ORM
+summary: RDBMS vs NoSQL, joins and indexing, EF Core, entity modelling, aggregates and change data capture.
+tags: [Architecture, Databases, EF-Core, SQL, Interview]
+updated: 2026-09-02
+---
+
 # Databases & ORM
 
 > Data storage models, SQL fundamentals, indexing, transactions, EF Core, and change data capture — the essentials a senior .NET engineer must reason about under load.
@@ -89,7 +96,7 @@ A transaction is an atomic unit. Isolation controls concurrency anomalies:
 
 ## ORM / EF Core
 
-See the deep-dive: [../CSharp/ef.md](../CSharp/ef.md). Key exam points:
+See the deep-dive: [../CSharp/ef.md](../../CSharp/ef.md). Key exam points:
 
 - **Code-First** + **migrations**: model in C# classes; `dotnet ef migrations add`, `dotnet ef database update`.
 - **`DbContext`**: unit of work + identity map; scoped lifetime in ASP.NET Core DI.

@@ -1,3 +1,10 @@
+---
+title: Web & Frontend
+summary: HTTP and WebSockets, full-stack concerns, SPA design, and advanced React and Angular topics.
+tags: [Architecture, Web, Frontend, Angular, React, Interview]
+updated: 2026-09-02
+---
+
 # Web & Frontend
 
 > HTTP evolution and real-time protocols, full-stack/BFF architecture, web fundamentals,

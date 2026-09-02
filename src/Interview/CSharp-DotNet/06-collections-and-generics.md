@@ -1,9 +1,16 @@
+---
+title: Collections & Generics
+summary: Array vs ArrayList vs List, choosing a collection, Big-O, the IEnumerable/ICollection/IList ladder, constraints, variance and deferred execution.
+tags: [C#, Collections, Generics, LINQ, Interview]
+updated: 2026-09-02
+---
+
 # 06 — Collections & Generics
 
 > **Scope:** why generic collections replaced the non-generic ones, which collection to pick, the
 > Big-O you must recite, and generics from constraints to variance.
 > Deeper data-structure internals live in
-> [Interview-Prep 02 — Collections & Data Structures](../../Interview-Prep/02-collections-and-data-structures.md).
+> [Interview-Prep 02 — Collections & Data Structures](../Architecture/02-collections-and-data-structures.md).
 
 ---
 
@@ -134,6 +141,22 @@ counters.AddOrUpdate("hits", 1, (_, old) => old + 1);   // atomic
 public static IReadOnlyList<string> ActiveNames(IEnumerable<User> users) =>
     users.Where(u => u.IsActive).Select(u => u.Name).ToList();
 ```
+
+The three classic interfaces form a **capability ladder** — each one adds to the last, so pick the
+lowest rung that does the job:
+
+| Capability | `IEnumerable<T>` | `ICollection<T>` | `IList<T>` |
+| --- | :---: | :---: | :---: |
+| `foreach` over it | ✅ | ✅ | ✅ |
+| `Count` without walking it | — | ✅ | ✅ |
+| `Add` / `Remove` / `Clear` | — | ✅¹ | ✅¹ |
+| `Contains`, `CopyTo` | — | ✅ | ✅ |
+| Index access `list[i]` | — | — | ✅ |
+| `Insert`/`RemoveAt`, `IndexOf` | — | — | ✅¹ |
+
+¹ Throws `NotSupportedException` when `IsReadOnly` is `true` — which is why a mutating interface is
+a *claim*, not a guarantee. Prefer the `IReadOnly*` family in the table above when you mean it.
+
 
 ---
 
@@ -287,4 +310,4 @@ signal "not found", or better, use the `TryGet` pattern.
 
 **Prev:** [05 — Language Essentials](05-language-essentials.md) ·
 **Next:** [07 — Delegates, Events & LINQ](07-delegates-events-and-linq.md) ·
-**Up:** [Interview hub](../csharp-interview.md)
+**Up:** [Interview hub](readme.md)

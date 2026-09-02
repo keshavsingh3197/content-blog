@@ -121,7 +121,7 @@ def derive_tags(relative_path):
     """
     Fallback tags for a document with no front matter: the folders it lives in.
 
-    Interview-Prep/01-language-fundamentals.md becomes ['Interview-Prep']. The file's own name
+    Interview/Architecture/01-language-fundamentals.md becomes ['Interview', 'Architecture']. The file's own name
     is never a tag - that is the title's job, and it would make every tag unique.
     """
     return [normalize_tag(part) for part in relative_path.parent.parts if part not in ('.', '')]

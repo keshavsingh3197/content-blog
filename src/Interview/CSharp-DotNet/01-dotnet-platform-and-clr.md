@@ -1,3 +1,10 @@
+---
+title: .NET Platform, CLR & Compilation
+summary: What .NET actually is, how C# becomes machine code through IL and the JIT, Native AOT, the runtime acronyms, assembly metadata and the manifest.
+tags: [C#, .NET, CLR, JIT, IL, Interview]
+updated: 2026-09-02
+---
+
 # 01 — .NET Platform, CLR & Compilation
 
 > **Scope:** what .NET actually *is*, how your C# becomes machine code, and every runtime
@@ -171,6 +178,49 @@ internal static partial class Native
 
 ---
 
+## Metadata and the assembly manifest
+
+An assembly is not just IL. Alongside the instructions the compiler emits **metadata**: a set of
+tables describing every type, member, signature and attribute in the assembly. The **manifest** is
+one part of that metadata — the assembly's own identity card.
+
+| | Metadata | Manifest |
+| --- | --- | --- |
+| Describes | the **contents** — types, members, signatures, attributes | the **assembly itself** |
+| Holds | type definitions, method signatures, custom attributes, security info | name, version, culture, public key, file list, referenced assemblies |
+| Read by | the JIT (to lay out types), reflection, serialisers, DI containers | the CLR's assembly loader, versioning and binding |
+| Reached via | `type.GetMembers()`, `type.GetProperties()` | `assembly.GetName()` |
+
+Think of the `.dll` as a book: **metadata** is the index — every chapter, section and term.
+The **manifest** is the title page — title, edition, authors, ISBN.
+
+```c#
+using System.Reflection;
+
+Assembly asm = typeof(Program).Assembly;
+
+// --- manifest: who this assembly IS ---
+AssemblyName id = asm.GetName();
+Console.WriteLine($"{id.Name} v{id.Version} culture={id.CultureName ?? "neutral"}");
+foreach (AssemblyName reference in asm.GetReferencedAssemblies())
+    Console.WriteLine($"  depends on {reference.Name} v{reference.Version}");
+
+// --- metadata: what this assembly CONTAINS ---
+foreach (Type type in asm.GetTypes())
+{
+    Console.WriteLine(type.FullName);
+    foreach (MemberInfo member in type.GetMembers(BindingFlags.Public | BindingFlags.Instance))
+        Console.WriteLine($"    {member.MemberType} {member.Name}");
+}
+```
+
+> 🎯 **The senior answer:** "Metadata is the self-description of everything *in* the assembly —
+> it is why .NET needs no header files and why reflection, serialisers and DI containers work at
+> all. The manifest is the slice of that metadata describing the assembly *as a unit*: identity,
+> version and dependencies, which is what the loader binds against."
+
+---
+
 ## Garbage collection — the interview essentials
 
 - **Why it matters:** it removes an entire class of bugs — leaks, double-free, dangling pointers —
@@ -181,7 +231,7 @@ internal static partial class Native
 - **Non-deterministic:** you do not know *when* it runs, so never rely on it for timing.
 
 > Full treatment — generations, GC modes, `Span<T>`, leak hunting — is in
-> [06 — Memory, GC & Profiling](../../Interview-Prep/06-memory-gc-and-profiling.md).
+> [06 — Memory, GC & Profiling](../Architecture/06-memory-gc-and-profiling.md).
 
 ### ❗ "Can the GC reclaim unmanaged objects?" — **No**
 
@@ -289,4 +339,4 @@ most of the garbage, so a full Gen 2 collection stays rare.
 ---
 
 **Next:** [02 — Memory, Types & Boxing](02-memory-and-type-system.md) ·
-**Up:** [Interview hub](../csharp-interview.md)
+**Up:** [Interview hub](readme.md)

@@ -1,3 +1,10 @@
+---
+title: Collections & Data Structures
+summary: Collection types and their trade-offs, Big-O to recite, and the internals of the advanced and concurrent collections.
+tags: [Architecture, Collections, Data-Structures, Interview]
+updated: 2026-09-02
+---
+
 # Collections & Data Structures
 
 > The .NET collection types, their internal structures, Big-O costs, growth/hashing internals, concurrent variants, and how to choose the right one.

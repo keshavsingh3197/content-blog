@@ -144,10 +144,43 @@ TryParse<int> parse = (text, out result) => int.TryParse(text, out result);
 
 ---
 
+## Still worth knowing — `required` and `init` (C# 11)
+
+Slightly older than this page's range, but interviewers pair them with primary constructors, so
+they belong here. Together they give an object that is **immutable after construction** yet still
+usable with object-initializer syntax.
+
+```c#
+public class Order
+{
+    public required string CustomerId { get; init; }   // must be set by the initializer...
+    public required decimal Total { get; init; }       // ...or it is a COMPILE error
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;   // optional, has a default
+}
+
+var order = new Order { CustomerId = "c-1", Total = 42m };   // ✅
+// var bad = new Order { Total = 42m };                      // ❌ CS9035: CustomerId is required
+// order.Total = 99m;                                        // ❌ init-only, set during init only
+```
+
+| | `required` | `init` |
+| --- | --- | --- |
+| Enforces | the property **must** be assigned | the property may only be assigned **during** initialisation |
+| Checked at | compile time, at the construction site | compile time, at every later assignment |
+| Replaces | a constructor parameter per property | a `private set` plus a constructor |
+
+> 🎯 **The senior answer:** "`required` moves 'you must supply this' from a runtime null-check into
+> a compile error, without forcing a constructor overload per combination. `init` makes the property
+> settable only while the object is being built. Together they are the non-record way to get
+> immutability — and with a `record` you get both plus value equality."
+
+---
+
 ## Quick reference
 
 | Feature | Version | .NET |
 | --- | --- | --- |
+| `required` members, `init`-only setters | C# 11 | 7 |
 | Primary constructors (all types), collection expressions | C# 12 | 8 |
 | `params` collections, `Lock`, partial properties | C# 13 | 9 |
 | Extension members, `field` keyword, null-conditional assignment | C# 14 | 10 |

@@ -1,9 +1,19 @@
+---
+title: Architecture & NFRs
+summary: The NFR catalogue, securing data in three states, multi-tenancy, multi-geo and residency, scaling, architecture views, layering and the deployment checklist.
+tags: [Architecture, NFR, System-Design, Interview]
+updated: 2026-09-02
+---
+
 # Architecture & NFRs
 
 > The cross-cutting "-ilities", how to secure and scale data, architecture views and layering,
 > and what it takes to ship and keep a system running. Context: **C# / .NET 10** on Azure.
 
 ## Non-functional requirements (NFR catalogue)
+
+> 📖 One level deeper on every row below — measurable targets, the .NET/Azure lever that delivers
+> each one, RTO/RPO and a worked example — is in [18 — NFR Deep Dive](18-nfr-deep-dive.md).
 
 | NFR | Question it answers | Levers / .NET & Azure |
 |---|---|---|

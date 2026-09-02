@@ -1,8 +1,15 @@
+---
+title: GOF Design Patterns
+summary: All 23 Gang of Four patterns grouped creational, structural and behavioural, each with the standard C# solution.
+tags: [Architecture, Design-Patterns, GOF, Interview]
+updated: 2026-09-02
+---
+
 # GOF Design Patterns
 
 > The 23 Gang of Four patterns across creational, structural and behavioural categories, with concise standard C# solutions and their .NET counterparts.
 
-See the deep-dive notes and diagrams in [../GOF/GOF.md](../GOF/GOF.md).
+See the deep-dive notes and diagrams in [../GOF/GOF.md](../../GOF/GOF.md).
 
 ## The Three Categories
 

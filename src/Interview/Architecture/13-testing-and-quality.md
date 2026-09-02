@@ -1,3 +1,10 @@
+---
+title: Testing & Quality
+summary: TDD, unit vs functional vs integration testing, BDD, automation across SIT/security/production, and the tooling.
+tags: [Architecture, Testing, TDD, Quality, Interview]
+updated: 2026-09-02
+---
+
 # Testing & Quality
 
 > A senior view of testing in .NET: the testing pyramid, unit testing with xUnit and

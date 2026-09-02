@@ -1,9 +1,16 @@
+---
+title: ASP.NET Core Pipeline & DI
+summary: Middleware order, custom middleware, DI lifetimes and captive dependencies, routing, filters and ActionResult.
+tags: [ASP.NET-Core, .NET, DI, Middleware, Interview]
+updated: 2026-09-02
+---
+
 # 09 — ASP.NET Core: Middleware, DI, Routing & Filters
 
 > **Scope:** the request pipeline, middleware ordering, dependency injection with lifetimes and the
 > captive-dependency trap, routing, filters vs endpoint filters, and `IActionResult` vs
 > `ActionResult<T>` — on **.NET 10** minimal hosting (no `Startup.cs`).
-> Filter deep-dives already on this blog: [Filters](../Filters/filter.md).
+> Filter deep-dives already on this blog: [Filters](../../CSharp/Filters/filter.md).
 
 ---
 
@@ -426,4 +433,4 @@ genuinely optional collaborators.
 
 **Prev:** [08 — Async, Threading & TPL](08-async-threading-and-tpl.md) ·
 **Next:** [10 — SOLID, Patterns & Rapid Fire](10-solid-and-patterns.md) ·
-**Up:** [Interview hub](../csharp-interview.md)
+**Up:** [Interview hub](readme.md)
