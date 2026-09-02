@@ -57,7 +57,7 @@ document, and the reader strips the block before rendering it:
 ---
 title: Language Fundamentals
 summary: Type system, generics, LINQ and CLR internals.
-tags: [C#, .NET, CLR, Interview-Prep]
+tags: [C#, .NET, CLR, Interview]
 updated: 2026-08-22
 ---
 
@@ -85,8 +85,8 @@ tables, and prints external link targets in brackets. The source URL is printed 
 Write them as ordinary **relative markdown links** and they just work:
 
 ```markdown
-[Chapter 2](Interview/02-memory-and-type-system.md)   → routes to the reader
-[Back up](../csharp-interview.md)                           → `..` is resolved
+[Chapter 2](02-memory-and-type-system.md)             → routes to the reader
+[Back up](../readme.md)                               → `..` is resolved
 [The diagram](Asset/static_constructor.png)           → opens the asset directly
 [MSDN](https://learn.microsoft.com/…)                 → new tab, rel="noopener"
 [Jump to a heading](#rapid-fire-qa)                   → scrolls, keeps the route
