@@ -10,7 +10,7 @@ updated: 2026-09-02
 > **Scope:** why generic collections replaced the non-generic ones, which collection to pick, the
 > Big-O you must recite, and generics from constraints to variance.
 > Deeper data-structure internals live in
-> [Interview-Prep 02 — Collections & Data Structures](../Architecture/02-collections-and-data-structures.md).
+> [Architecture 02 — Collections & Data Structures](../Architecture/02-collections-and-data-structures.md).
 
 ---
 

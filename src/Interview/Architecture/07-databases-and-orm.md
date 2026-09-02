@@ -8,6 +8,11 @@ updated: 2026-09-02
 # Databases & ORM
 
 > Data storage models, SQL fundamentals, indexing, transactions, EF Core, and change data capture — the essentials a senior .NET engineer must reason about under load.
+>
+> 📖 **This chapter is the architecture-round summary.** The depth — every join with real output,
+> window functions, SARGability, execution plans, isolation levels, EF Core query translation and
+> 16 whiteboard drills — lives in the **[SQL track](../SQL/readme.md)** (13 chapters). Read this one
+> for the trade-offs a design panel probes; read that one before a live query round.
 
 ## RDBMS vs NoSQL
 
@@ -56,6 +61,9 @@ FROM Employees e LEFT JOIN Employees m ON e.ManagerId = m.Id;
 
 - `LEFT JOIN ... WHERE right.Id IS NULL` = **anti-join** (rows with no match).
 
+> 📖 Full treatment with real output for every join type, the row-count/fan-out rule and the
+> `ON`-vs-`WHERE` trap: [SQL 04 — Joins](../SQL/04-joins.md).
+
 ## Indexing
 
 - **Clustered index**: defines the **physical order** of the table; one per table (usually the PK). The leaf level *is* the data.
@@ -73,11 +81,17 @@ ON Orders (CustomerId, OrderDate) INCLUDE (Total);
 
 **Execution plans**: read them to spot **table/clustered index scans** (often bad on big tables), **key lookups**, and missing-index hints. Look for **Seek** (good) vs **Scan**, and estimated vs actual row counts (skew = stale statistics).
 
+> 📖 SARGability, the tipping point, key order, statistics and parameter sniffing:
+> [SQL 08 — Indexing & Query Performance](../SQL/08-indexing-and-query-performance.md).
+
 ## Normalization vs Denormalization
 
 - **Normalization** (1NF→3NF/BCNF): remove redundancy, one fact per place → fewer anomalies, more joins.
   - 1NF: atomic columns; 2NF: no partial-key dependency; 3NF: no transitive dependency.
 - **Denormalization**: deliberately duplicate data to cut joins and speed reads (reporting, read-heavy NoSQL). Cost: update anomalies, must keep copies in sync.
+
+> 📖 The three anomalies, 1NF→5NF worked on one table, functional dependencies and OLTP vs star
+> schema: [SQL 07 — Normalization & Data Modelling](../SQL/07-normalization-and-modelling.md).
 
 ## Transactions & Isolation Levels
 
@@ -93,6 +107,9 @@ A transaction is an atomic unit. Isolation controls concurrency anomalies:
 
 - **Snapshot / RCSI** uses row versioning — readers don't block writers (Postgres/Oracle behave this way by default).
 - Higher isolation = more locking/blocking; pick the lowest level that is correct.
+
+> 📖 The read phenomena in detail, RCSI, locking vs blocking vs deadlock, `NOLOCK` and optimistic
+> concurrency: [SQL 09 — Transactions & Concurrency](../SQL/09-transactions-and-concurrency.md).
 
 ## ORM / EF Core
 
