@@ -1,0 +1,130 @@
+/* Element defaults.
+
+   Replaces Bootstrap's Reboot, which used to supply these. Browser defaults for
+   heading/paragraph/list margins differ enough from Reboot's that dropping it
+   without this file would reflow the whole site, so the values here match what
+   Reboot resolved to - except colours, which now come from our tokens instead of
+   Bootstrap's palette. */
+
+hr {
+  margin: 1rem 0;
+  color: inherit;
+  border: 0;
+  border-top: 1px solid;
+  opacity: 0.25;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Reboot ran these through RFS, which fluidly scales the four largest headings
+   below the xl breakpoint and pins them above it. Most headings here carry a
+   class that overrides the size; these are the defaults for the bare ones. */
+h1 { font-size: calc(1.375rem + 1.5vw); }
+h2 { font-size: calc(1.325rem + 0.9vw); }
+h3 { font-size: calc(1.3rem + 0.6vw); }
+h4 { font-size: calc(1.275rem + 0.3vw); }
+h5 { font-size: 1.25rem; }
+h6 { font-size: 1rem; }
+
+@media (min-width: 1200px) {
+  h1 { font-size: 2.5rem; }
+  h2 { font-size: 2rem; }
+  h3 { font-size: 1.75rem; }
+  h4 { font-size: 1.5rem; }
+}
+
+p { margin-top: 0; margin-bottom: 1rem; }
+
+ol, ul { padding-left: 2rem; }
+ol, ul, dl { margin-top: 0; margin-bottom: 1rem; }
+ol ol, ul ul, ol ul, ul ol { margin-bottom: 0; }
+
+dt { font-weight: 700; }
+dd { margin-bottom: 0.5rem; margin-left: 0; }
+
+b, strong { font-weight: bolder; }
+small { font-size: 0.875em; }
+mark { padding: 0.1875em; background-color: var(--accent-soft-strong); }
+
+sub, sup { position: relative; font-size: 0.75em; line-height: 0; vertical-align: baseline; }
+sub { bottom: -0.25em; }
+sup { top: -0.5em; }
+
+/* Bare links: Bootstrap painted these its own blue. They now take the brand accent. */
+a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+a:hover { color: var(--accent-hover); }
+a:not([href]):not([class]),
+a:not([href]):not([class]):hover { color: inherit; text-decoration: none; }
+
+pre, code, kbd, samp { font-family: var(--font-mono); font-size: 1em; }
+pre {
+  display: block;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  overflow: auto;
+  font-size: 0.875em;
+}
+pre code { font-size: inherit; color: inherit; word-break: normal; }
+code { font-size: 0.875em; color: var(--accent-danger); word-wrap: break-word; }
+a > code { color: inherit; }
+kbd {
+  padding: 0.1875rem 0.375rem;
+  font-size: 0.875em;
+  color: var(--bg-primary);
+  background-color: var(--text-primary);
+  border-radius: var(--radius-xs);
+}
+kbd kbd { padding: 0; font-size: 1em; }
+
+figure { margin: 0 0 1rem; }
+blockquote { margin: 0 0 1rem; }
+address { margin-bottom: 1rem; font-style: normal; line-height: inherit; }
+abbr[title] { text-decoration: underline dotted; cursor: help; text-decoration-skip-ink: none; }
+
+img, svg { vertical-align: middle; }
+
+table { caption-side: bottom; border-collapse: collapse; }
+caption { padding-top: 0.5rem; padding-bottom: 0.5rem; color: var(--text-muted); text-align: left; }
+th { font-weight: 500; text-align: inherit; text-align: -webkit-match-parent; }
+thead, tbody, tfoot, tr, td, th { border-color: inherit; border-style: solid; border-width: 0; }
+
+label { display: inline-block; }
+button { border-radius: 0; }
+button:focus:not(:focus-visible) { outline: 0; }
+input, button, select, optgroup, textarea {
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+button, select { text-transform: none; }
+select { word-wrap: normal; }
+select:disabled { opacity: 1; }
+button, [type='button'], [type='reset'], [type='submit'] { -webkit-appearance: button; }
+button:not(:disabled),
+[type='button']:not(:disabled),
+[type='reset']:not(:disabled),
+[type='submit']:not(:disabled) { cursor: pointer; }
+::-moz-focus-inner { padding: 0; border-style: none; }
+textarea { resize: vertical; }
+fieldset { min-width: 0; padding: 0; margin: 0; border: 0; }
+legend { float: left; width: 100%; padding: 0; margin-bottom: 0.5rem; line-height: inherit; font-size: 1.5rem; }
+legend + * { clear: left; }
+[type='search'] { outline-offset: -2px; -webkit-appearance: textfield; }
+::-webkit-search-decoration { -webkit-appearance: none; }
+::-webkit-color-swatch-wrapper { padding: 0; }
+::file-selector-button { font: inherit; -webkit-appearance: button; }
+output { display: inline-block; }
+iframe { border: 0; }
+summary { display: list-item; cursor: pointer; }
+progress { vertical-align: baseline; }
+[role='button'] { cursor: pointer; }
+[hidden] { display: none !important; }

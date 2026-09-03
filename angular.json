@@ -26,13 +26,8 @@
               { "glob": "CNAME", "input": ".", "output": "" },
               { "glob": "favicon.svg", "input": ".", "output": "" }
             ],
-            "styles": [
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "ng-src/styles.scss"
-            ],
-            "scripts": [
-              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
-            ]
+            "styles": ["ng-src/styles.scss"],
+            "scripts": []
           },
           "configurations": {
             "production": {

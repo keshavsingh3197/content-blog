@@ -18,7 +18,7 @@ import { FileNode } from '../../models/file-node.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, FormsModule],
   template: `
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <nav class="navbar navbar-expand-lg fixed-top">
       <div class="container-fluid">
         <a class="navbar-brand fw-bold" [routerLink]="['/']">
           <i class="fas fa-code me-2"></i>{{ brandName() }}
@@ -110,13 +110,13 @@ import { FileNode } from '../../models/file-node.model';
     .lang-picker option { color:#111; background:#fff; }
 
     /*
-      The topic strip is a horizontal scroller (styles.scss sets overflow-x:auto/overflow-y:hidden
+      The topic strip is a horizontal scroller (_navbar.scss sets overflow-x:auto/overflow-y:hidden
       on .navbar-nav so the topics never wrap onto a second row). Any overflow other than visible
-      clips absolutely positioned descendants, and Bootstrap's .dropdown-menu is positioned against
+      clips absolutely positioned descendants, and .dropdown-menu is positioned against
       .nav-item.dropdown *inside* that scroller — so the menu opened but was clipped to nothing.
       Anchoring it to the viewport takes it out of the clipping box; the coordinates come from the
-      toggle's own rect in toggleDropdown(). Only >=lg needs this: below that breakpoint Bootstrap
-      makes .navbar-nav .dropdown-menu position:static and the scroller does not exist.
+      toggle's own rect in toggleDropdown(). Only >=lg needs this: below that breakpoint
+      _utilities.scss keeps .navbar-nav .dropdown-menu static and the scroller does not exist.
     */
     @media (min-width: 992px) {
       .navbar .navbar-nav .dropdown-menu.show {

@@ -13,6 +13,8 @@
 
 @use './styles/tokens';
 @use './styles/reset';
+@use './styles/elements';
+@use './styles/utilities';
 @use './styles/navbar';
 @use './styles/hero';
 @use './styles/search';
