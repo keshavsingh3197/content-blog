@@ -12,6 +12,7 @@
    ============================================================ */
 
 @use './styles/shell';
+@use './styles/web-ui-bridge';
 @use './styles/sidebar';
 @use './styles/topbar';
 @use './styles/page-header';
@@ -22,5 +23,5 @@
 @use './styles/onboarding';
 @use './styles/toasts';
 @use './styles/tables';
-@use './styles/filter-bar';
+@use './styles/moderation';
 @use './styles/responsive';

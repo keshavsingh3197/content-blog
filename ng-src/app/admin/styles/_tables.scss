@@ -1,25 +1,45 @@
-/* Admin data tables. */
+/* Admin data tables.
 
-/* ── Tables ───────────────────────────────────────────── */
-.toolbar {
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap;
-  .search { max-width: 320px; flex: 1; }
-}
-.table-wrap { overflow-x: auto; }
-.admin-table {
-  width: 100%; border-collapse: collapse; font-size: 0.9rem;
-  th {
-    text-align: left; padding: 0.8rem 1.1rem; background: var(--bg-secondary);
-    color: var(--text-muted); font-weight: 700; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em;
-    border-bottom: 1px solid var(--border-color); white-space: nowrap;
+   The three list screens render through <brand-data-table> from
+   @keshavsingh3197/web-ui. That component owns the toolbar, header row, sort
+   state, paging footer and empty row; the consuming page projects the body rows
+   through an <ng-template>.
+
+   Projected rows are the catch. brand-data-table uses Angular's default
+   (emulated) encapsulation and no ::ng-deep, so its `th, td` padding/border and
+   its row striping and hover only reach elements in its own template. Our <tr>
+   and <td> are declared in the page component, so they carry the page's
+   encapsulation, not the package's, and none of those rules apply to them - the
+   header would sit over unpadded, borderless body cells.
+
+   The rules below close that gap from the admin theme, which is
+   ViewEncapsulation.None and so can reach the projected cells. Padding and
+   border are matched to the package's own values (.6rem .75rem, 1px solid
+   var(--border)) so the header and body stay on the same grid; if the package
+   changes them, change them here too.
+
+   The right long-term fix is in the package - :host ::ng-deep on the cell rules,
+   or ViewEncapsulation.None - after which this block can go. */
+
+brand-data-table {
+  td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    text-align: left;
+    vertical-align: middle;
   }
-  td { padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+
   tbody tr { transition: background var(--transition-fast); }
-  tbody tr:hover td { background: var(--bg-secondary); }
+  tbody tr:nth-child(even) { background: color-mix(in srgb, var(--bg-secondary) 45%, transparent); }
+  tbody tr:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+  tbody tr:last-child td { border-bottom: 0; }
+
   .muted { color: var(--text-muted); }
   .d-block { display: block; }
 }
+
 .link-ico { display: inline-flex; align-items: center; justify-content: center;
   width: 34px; height: 34px; border-radius: var(--radius-xs);
   background: var(--accent-soft); color: var(--accent); flex-shrink: 0; }
@@ -27,17 +47,12 @@
   span { display: flex; flex-direction: column; line-height: 1.25;
     strong { font-size: 0.9rem; } small { font-size: 0.76rem; color: var(--text-muted); } } }
 .row-actions { display: flex; gap: 0.35rem; justify-content: flex-end; }
-.empty-row { text-align: center; color: var(--text-muted); padding: 2.5rem !important;
-  i { display: block; font-size: 1.6rem; margin-bottom: 0.5rem; opacity: 0.6; } }
 
-/* pills / badges / dots / tags */
+/* pills / badges / tags */
 .pill {
   display: inline-flex; align-items: center; gap: 0.3rem;
   font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: var(--radius-pill);
   margin-right: 0.3rem; background: var(--accent-soft); color: var(--accent);
-  &.role-admin { background: rgba(225, 29, 72, 0.14); color: #e11d48; }
-  &.role-editor { background: rgba(245, 158, 11, 0.16); color: #d97706; }
-  &.role-viewer { background: rgba(99, 102, 241, 0.14); color: var(--accent); }
   &.folder { background: var(--bg-tertiary); color: var(--text-secondary); }
 }
 .badge {
@@ -46,6 +61,4 @@
   &.on { background: rgba(16, 185, 129, 0.15); color: #059669; }
   &.off { background: var(--bg-tertiary); color: var(--text-muted); }
 }
-.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem;
-  &.dot-green { background: var(--accent-success); } &.dot-grey { background: var(--text-muted); } }
 .tag { font-size: 0.74rem; color: var(--text-secondary); margin-right: 0.35rem; }
