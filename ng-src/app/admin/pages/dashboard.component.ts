@@ -4,8 +4,8 @@ import { RouterModule } from '@angular/router';
 import { forkJoin, of, catchError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminApiService } from '../services/admin-api.service';
-import { AuthService } from '../services/auth.service';
-import { ADMIN_APP_URL } from '../api.config';
+import { AuthService } from '../../core/services/auth.service';
+import { ADMIN_APP_URL } from '../../core/api.config';
 
 @Component({
   selector: 'app-admin-dashboard',

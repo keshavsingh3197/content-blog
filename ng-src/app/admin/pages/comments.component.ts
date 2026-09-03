@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommentBan, CommentsService, ModeratedComment } from '../../services/comments.service';
-import { AuthService } from '../services/auth.service';
+import { CommentBan, CommentsService, ModeratedComment } from '../../core/services/comments.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../services/toast.service';
 
 /**

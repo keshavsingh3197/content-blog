@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminApiService } from '../services/admin-api.service';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../services/toast.service';
 import { MediaListItem } from '../admin.models';
 

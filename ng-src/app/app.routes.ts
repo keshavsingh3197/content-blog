@@ -3,19 +3,19 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent)
+    loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
   },
   {
     path: 'file',
-    loadComponent: () => import('./components/content-view/content-view.component').then(m => m.ContentViewComponent)
+    loadComponent: () => import('./features/content-view/content-view.component').then(m => m.ContentViewComponent)
   },
   {
     path: 'folder',
-    loadComponent: () => import('./components/folder-view/folder-view.component').then(m => m.FolderViewComponent)
+    loadComponent: () => import('./features/folder-view/folder-view.component').then(m => m.FolderViewComponent)
   },
   {
     path: 'tags',
-    loadComponent: () => import('./components/tags-view/tags-view.component').then(m => m.TagsViewComponent)
+    loadComponent: () => import('./features/tags-view/tags-view.component').then(m => m.TagsViewComponent)
   },
   {
     path: 'admin',

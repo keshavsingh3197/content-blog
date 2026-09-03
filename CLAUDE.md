@@ -73,13 +73,14 @@ There is deliberately no auth controller, no user store and no token minting her
   `VisitorKeyService`. If you find yourself adding a password hasher or a token service here, the
   feature belongs at the IdP.
 
-The three runtime bases are `InjectionToken`s in `ng-src/app/admin/api.config.ts`
+The three runtime bases are `InjectionToken`s in `ng-src/app/core/api.config.ts`
 (`API_BASE`, `IDP_BASE`, `ADMIN_APP_URL`), defaulted from `window.__*__` globals hardcoded in
-`ng-src/index.html`. Public-site services import from that admin path too — that is intentional, not
-a layering mistake.
+`ng-src/index.html`. They used to live under `admin/`, which meant public-site services imported
+across a feature boundary to reach them; `api.config.ts`, `AuthService`, `authInterceptor` and the
+identity types are all in `core/` now, so nothing outside `admin/` imports from it.
 
 `Content/ContentPath` is the one predicate that decides whether a caller-supplied string names a
-document, and `ng-src/app/services/content-path.ts` is its client-side mirror — keep the two
+document, and `ng-src/app/core/content-path.ts` is its client-side mirror — keep the two
 equivalent, since a path that passes one and fails the other is a bug in whichever direction.
 
 ## Branding, copy and config are database values
