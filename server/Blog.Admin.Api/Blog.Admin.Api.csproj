@@ -32,10 +32,10 @@
          source in the repo-root nuget.config, which needs the PACKAGES_READ_TOKEN env var.
          GitHub's hosted automatic NuGet dependency submission job cannot read this private
          feed, so that specific job skips these references instead of failing restore. -->
-    <PackageReference Include="KeshavSingh.Security" Version="0.5.0" />
-    <PackageReference Include="KeshavSingh.Auth" Version="0.7.0" />
-    <PackageReference Include="KeshavSingh.Mongo.NoSql" Version="0.3.0" />
-    <PackageReference Include="KeshavSingh.Core" Version="0.5.0" />
+    <PackageReference Include="KeshavSingh.Security" Version="0.6.0" />
+    <PackageReference Include="KeshavSingh.Auth" Version="0.10.0" />
+    <PackageReference Include="KeshavSingh.Mongo.NoSql" Version="0.4.0" />
+    <PackageReference Include="KeshavSingh.Core" Version="0.6.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(SkipPrivatePackages)' == 'true'">
