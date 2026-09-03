@@ -1,0 +1,100 @@
+/* Article + TOC layout and the wide-viewport section rail. */
+
+/* ── Content Layout (Article + TOC) ───────────────────── */
+.content-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+
+  /* Two columns: article, then the contents rail on the right. */
+  @media (min-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr) 250px;
+  }
+
+  /*
+    Three columns once there is room for them. The article is pinned to a readable measure and the
+    grid is centred, so the surplus width of a very large display becomes balanced margin plus two
+    usable rails — never a 200-character line of text.
+  */
+  @media (min-width: 1600px) {
+    grid-template-columns:
+      minmax(210px, 300px)
+      minmax(0, var(--reader-measure))
+      minmax(230px, 320px);
+    justify-content: center;
+    column-gap: clamp(1.75rem, 2.5vw, 3.25rem);
+
+    .section-rail { grid-column: 1; grid-row: 1; }
+    .content-main { grid-column: 2; grid-row: 1; }
+    .toc-sidebar  { grid-column: 3; grid-row: 1; }
+  }
+
+  /* Longer document titles and heading text get room to breathe before the margins do. */
+  @media (min-width: 2100px) {
+    grid-template-columns:
+      minmax(240px, 360px)
+      minmax(0, var(--reader-measure))
+      minmax(260px, 380px);
+  }
+}
+
+.content-main { min-width: 0; }
+
+/* ── Section rail (very wide viewports only) ──────────── */
+.section-rail {
+  display: none;
+
+  @media (min-width: 1600px) {
+    display: block;
+    position: sticky;
+    top: calc(var(--navbar-height) + 1.5rem);
+    max-height: calc(100vh - var(--navbar-height) - 3rem);
+    overflow-y: auto;
+  }
+}
+
+.rail-panel { background: transparent; }
+
+.rail-title {
+  color: var(--text-muted);
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  word-break: break-word;
+
+  i { color: var(--accent); }
+}
+
+.rail-nav {
+  padding: 0.25rem 0;
+  border-left: 1px solid var(--border-color);
+  margin-left: 1rem;
+}
+
+.rail-link {
+  display: block;
+  padding: 0.4rem 1rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  border-left: 2px solid transparent;
+  margin-left: -1px;
+  transition: var(--transition-fast);
+  word-break: break-word;
+
+  &:hover {
+    color: var(--accent);
+    border-left-color: var(--border-strong);
+  }
+
+  &.rail-active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 600;
+    background: var(--accent-soft);
+  }
+}

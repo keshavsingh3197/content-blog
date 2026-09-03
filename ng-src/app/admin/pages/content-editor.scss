@@ -1,0 +1,5 @@
+/* Content-editor-only: split markdown editor.
+   Rides its page component (ViewEncapsulation.None) so it loads with that
+   route, not with the console shell. */
+
+@use './styles/content-editor';

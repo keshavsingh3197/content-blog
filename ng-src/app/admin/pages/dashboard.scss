@@ -1,0 +1,7 @@
+/* Dashboard-only: stat tiles, architecture diagram, quick actions.
+   Rides its page component (ViewEncapsulation.None) so it loads with that
+   route, not with the console shell. */
+
+@use './styles/stat-tiles';
+@use './styles/diagram';
+@use './styles/quick-actions';

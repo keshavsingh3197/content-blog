@@ -1,0 +1,55 @@
+/* Spinners and skeleton loaders. */
+
+/* ── Loading ──────────────────────────────────────────── */
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem;
+  color: var(--text-muted);
+}
+
+/* ── Skeleton Loader ──────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position: 800px 0; }
+}
+
+.skeleton-header,
+.skeleton-line {
+  border-radius: var(--radius-xs);
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary) 25%,
+    var(--bg-secondary) 50%,
+    var(--bg-tertiary) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+.content-skeleton {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+
+  .skeleton-header {
+    height: 2.5rem;
+    width: 60%;
+    margin-bottom: 1.75rem;
+  }
+
+  .skeleton-line {
+    height: 1rem;
+    margin-bottom: 0.85rem;
+
+    &.w-75  { width: 75%; }
+    &.w-100 { width: 100%; }
+    &.w-90  { width: 90%; }
+    &.w-60  { width: 60%; }
+    &.w-80  { width: 80%; }
+  }
+}

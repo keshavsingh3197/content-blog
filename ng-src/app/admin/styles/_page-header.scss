@@ -1,0 +1,15 @@
+/* Page title block. */
+
+/* ── Page header ──────────────────────────────────────── */
+.page-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 1rem; margin-bottom: 1.6rem; flex-wrap: wrap;
+}
+.page-title { font-size: 1.55rem; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
+.page-sub { color: var(--text-secondary); margin: 0.25rem 0 0; font-size: 0.925rem; }
+.head-actions { display: flex; gap: 0.6rem; }
+.crumb {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  color: var(--text-muted); text-decoration: none; font-size: 0.82rem; font-weight: 600;
+  &:hover { color: var(--accent); }
+}

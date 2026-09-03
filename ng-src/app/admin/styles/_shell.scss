@@ -1,0 +1,14 @@
+/* Admin shell grid. */
+
+/* ── Shell ────────────────────────────────────────────── */
+.admin-main-shell { padding: 0; }
+
+.admin-shell {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 264px 1fr;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  z-index: 5000;
+}

@@ -1,0 +1,20 @@
+/* Dialog surface (class names avoid ad-blocker cosmetic filters). */
+
+/* ── Dialog (class names avoid ad-blocker "modal/popup" cosmetic filters) ── */
+.admin-dialog-scrim {
+  position: fixed; inset: 0; background: rgba(3, 6, 15, 0.55);
+  display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 6000;
+  backdrop-filter: blur(3px); animation: admin-fade-up 0.2s ease;
+}
+.admin-dialog {
+  background: var(--bg-primary); border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto;
+}
+.admin-dialog-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 1.35rem; border-bottom: 1px solid var(--border-color);
+  h3 { margin: 0; font-size: 1.1rem; font-weight: 700; }
+}
+.admin-dialog-body { padding: 1.35rem; }
+.admin-dialog-foot { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.5rem; }

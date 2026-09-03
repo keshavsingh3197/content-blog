@@ -1,0 +1,37 @@
+/* Admin button variants. */
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn-primary, .btn-ghost, .btn-danger {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  border-radius: var(--radius-sm); padding: 0.62rem 1.05rem;
+  font-weight: 600; font-size: 0.9rem; cursor: pointer; border: 1px solid transparent;
+  transition: var(--transition-fast); text-decoration: none;
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+.btn-primary {
+  background: var(--gradient-primary); color: #fff; box-shadow: var(--shadow-accent);
+  &:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.05); }
+}
+.btn-ghost {
+  background: var(--bg-secondary); border-color: var(--border-color); color: var(--text-secondary);
+  &:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+}
+.btn-danger {
+  background: var(--accent-danger); color: #fff;
+  &:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+}
+.block { width: 100%; }
+.link-btn {
+  background: none; border: none; color: var(--accent); font-weight: 600; font-size: 0.85rem;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0;
+  &:hover { text-decoration: underline; }
+}
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: var(--radius-xs);
+  background: var(--bg-secondary); border: 1px solid var(--border-color);
+  color: var(--text-secondary); cursor: pointer; text-decoration: none; transition: var(--transition-fast);
+  &:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  &.danger:hover { background: var(--accent-danger); color: #fff; border-color: var(--accent-danger); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}

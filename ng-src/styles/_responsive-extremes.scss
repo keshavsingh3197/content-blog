@@ -1,0 +1,61 @@
+/* Very wide displays and small screens. */
+
+/* ── Wide displays ────────────────────────────────────── */
+/*
+  Beyond ~2100px the reader gains a third column and the article keeps its measure, so the only
+  thing left worth scaling is the type itself — at that size the default is optically small.
+*/
+@media (min-width: 2100px) {
+  .markdown-body {
+    font-size: 1.08rem;
+
+    pre { font-size: 0.92rem; }
+  }
+
+  .content-meta .meta-item { font-size: 0.86rem; }
+}
+
+/* ── Small screens ────────────────────────────────────── */
+@media (max-width: 575.98px) {
+  /*
+    The header holds a brand, three controls and the menu toggle. On a 390px phone that is more
+    than fits, so the brand gives up its width first (it can ellipsis) and the controls shrink.
+  */
+  .navbar {
+    .container-fluid { gap: 0.35rem; }
+
+    .navbar-brand {
+      font-size: 1.05rem;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .nav-icon-btn,
+  .theme-toggle-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 0.85rem;
+  }
+
+  .lang-picker select { max-width: 5rem; }
+
+  .content-meta {
+    padding: 0.75rem 1rem;
+
+    /* Let the action wrap onto its own line rather than being pushed off the edge. */
+    .meta-action { margin-left: 0; }
+  }
+
+  .content-tags { padding: 0.65rem 1rem; }
+
+  .markdown-body {
+    padding: 1.15rem;
+
+    pre { padding: 1rem 1.1rem; }
+  }
+
+  .tag-chip.tag-chip-lg { padding: 0.3rem 0.75rem; font-size: 0.8rem; }
+}

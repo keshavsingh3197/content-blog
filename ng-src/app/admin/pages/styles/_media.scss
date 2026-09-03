@@ -1,0 +1,34 @@
+/* Media library grid. */
+
+/* ── Media ────────────────────────────────────────────── */
+.dropzone {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;
+  padding: 2.25rem; margin: 1.25rem; border-radius: var(--radius);
+  border: 2px dashed var(--border-strong); cursor: pointer; text-align: center;
+  transition: var(--transition-fast);
+  .dz-ico { font-size: 1.8rem; color: var(--accent); margin-bottom: 0.3rem; }
+  small { color: var(--text-muted); }
+  .dz-progress { color: var(--accent); font-weight: 600; margin-top: 0.5rem; }
+  &:hover, &.drag { border-color: var(--accent); background: var(--accent-soft); }
+}
+.media-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem;
+}
+.media-card {
+  margin: 0; border-radius: var(--radius); overflow: hidden; background: var(--bg-primary);
+  border: 1px solid var(--border-color); box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  &:hover { transform: translateY(-4px); box-shadow: var(--shadow-md);
+    .media-actions { opacity: 1; } }
+  .media-thumb { aspect-ratio: 4 / 3; background: var(--bg-tertiary);
+    img { width: 100%; height: 100%; object-fit: cover; display: block; } }
+  figcaption { padding: 0.6rem 0.75rem; display: flex; flex-direction: column; gap: 0.1rem;
+    .media-name { font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .media-meta { font-size: 0.72rem; color: var(--text-muted); } }
+  .media-actions { position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.3rem;
+    opacity: 0; transition: opacity var(--transition-fast); }
+  position: relative;
+}
+.empty-card, .empty-row { color: var(--text-muted); }
+.empty-card { grid-column: 1 / -1; text-align: center; padding: 3rem;
+  i { font-size: 2rem; opacity: 0.6; } }

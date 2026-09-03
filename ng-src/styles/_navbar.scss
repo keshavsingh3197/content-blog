@@ -1,0 +1,155 @@
+/* Reading-progress bar, glass navbar and its controls. */
+
+/* ── Reading Progress ─────────────────────────────────── */
+.reading-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  z-index: 99999;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+}
+
+/* ── Navbar (glass) ───────────────────────────────────── */
+.navbar {
+  height: var(--navbar-height);
+  background: var(--surface-glass) !important;
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-xs);
+
+  .navbar-brand {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+
+    background: var(--gradient-brand-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    i {
+      -webkit-text-fill-color: initial;
+      color: var(--accent);
+    }
+  }
+
+  .nav-link {
+    color: var(--text-secondary) !important;
+    font-weight: 500;
+    font-size: 0.925rem;
+    border-radius: var(--radius-sm);
+    padding: 0.45rem 0.85rem !important;
+    transition: color var(--transition-fast), background var(--transition-fast);
+
+    i {
+      color: var(--text-muted);
+      transition: color var(--transition-fast);
+    }
+
+    &:hover,
+    &[aria-expanded='true'] {
+      color: var(--accent) !important;
+      background: var(--accent-soft);
+
+      i { color: var(--accent); }
+    }
+  }
+
+  .dropdown-menu {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 0.4rem;
+    min-width: 220px;
+    margin-top: 0.5rem;
+
+    .dropdown-item {
+      border-radius: var(--radius-xs);
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.9rem;
+      padding: 0.5rem 0.85rem;
+      transition: background var(--transition-fast), color var(--transition-fast);
+
+      &:hover,
+      &:focus {
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+    }
+
+    .dropdown-divider {
+      border-color: var(--border-color);
+    }
+  }
+
+  .navbar-toggler {
+    color: var(--text-primary);
+    &:focus { box-shadow: none; }
+  }
+
+  /*
+    The topic list grows with the content tree, and the bar has a fixed height — so once the
+    topics no longer fit they must scroll sideways rather than wrap onto a second row and push
+    the page down behind the header.
+  */
+  @media (min-width: 992px) {
+    /*
+      A flex item will not shrink below its content width unless min-width is cleared, so without
+      this the overflow-x below never engages: the topic list keeps its full width and shoves the
+      theme, language and tag controls off the right-hand edge of the screen.
+    */
+    /* Keep the scrolling topic list clear of the controls it would otherwise slide under. */
+    .navbar-collapse { min-width: 0; margin-right: 0.75rem; }
+
+    .navbar-nav {
+      min-width: 0;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar { display: none; }
+
+      .nav-item { flex: 0 0 auto; }
+      .nav-link { white-space: nowrap; }
+    }
+  }
+}
+
+/* A control that belongs to the whole site (tag index), sized to match the theme toggle. */
+.nav-icon-btn,
+.theme-toggle-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: var(--radius-pill);
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition-fast);
+
+  &:hover,
+  &:focus-visible {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+/* Only the theme toggle tilts — it is the one control whose icon is the thing being switched. */
+.theme-toggle-btn:hover { transform: rotate(-15deg); }

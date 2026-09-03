@@ -1,0 +1,15 @@
+/* Panel surfaces. */
+
+/* ── Panels ───────────────────────────────────────────── */
+.panel {
+  background: var(--bg-primary); border: 1px solid var(--border-color);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  margin-bottom: 1.5rem; overflow: hidden;
+}
+.panel-head {
+  display: flex; align-items: center; gap: 0.55rem;
+  padding: 0.9rem 1.25rem; font-weight: 700; font-size: 0.92rem;
+  border-bottom: 1px solid var(--border-color); background: var(--bg-secondary);
+  i { color: var(--accent); }
+}
+.panel-body { padding: 1.25rem; }

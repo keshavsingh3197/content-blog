@@ -1,0 +1,33 @@
+/* Moderation list filter bar. */
+
+/* ── Filter bar (moderation lists) ────────────────────── */
+.filter-bar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem;
+  padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+.filter-input {
+  flex: 1 1 22rem; min-width: 0;
+  padding: 0.45rem 0.7rem; border-radius: var(--radius-xs);
+  border: 1px solid var(--border-color); background: var(--bg-primary);
+  color: var(--text-primary); font-size: 0.85rem;
+  &:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+}
+.filter-toggle {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font-size: 0.82rem; color: var(--text-secondary); cursor: pointer; margin: 0;
+}
+
+.panel-heading {
+  margin: 0; padding: 0.9rem 1.25rem;
+  font-size: 0.92rem; font-weight: 700;
+  border-bottom: 1px solid var(--border-color); background: var(--bg-secondary);
+}
+
+.pad { padding: 1.1rem 1.25rem; }
+
+/* A comment body in a table cell: two lines of plain text, never expanded to full height. */
+.comment-preview {
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; white-space: pre-wrap; color: var(--text-secondary);
+}

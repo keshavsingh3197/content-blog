@@ -1,0 +1,46 @@
+/* Main breakpoint adjustments. */
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 992px) {
+  :root { --navbar-height: 64px; }
+}
+
+@media (max-width: 768px) {
+  :root { --navbar-height: 60px; }
+
+  .hero-section { padding: 3rem 0 2.5rem; }
+  .hero-section .hero-stats { gap: 1.5rem; }
+
+  .markdown-body {
+    padding: 1.5rem;
+    font-size: 0.98rem;
+    pre { font-size: 0.8rem; }
+    h1 { font-size: 1.7rem; }
+    h2 { font-size: 1.4rem; }
+    h3 { font-size: 1.2rem; }
+  }
+
+  .search-container .search-results {
+    position: fixed;
+    top: var(--navbar-height);
+    left: 0;
+    right: 0;
+    border-radius: 0;
+    max-height: 55vh;
+    z-index: 2000;
+    border-left: none;
+    border-right: none;
+  }
+
+  .back-to-top { bottom: 1.25rem; right: 1rem; }
+}
+
+@media (max-width: 576px) {
+  .hero-section .hero-stats .stat-number { font-size: 1.5rem; }
+
+  .content-meta {
+    gap: 0.6rem 1.25rem;
+  }
+
+  .topic-card { min-height: 130px; padding: 1.15rem; }
+}

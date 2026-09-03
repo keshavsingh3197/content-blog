@@ -1,0 +1,211 @@
+/* Reader comment thread and its buttons. */
+
+/* ── Comments ─────────────────────────────────────────── */
+.comments {
+  margin: 2rem 0 3rem;
+}
+
+.comments-heading {
+  display: flex;
+  align-items: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 1.25rem;
+
+  i { color: var(--accent); }
+}
+
+.comments-state,
+.comments-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.comment-list {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.comment {
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.comment-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.comment-author {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.comment-date,
+.comment-edited {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.comment-edited::before {
+  content: '·';
+  margin-right: 0.4rem;
+}
+
+.comment-actions {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.comment-action {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: var(--transition-fast);
+
+  &:hover { color: var(--accent); background: var(--accent-soft); }
+
+  &.comment-action-danger:hover { color: var(--accent-danger); background: rgba(225, 29, 72, 0.1); }
+}
+
+.comment-body {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  /* Comments are plain text: keep the author's own line breaks without interpreting anything. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comment-form,
+.comment-signin {
+  padding: 1.15rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+}
+
+.comment-form-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+}
+
+.comment-form-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.65rem;
+}
+
+.comment-count {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.comment-form-buttons {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.comment-form-foot .btn-accent { margin-left: auto; }
+.comment-form-buttons .btn-accent { margin-left: 0; }
+
+.comment-error { margin: 0.75rem 0 0; }
+
+.comment-edit { margin-top: 0.5rem; }
+
+.comment-signin-text {
+  margin: 0 0 0.85rem;
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+}
+
+.comment-signin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.comment-signin-note {
+  margin: 0.85rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ── Buttons for the comment UI ───────────────────────── */
+/*
+  Scoped to .comments on purpose: `.btn-ghost` is also an admin-console class defined in the
+  @imported styles-admin.scss above, and an unscoped rule here would win over it everywhere.
+*/
+.comments .btn-accent,
+.comments .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.comments .btn-accent {
+  border: 1px solid transparent;
+  background: var(--gradient-primary);
+  color: #fff;
+
+  &:hover:not(:disabled) { box-shadow: var(--shadow-accent); }
+
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+}
+
+.comments .btn-ghost {
+  border: 1px solid var(--border-strong);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+
+  &:hover { color: var(--accent); border-color: var(--accent); }
+}

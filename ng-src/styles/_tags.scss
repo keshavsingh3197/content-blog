@@ -1,0 +1,76 @@
+/* Tag pills and the tag index. */
+
+/* ── Tags ─────────────────────────────────────────────── */
+.content-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+
+  .content-tags-icon {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-right: 0.15rem;
+  }
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.7rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.6;
+  text-decoration: none;
+  transition: var(--transition-fast);
+
+  &:hover,
+  &:focus-visible {
+    background: var(--accent-soft-strong);
+    border-color: var(--accent);
+    color: var(--accent-hover);
+  }
+
+  &.tag-chip-lg {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  /* The tag currently being browsed reads as selected, not as another link. */
+  &.tag-chip-active {
+    background: var(--gradient-primary);
+    border-color: transparent;
+    color: #fff;
+
+    .tag-count { background: rgba(255, 255, 255, 0.25); color: #fff; }
+  }
+}
+
+.tag-count {
+  padding: 0 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--bg-primary);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tags-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  margin-bottom: 1.25rem;
+}

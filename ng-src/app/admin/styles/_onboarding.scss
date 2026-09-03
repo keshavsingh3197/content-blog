@@ -1,0 +1,12 @@
+/* Onboarding banner and narrow form panel. */
+
+/* ── Onboarding banner + narrow form panel ────────────── */
+.setup-banner {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.9rem 1.15rem; margin-bottom: 1.25rem;
+  border-radius: var(--radius); font-weight: 600; font-size: 0.9rem;
+  background: rgba(245, 158, 11, 0.12); color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  i { font-size: 1.1rem; }
+}
+.panel.narrow { max-width: 460px; }

@@ -1,0 +1,92 @@
+/* Design tokens: surfaces, text, brand, shadows, radii, motion. */
+
+/* ── Design Tokens ─────────────────────────────────────── */
+:root {
+  /* Surfaces & background */
+  --bg-app: #f6f7f9;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f2f4f7;
+  --bg-tertiary: #e8ebf0;
+  --surface-glass: rgba(255, 255, 255, 0.72);
+
+  /* Text */
+  --text-primary: #0f172a;
+  --text-secondary: #556070;
+  --text-muted: #8a94a6;
+
+  /* Lines */
+  --border-color: #e6e8ee;
+  --border-strong: #d3d8e2;
+
+  /* Brand / accent */
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-contrast: #ffffff;
+  --accent-soft: rgba(99, 102, 241, 0.10);
+  --accent-soft-strong: rgba(99, 102, 241, 0.16);
+  --accent-secondary: #8b5cf6;
+  --accent-danger: #e11d48;
+  --accent-success: #10b981;
+
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 55%, #a855f7 100%);
+  --gradient-brand-text: linear-gradient(135deg, #6366f1, #a855f7);
+
+  /* Shadows (soft, layered) */
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 6px 16px -4px rgba(16, 24, 40, 0.12), 0 2px 6px -2px rgba(16, 24, 40, 0.06);
+  --shadow-lg: 0 20px 40px -12px rgba(16, 24, 40, 0.20), 0 6px 14px -6px rgba(16, 24, 40, 0.10);
+  --shadow-accent: 0 10px 30px -8px rgba(99, 102, 241, 0.45);
+
+  /* Radii */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* Typography */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', 'Fira Code', Menlo, monospace;
+
+  /* Layout */
+  --navbar-height: 68px;
+  --content-max: 1240px;
+  /* The reader is allowed to run wider than a listing page: it has side rails to fill. */
+  --reader-max: 1240px;
+  /* Article measure. Prose stops growing here; the leftover width goes to the rails. */
+  --reader-measure: 105ch;
+
+  /* Motion */
+  --transition-fast: 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme='dark'] {
+  --bg-app: #0b0f17;
+  --bg-primary: #131824;
+  --bg-secondary: #1a2130;
+  --bg-tertiary: #232c3d;
+  --surface-glass: rgba(19, 24, 36, 0.72);
+
+  --text-primary: #eaeef6;
+  --text-secondary: #a3adbe;
+  --text-muted: #6b7688;
+
+  --border-color: #262f40;
+  --border-strong: #33405a;
+
+  --accent: #818cf8;
+  --accent-hover: #a5b0ff;
+  --accent-soft: rgba(129, 140, 248, 0.14);
+  --accent-soft-strong: rgba(129, 140, 248, 0.22);
+  --accent-secondary: #a78bfa;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 8px 22px -6px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 24px 50px -14px rgba(0, 0, 0, 0.7);
+  --shadow-accent: 0 10px 30px -8px rgba(99, 102, 241, 0.5);
+}
