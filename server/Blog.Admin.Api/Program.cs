@@ -72,10 +72,14 @@ builder.Services
 builder.Services.AddEndpointsApiExplorer();
 
 // ---- CORS: allow the SSO family — any keshavsingh.in subdomain (blog, git, admin, id, …)
-// over https, plus localhost in dev. Credentialed, so this is a scoped predicate allowlist
+// over https, plus localhost in Development only. Credentialed, so this is a scoped allowlist
 // (never AllowAnyOrigin). New sibling apps work without touching this. ----
 const string CorsPolicy = "AdminUi";
-builder.Services.AddKeshavSsoCors(CorsPolicy);
+// localhost is now dev-only (KeshavSingh.Core 0.6.0): it used to be trusted in production
+// too, where it bought nothing and left http://localhost:* as a credentialed origin.
+builder.Services.AddKeshavSsoCors(
+    CorsPolicy,
+    allowLocalhost: builder.Environment.IsDevelopment());
 
 // ---- Authentication: OAuth2 bearer (JWT) validated on every request ----
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
