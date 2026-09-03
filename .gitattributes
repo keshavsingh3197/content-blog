@@ -1,0 +1,26 @@
+# Normalize every text file to LF in the repository.
+# Without this the tree flips wholesale whenever a Windows tool rewrites files
+# (see the 205-file CRLF churn this file was added to stop).
+* text=auto eol=lf
+
+# Windows-only tooling that needs CRLF in the working tree.
+# The index still stores LF; only checkout differs.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+*.sln  text eol=crlf
+
+# Binary assets - never touch, never diff as text.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.woff  binary
+*.woff2 binary
+*.pdf  binary
+
+# Generated - keep out of diffs/langstats noise.
+package-lock.json  -diff linguist-generated
+structure.json     -diff linguist-generated
