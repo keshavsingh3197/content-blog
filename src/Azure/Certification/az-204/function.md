@@ -1,296 +1,265 @@
-# Azure Function
+---
+title: Azure Functions Reference
+summary: Triggers, bindings, authorization levels, hosting plans, cold start and the runtime storage account — with the six-field NCRONTAB table and the isolated-worker C# that replaced the retired in-process model.
+tags: [Azure, Azure-Functions, Serverless, .NET, CRON, Interview]
+updated: 2026-09-03
+---
 
-## What are Azure Functions?
+# Azure Functions
 
-    Serverless compute service to run event-driven code without managing infrastructure.
-    Use cases: Data processing, APIs, automation.
+> Reference notes. The interview-shaped version, with Durable Functions, retries and the labs, is
+> [Interview → Azure → 04 Azure Functions](../../../Interview/Azure/04-azure-functions.md).
+
+> ⚠️ **Model note.** All C# here uses the **isolated worker** model (`[Function]`). Support for the
+> **in-process** model (`[FunctionName]`) ends **10 November 2026** — samples using it, including
+> older versions of this page, describe a retired model.
+
+## What Azure Functions is
+
+Serverless compute for event-driven code: you write a function, the platform provides the host,
+scaling and the connection to whatever triggered it. Typical uses are APIs, data processing, scheduled
+jobs and reacting to events from other Azure services.
 
 ## Triggers
 
-    Define how the function is invoked.
-    Examples: HTTP Trigger, Timer Trigger, Queue Trigger, Blob Trigger.
+A trigger defines **how the function is invoked** — exactly one per function.
 
-```c#
-[FunctionName("HttpExample")]
-public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
-{
-    return new OkObjectResult("Triggered by HTTP request.");
-}
+| Trigger | Fires on |
+| --- | --- |
+| HTTP | An HTTP request (max 230 s to respond — an Azure Load Balancer limit) |
+| Timer | A NCRONTAB schedule |
+| Queue Storage | A queue message |
+| Blob (Event Grid source) | A blob created or updated |
+| Service Bus | A queue or topic-subscription message |
+| Event Hubs | A batch of events |
+| Cosmos DB | Change feed items |
+| Event Grid | A routed event |
+
+```csharp
+[Function(nameof(HttpExample))]
+public IActionResult HttpExample(
+    [HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
+    => new OkObjectResult("Triggered by HTTP request.");
 ```
 
 ## Bindings
 
-    Connect to other Azure resources without code (Input and Output bindings).
-    Example: Write data to a Blob.
+Bindings connect to other Azure resources declaratively — **input** bindings supply data, **output**
+bindings write it, and neither needs SDK code.
 
-```c#
-        [FunctionName("BlobOutputExample")]
-        public async Task Run([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req,
-                              [Blob("sample-container/{rand-guid}.txt", FileAccess.Write)] Stream outputBlob)
-        {
-            using var writer = new StreamWriter(outputBlob);
-            await writer.WriteAsync("Data written to blob!");
-        }
+```csharp
+[Function(nameof(BlobOutputExample))]
+[BlobOutput("sample-container/{rand-guid}.txt", Connection = "StorageConnection")]
+public string BlobOutputExample(
+    [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest req)
+    => "Data written to blob!";      // the return value becomes the blob content
 ```
 
-## Authorization Levels
-        Anonymous, Function, Admin for securing HTTP functions.
+Bindings trade control for brevity: they give you no hook for custom retry/back-off, batching or
+partial failure. Use the SDK directly when you need any of those.
 
-### Anonymous: No authentication required.
+## Authorization levels
 
-    Use case: Public endpoints like health checks.
-    Example:
+For HTTP triggers only. Keys are shared secrets, **not identity** — for real authorization put the
+function behind API Management or Easy Auth and validate a Microsoft Entra ID token.
 
-```c#
-    [FunctionName("PublicEndpoint")]
-    public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
-    {
-        return new OkObjectResult("This is a public endpoint.");
-    }
+### Anonymous — no key required
+
+```csharp
+[Function(nameof(PublicEndpoint))]
+public IActionResult PublicEndpoint(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+    => new OkObjectResult("This is a public endpoint.");
 ```
 
-### Function: Requires a function key (provided in the query string or headers).
+Use for health checks and endpoints already protected by a gateway.
 
-    Use case: Internal or shared APIs where keys are distributed.
-    Example:
+### Function — requires a function or host key
 
-```c#
-    [FunctionName("InternalApi")]
-    public IActionResult Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req)
-    {
-        return new OkObjectResult("Function-level secured endpoint.");
-    }
+Passed as `?code=<key>` or the `x-functions-key` header.
+
+```csharp
+[Function(nameof(InternalApi))]
+public IActionResult InternalApi(
+    [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req)
+    => new OkObjectResult("Function-level secured endpoint.");
 ```
 
-### Admin: Requires an admin key.
+### Admin — requires the master key
 
-    Use case: Management or admin-only operations.
-    Example:
-
-```c#
-        [FunctionName("AdminApi")]
-        public IActionResult Run([HttpTrigger(AuthorizationLevel.Admin, "delete")] HttpRequest req)
-        {
-            return new OkObjectResult("Admin-level secured endpoint.");
-        }
+```csharp
+[Function(nameof(AdminApi))]
+public IActionResult AdminApi(
+    [HttpTrigger(AuthorizationLevel.Admin, "delete")] HttpRequest req)
+    => new OkObjectResult("Admin-level secured endpoint.");
 ```
 
-Key Points:
+### Function vs Admin
 
-    Function and Admin keys can be managed in the Azure Portal.
-    Combine authorization levels with Azure AD or custom authentication for added security.
-### Difference Between Function and Admin Authorization:
+| Aspect | Function | Admin |
+| --- | --- | --- |
+| Access key | Function key (or host key) | **Master key** |
+| Scope | The specific function (host keys: the app) | Every function in the app, plus admin APIs |
+| Use case | Per-function secured access | Management operations only — never distribute it |
 
-| Aspect     | Function | Admin |
-| ---------- | -------- | ------- |
-| Access Key | Requires Function Key |	Requires Admin Key |
-| Scope	     | Limited to specific function(s) |	Grants access to all functions in the app |
-| Use Case	 | Per-function secured access |	Global administrative operations |
+Keys are managed in the portal or with `az functionapp keys`. Rotate them; treat the master key like
+a root credential.
+
+## Hosting plans
+
+| Plan | Scale-out | Max instances | Default / max timeout | Cold start |
+| --- | --- | --- | --- | --- |
+| **Flex Consumption** (default for new apps) | Per-function group, concurrency-based | 1000 | 30 min / unbounded | Reduced; **always-ready instances** |
+| **Premium** | Event-driven, pre-warmed | Windows 100, Linux 20–100 | 30 min / unbounded | None |
+| **Dedicated** (App Service plan) | Manual or autoscale | 10–30 (100 ASE) | 30 min / unbounded (needs Always On) | None |
+| **Container Apps** | KEDA | 300–1000 | 30 min / unbounded | Depends on min replicas |
+| **Consumption** (legacy) | Event-driven | Windows 200, Linux 100 | **5 min / 10 min** | Yes — scales to zero |
+
+The classic **Consumption plan is legacy** — new serverless apps should use **Flex Consumption**, and
+**Linux Consumption retires on 30 September 2028**.
 
 ## Durable Functions
-        Build stateful workflows using an orchestrator.
-        Use cases: Long-running processes like approval workflows.
 
-    Hosting Plans
-        Consumption Plan: Auto-scale, pay-per-execution.
-        Premium Plan: Pre-warmed instances for lower latency.
-        Dedicated Plan: Runs on pre-allocated VMs.
+Stateful workflows on top of stateless functions: **client**, **orchestrator**, **activity** and
+**entity** functions, with state checkpointed to a task hub. Patterns: function chaining,
+fan-out/fan-in, async HTTP API, monitor, human interaction. The orchestrator is **replayed**, so it
+must be deterministic — no `DateTime.UtcNow`, `Guid.NewGuid()`, I/O or `Task.Delay` in the
+orchestrator body.
 
-## Deployment
-        Methods: Azure Portal, VS Code, Azure DevOps, GitHub Actions.
-        Tools: Azure CLI, ARM Templates, Terraform.
+## Deployment and tooling
+
+- **Local:** Azure Functions Core Tools (`func init`, `func new`, `func start`) plus **Azurite** for
+  the storage emulator.
+- **Deploy:** `func azure functionapp publish`, GitHub Actions, Azure Pipelines, VS Code, Azure CLI,
+  Bicep/ARM/Terraform.
+- **Monitor:** Application Insights (Azure Monitor), Log Analytics.
+- **Languages:** C#, JavaScript/TypeScript, Python, Java, PowerShell.
 
 ## Scaling
-        Automatically scales based on the trigger (e.g., HTTP requests, queue size).
 
-## Monitoring
-        Use Azure Monitor, Application Insights, or Log Analytics.
+Scaling follows the trigger (HTTP request rate, queue depth, event throughput) and the plan:
 
-Example: Timer Trigger
-
-```c#
-[FunctionName("TimerExample")]
-public void Run([TimerTrigger("0 */5 * * * *")] TimerInfo timer, ILogger log)
-{
-    log.LogInformation($"Function executed at: {DateTime.Now}");
-}
-```
-
-Key Features:
-
-    Language Support: C#, JavaScript, Python, Java, etc.
-    Integration: Azure Storage, Cosmos DB, Service Bus, Event Grid.
-    Dev Tools: Local testing with Azure Functions Core Tools.
+- **Flex Consumption** — per-function scaling with concurrency-based decisions; HTTP triggers scale as
+  one group, as do Blob (Event Grid) and Durable triggers.
+- **Premium** — event-driven with pre-warmed workers, so no cold start.
+- **Dedicated** — manual or App Service autoscale rules; event-driven scaling does not apply.
 
 ## Cron format
 
-Azure Functions use a six-field CRON format:
+Azure Functions timer triggers use a **six-field** NCRONTAB expression:
 
-```
+```text
 {second} {minute} {hour} {day} {month} {day-of-week}
 
-Range
-Second: Values from 0–59.
-Minute: Values from 0–59.
-Hour: Values from 0–23.
-Day: Values from 1–31.
-Month: Values from 1–12.
-Day-of-week: Values from 0–7 (Sunday is both 0 and 7).
+Second:      0–59
+Minute:      0–59
+Hour:        0–23
+Day:         1–31
+Month:       1–12
+Day-of-week: 0–6 (Sunday = 0; names like SUN/MON also work)
 ```
 
-Explanation of 0 */5 * * * *
+```csharp
+[Function(nameof(TimerExample))]
+public void TimerExample([TimerTrigger("0 */5 * * * *")] TimerInfo timer)
+    => logger.LogInformation("Function executed at: {Now}", DateTime.UtcNow);
+```
 
-    0: At the 0th second of the minute.
-    */5: Every 5 minutes.
-    *: Every hour, every day, every month, and every day of the week.
+`0 */5 * * * *` = at second 0, every 5th minute, every hour/day/month/weekday → 12:00:00, 12:05:00, …
 
-Result: Runs every 5 minutes, at the start of each minute (e.g., 12:00:00, 12:05:00, etc.).
+| Expression | Description |
+| --- | --- |
+| `0 0 * * * *` | Every hour, on the hour |
+| `0 0 9 * * *` | Daily at 09:00 |
+| `0 0 9 * * 1` | Every Monday at 09:00 |
+| `0 0 9 1 * *` | 09:00 on the 1st of every month |
+| `0 0 9 1 1 *` | 09:00 on 1 January |
+| `0 */15 * * * *` | Every 15 minutes |
+| `0 37/1 * * * *` | From minute 37, then every minute to the end of the hour (12:37, 12:38 … 12:59) |
+| `0 1/1 * * * *` | From minute 1, every minute — **skips** minute 0 |
+| `0 */1 * * * *` | Every minute, **including** minute 0 |
+| `0 51-53 * * * *` | At minutes 51, 52 and 53 of every hour |
 
-Common CRON Examples
-| Expression     |	Description |
-| -------------- | ------------ |
-| 0 0 * * * *    | Every hour (on the hour). |
-| 0 0 9 * * *    | Daily at 9:00 AM. |
-| 0 0 9 * * 1    | Every Monday at 9:00 AM. |
-| 0 0 9 1 * *    | At 9:00 AM on the 1st of every month. |
-| 0 0 9 1 1 *    | At 9:00 AM on January 1st. |
-| 0 0/15 * * * * | Every 15 minutes. |
-| 0 37/1 * * * * | This expression starts at the 37th minute of the hour and runs every minute for the rest of the hour. Example: For an hour (e.g., 12:00 to 12:59), it would run at: 12:37, 12:38, 12:39, ..., up to 12:59. |
-| 0 1/1 * * * *  | This starts at the 1st minute of the hour (e.g., 12:01, 12:02, 12:03, and so on). The task skips the 0th minute (e.g., 12:00, 1:00, etc.). |
-| 0 */1 * * * *  | Starts at the 0th minute (e.g., 12:00, 12:01, 12:02, etc.). Runs at the beginning of every minute, covering the entire hour. |
-| 0 51-53 * * * * | runs every hour at 51, 52 and 53 minute | 
+**The difference:** `0 1/1 * * * *` skips the 0th minute; `0 */1 * * * *` includes it.
 
-### Difference
-
-- 0 1/1 * * * * skips the 0th minute.
-- 0 */1 * * * * includes the 0th minute.
+For a schedule you might want to change without redeploying, put the expression in an app setting and
+reference it: `[TimerTrigger("%Schedule:Cleanup%")]`.
 
 <details>
-<summary>More</summary>
+<summary>Timer trigger in the portal</summary>
 
-![timmer trigger](./Assets/timer-trigger-01.png)
+![timer trigger](./Assets/timer-trigger-01.png)
 
 </details>
 
-### Notes
+**Note:** a `Last timer scheduled at: 01-01-0001 00:00:00` means no previous run was recorded — the
+first execution since deployment.
 
-- Last timer scheduled at: **01-01-0001 00:00:00** => If no trigger happend before this means first time.
+## The runtime storage account
 
-## Runtime Storage Account:
+`AzureWebJobsStorage` is required. The Functions host uses it for:
 
-Purpose of AzureWebJobsStorage:
-The storage account is used by the Azure Functions runtime for several operational tasks, including:
+- **Key management** — storing the function/host/master keys
+- **Timer trigger state** — the singleton lease that stops every instance firing the same schedule
+- **Logging** and runtime state
+- **Event Hubs checkpoints** — so event processing resumes where it left off
+- **Durable Functions task hub** — orchestration history and queues
 
-    Key Management: Storing cryptographic keys and managing secure secrets.
-    Timer Trigger Management: Managing state for timer-based triggers.
-    Logging: Storing execution logs and runtime information.
-    Event Hubs Checkpoints: Saving checkpoints to ensure reliable processing of Event Hub events.
-    
-```
-Azure Functions Runtime
+```text
+Azure Functions runtime
         │
         ▼
-AzureWebJobsStorage (Azurite in Local Development)
+AzureWebJobsStorage (Azurite in local development)
    ┌───────────────────────────────┐
-   │ - Key Management              │
-   │ - Timer Trigger State         │
+   │ - Key management              │
+   │ - Timer trigger state         │
    │ - Logging                     │
-   │ - Event Hubs Checkpoints      │
+   │ - Event Hubs checkpoints      │
+   │ - Durable task hub            │
    └───────────────────────────────┘
 ```
 
-## Cold Start
+Prefer an **identity-based connection** over a connection string — set
+`AzureWebJobsStorage__accountName` and grant the function app's managed identity
+`Storage Blob Data Owner` + `Storage Queue Data Contributor`. Then the app holds no secret at all.
 
-A cold start happens when an Azure Function needs to initialize its infrastructure (e.g., container or process) before it can execute your code. This delay occurs when the function hasn't been running recently or has been scaled down to zero to save resources.
+## Cold start
 
-### Why Does It Happen?
+A cold start is the delay while the platform allocates an instance and loads the runtime and your
+dependencies. It happens on the first call after deployment, after an idle period on a plan that
+scales to zero, and when scaling out to a new instance.
 
-- Azure Functions, especially in the Consumption Plan, are event-driven and don't maintain always-on infrastructure. When a request triggers an idle function:
+**What influences it:** the hosting plan (scale-to-zero plans pay it; Premium and always-ready
+instances don't), the size of your dependency graph, work done at startup, and image/package size.
 
-    The platform must allocate resources (like containers or VMs).
-    The function's runtime and dependencies must be loaded.
-    Your function is then executed.
+**What actually helps**, in order:
 
-- This initialization process causes a delay, which is referred to as a "cold start."
+1. **Always-ready / pre-warmed instances** (Flex Consumption, Premium)
+2. `WEBSITE_RUN_FROM_PACKAGE=1`
+3. Trim dependencies; no blocking I/O in `Program.cs`; `IHttpClientFactory` rather than per-call clients
+4. `<PublishReadyToRun>true</PublishReadyToRun>`
 
-### When Does Cold Start Occur?
+A "warm-up pinger" is not a fix — it keeps one instance warm and does nothing for scale-out.
 
-    First Invocation: When the function is called for the first time after deployment.
-    Idle Period: If the function hasn't been triggered for a while.
-    Scaling: When the platform scales out to handle additional requests, new instances may need to be initialized.
+## Authentication with Microsoft Entra ID
 
-### Factors Influencing Cold Start
+Function keys identify a caller's possession of a secret, not an identity. For user or service
+identity:
 
-    Hosting Plan:
-        Consumption Plan: Prone to cold starts because instances scale to zero when idle.
-        Premium Plan: Avoids cold starts with always-ready instances.
-        Dedicated Plan: No cold starts; functions run continuously.
-    Runtime: Functions using languages like C# (Isolated Process) or Java tend to have longer cold starts compared to lighter runtimes like Node.js or Python.
-    Dependencies: Heavy or unoptimized dependencies increase initialization time.
-    Region: Deploying to regions far from users can also add latency.
+1. Enable **App Service authentication (Easy Auth)** on the function app and pick **Microsoft** as
+   the identity provider, or front the app with **API Management** and a `validate-jwt` policy.
+2. Register the app in Microsoft Entra ID and configure the redirect URI / exposed scopes.
+3. Callers present a **JWT access token**; the platform (or APIM) validates issuer, audience,
+   signature and expiry, and your code authorizes on the `scp` / `roles` claims.
+4. For **outbound** calls, give the function app a **managed identity** and assign it data-plane
+   roles — no secrets to store or rotate.
 
-### How to Minimize Cold Starts
+See [Interview → Azure → 02 Entra ID & Managed Identity](../../../Interview/Azure/02-identity-and-managed-identity.md).
 
-    Use Premium Plan: Keeps instances warm and eliminates cold starts.
-    Pre-Warming:
-        Configure always-ready instances (Premium Plan).
-        Use an external tool (e.g., a pinging service) to regularly trigger the function and keep it warm.
-    Optimize Function:
-        Minimize dependencies.
-        Avoid large initialization logic.
-    Deploy to Multiple Regions: Serve users from the closest region to reduce latency.
+## References
 
-### Summary
-
-    Cold Start: A delay caused by initializing an idle function.
-    Best Fix: Use the Premium Plan for production workloads where latency is critical.
-
-## Scaling in Azure Functions
-
-Azure Functions support scaling automatically based on the hosting plan you choose. Here's how scaling works:
-a) Consumption Plan
-
-    Automatic Scaling: Functions scale out (add more instances) automatically based on demand.
-    Scale Limit: Limited to 200 instances by default.
-    Triggers: Event-driven triggers (e.g., HTTP, Queue, Timer) determine the scale.
-    Ideal Use Case: Applications with sporadic workloads.
-
-b) Premium Plan
-
-    Enhanced Scaling: Supports both auto-scaling and always-ready instances.
-    Features:
-        No cold starts.
-        More powerful instances.
-    Use Case: Applications requiring low latency or advanced scaling needs.
-
-c) Dedicated (App Service) Plan
-
-    Scaling is manual or based on App Service auto-scaling rules.
-    Suitable for long-running functions.
-
-## Azure AD Authentication in Azure Functions
-
-Azure Functions support Azure AD authentication out-of-the-box. Here's how it works:
-a) Enable Azure AD Authentication
-
-    In the Azure portal:
-        Navigate to your Azure Function App.
-        Go to Authentication/Authorization.
-        Enable App Service Authentication.
-        Select Azure Active Directory as the identity provider.
-    Configure the Azure AD App Registration for your Function App:
-        Redirect URI: Set it to your function app's URL.
-
-b) Access Tokens
-
-    For client requests, Azure AD issues JWT tokens that the function validates.
-    These tokens include claims for the user's identity and permissions.
-
-c) Authorization Levels
-
-    Authorization levels can be set per function:
-        Function: Requires a function key or token.
-        Admin: High-level access.
-        Anonymous: Open access (not recommended with Azure AD).
-
-- [ChatGpt](https://chatgpt.com/c/674e3c7a-9988-8002-9779-89dfdf40882c)
+- [Azure Functions documentation](https://learn.microsoft.com/en-us/azure/azure-functions/)
+- [Isolated worker guide](https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide)
+- [In-process → isolated migration](https://learn.microsoft.com/en-us/azure/azure-functions/migrate-dotnet-to-isolated-model)
+- [Hosting plans and scale](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale)
+- [Timer trigger / NCRONTAB](https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer)

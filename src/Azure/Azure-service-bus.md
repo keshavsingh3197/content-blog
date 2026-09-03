@@ -1,4 +1,16 @@
+---
+title: Azure Service Bus
+summary: Queues (point-to-point) and topics (publish-subscribe) explained with real order-processing flows, and when Service Bus is the right broker.
+tags: [Azure, Service-Bus, Messaging, Queue, Topic]
+updated: 2026-09-03
+---
+
 # Azure Service Bus
+
+> Reference notes. The interview-shaped version — peek-lock, dead-lettering, sessions, duplicate
+> detection, the C# `ServiceBusProcessor`, and the choice between Service Bus, Storage Queues, Event
+> Grid and Event Hubs — is
+> [Interview → Azure → 08 Messaging & Events](../Interview/Azure/08-messaging-and-events.md).
 
 - Azure Service Bus is a fully managed message broker that enables reliable communication between distributed applications using queues and topics.
 

@@ -99,22 +99,30 @@
                   "name": "app-service.md",
                   "path": "src/Azure/Certification/az-204/app-service.md",
                   "isDirectory": false,
-                  "title": "App Service",
+                  "title": "App Service Reference",
+                  "summary": "What App Service is, the plan tiers and what each unlocks, deployment slots and networking features, with exam-style questions and answers.",
+                  "updated": "2026-09-03",
                   "tags": [
                     "Azure",
-                    "Certification",
-                    "az-204"
+                    "App-Service",
+                    "PaaS",
+                    "Interview"
                   ]
                 },
                 {
                   "name": "function.md",
                   "path": "src/Azure/Certification/az-204/function.md",
                   "isDirectory": false,
-                  "title": "Azure Function",
+                  "title": "Azure Functions Reference",
+                  "summary": "Triggers, bindings, authorization levels, hosting plans, cold start and the runtime storage account — with the six-field NCRONTAB table and the isolated-worker C# that replaced the retired in-process model.",
+                  "updated": "2026-09-03",
                   "tags": [
                     "Azure",
-                    "Certification",
-                    "az-204"
+                    "Azure-Functions",
+                    "Serverless",
+                    ".NET",
+                    "CRON",
+                    "Interview"
                   ]
                 }
               ]
@@ -123,10 +131,15 @@
               "name": "AZ-204.md",
               "path": "src/Azure/Certification/AZ-204.md",
               "isDirectory": false,
-              "title": "Azure Developer Associate",
+              "title": "Azure Developer Certification (AZ-204 → AI-200)",
+              "summary": "AZ-204 retired on 31 July 2026; AI-200 (Azure AI Cloud Developer Associate) replaces it. What each exam measures, what carried over, what was dropped, and where to study.",
+              "updated": "2026-09-03",
               "tags": [
                 "Azure",
-                "Certification"
+                "Certification",
+                "AZ-204",
+                "AI-200",
+                "Interview"
               ]
             }
           ]
@@ -172,18 +185,32 @@
           "name": "azure-basic.md",
           "path": "src/Azure/azure-basic.md",
           "isDirectory": false,
-          "title": "Azure",
+          "title": "Azure Fundamentals",
+          "summary": "Azure Resource Manager, regions and availability zones with the region-vs-zone trade-off, and the IaaS/PaaS/SaaS/FaaS hosting models with a mnemonic for the stack layers.",
+          "updated": "2026-09-03",
           "tags": [
-            "Azure"
+            "Azure",
+            "Cloud",
+            "Fundamentals",
+            "Regions",
+            "IaaS",
+            "PaaS"
           ]
         },
         {
           "name": "Azure-DevOps.md",
           "path": "src/Azure/Azure-DevOps.md",
           "isDirectory": false,
-          "title": "Azure DevOps",
+          "title": "Azure DevOps & CI/CD to Azure",
+          "summary": "The five Azure DevOps services, a working multi-stage YAML pipeline that builds and deploys a .NET app to App Service, workload identity federation instead of secrets, environments and approvals — plus the GitHub Actions equivalent.",
+          "updated": "2026-09-03",
           "tags": [
-            "Azure"
+            "Azure",
+            "Azure-DevOps",
+            "CI-CD",
+            "Pipelines",
+            "GitHub-Actions",
+            ".NET"
           ]
         },
         {
@@ -191,17 +218,29 @@
           "path": "src/Azure/Azure-service-bus.md",
           "isDirectory": false,
           "title": "Azure Service Bus",
+          "summary": "Queues (point-to-point) and topics (publish-subscribe) explained with real order-processing flows, and when Service Bus is the right broker.",
+          "updated": "2026-09-03",
           "tags": [
-            "Azure"
+            "Azure",
+            "Service-Bus",
+            "Messaging",
+            "Queue",
+            "Topic"
           ]
         },
         {
           "name": "azure.md",
           "path": "src/Azure/azure.md",
           "isDirectory": false,
-          "title": "Azure",
+          "title": "Azure Automation & Logic Apps",
+          "summary": "Automation Accounts, runbooks and modules, plus Logic Apps — what each is for, how they differ from Azure Functions, and when to reach for which.",
+          "updated": "2026-09-03",
           "tags": [
-            "Azure"
+            "Azure",
+            "Automation",
+            "Logic-Apps",
+            "Runbook",
+            "Integration"
           ]
         }
       ]
@@ -863,6 +902,223 @@
           ]
         },
         {
+          "name": "Azure",
+          "path": "src/Interview/Azure",
+          "isDirectory": true,
+          "children": [
+            {
+              "name": "01-fundamentals-and-governance.md",
+              "path": "src/Interview/Azure/01-fundamentals-and-governance.md",
+              "isDirectory": false,
+              "title": "Azure Fundamentals & Governance",
+              "summary": "The resource hierarchy, control plane vs data plane, regions and availability zones, composite SLA maths, RBAC vs Policy, Bicep and the az CLI a .NET developer is actually asked about.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "Cloud",
+                "Governance",
+                "Bicep",
+                "IaC",
+                "Interview"
+              ]
+            },
+            {
+              "name": "02-identity-and-managed-identity.md",
+              "path": "src/Interview/Azure/02-identity-and-managed-identity.md",
+              "isDirectory": false,
+              "title": "Entra ID & Managed Identity",
+              "summary": "App registrations vs service principals, the four OAuth2 flows that matter, delegated scopes vs app roles, managed identity end to end, and the DefaultAzureCredential chain with the production guidance most people miss.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "Entra-ID",
+                "OAuth2",
+                "Managed-Identity",
+                "Security",
+                "Interview"
+              ]
+            },
+            {
+              "name": "03-app-service.md",
+              "path": "src/Interview/Azure/03-app-service.md",
+              "isDirectory": false,
+              "title": "Azure App Service",
+              "summary": "Plans and tiers, scale up vs scale out, deployment slots and exactly what a swap does, run-from-package deployment, app settings as configuration, VNet integration vs private endpoints, and diagnostics.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "App-Service",
+                "PaaS",
+                "Deployment",
+                ".NET",
+                "Interview"
+              ]
+            },
+            {
+              "name": "04-azure-functions.md",
+              "path": "src/Interview/Azure/04-azure-functions.md",
+              "isDirectory": false,
+              "title": "Azure Functions",
+              "summary": "The isolated worker model (the in-process model retires 10 Nov 2026), triggers and bindings in C#, the five hosting plans with real limits, cold start, identity-based connections, retries and Durable Functions.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "Azure-Functions",
+                "Serverless",
+                ".NET",
+                "Durable-Functions",
+                "Interview"
+              ]
+            },
+            {
+              "name": "05-containers-and-aks.md",
+              "path": "src/Interview/Azure/05-containers-and-aks.md",
+              "isDirectory": false,
+              "title": "Containers, ACR, Container Apps & AKS",
+              "summary": "Choosing between ACI, Container Apps, App Service containers and AKS; a production .NET Dockerfile; ACR tasks and managed-identity pulls; Container Apps revisions, traffic splitting and KEDA scaling.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "Containers",
+                "ACR",
+                "Container-Apps",
+                "AKS",
+                "Docker",
+                "Interview"
+              ]
+            },
+            {
+              "name": "06-blob-storage.md",
+              "path": "src/Interview/Azure/06-blob-storage.md",
+              "isDirectory": false,
+              "title": "Azure Blob Storage",
+              "summary": "Redundancy options, blob types, access tiers with their real retention penalties, lifecycle policies, the three kinds of SAS and when each is right, and the Azure.Storage.Blobs .NET SDK with ETag concurrency.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "Storage",
+                "Blob",
+                "SAS",
+                ".NET",
+                "Interview"
+              ]
+            },
+            {
+              "name": "07-cosmos-db.md",
+              "path": "src/Interview/Azure/07-cosmos-db.md",
+              "isDirectory": false,
+              "title": "Azure Cosmos DB",
+              "summary": "Partitioning and the 20 GB logical-partition ceiling, Request Units, the five consistency levels and what each costs, indexing policies, the change feed, and the .NET v3 SDK patterns that keep RU charges down.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "Cosmos-DB",
+                "NoSQL",
+                "Partitioning",
+                ".NET",
+                "Interview"
+              ]
+            },
+            {
+              "name": "08-messaging-and-events.md",
+              "path": "src/Interview/Azure/08-messaging-and-events.md",
+              "isDirectory": false,
+              "title": "Messaging & Events",
+              "summary": "Service Bus vs Storage Queues vs Event Grid vs Event Hubs — what each is actually for, peek-lock and dead-lettering, sessions and duplicate detection, partitions and checkpoints, with C# for all four and the idempotency rules that make them safe.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "Service-Bus",
+                "Event-Grid",
+                "Event-Hubs",
+                "Messaging",
+                ".NET",
+                "Interview"
+              ]
+            },
+            {
+              "name": "09-secrets-and-configuration.md",
+              "path": "src/Interview/Azure/09-secrets-and-configuration.md",
+              "isDirectory": false,
+              "title": "Key Vault & App Configuration",
+              "summary": "Key Vault objects, RBAC vs access policies, soft delete and purge protection, rotation; App Configuration labels, the sentinel-key refresh pattern and feature flags — wired into ASP.NET Core with a managed identity.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "Key-Vault",
+                "App-Configuration",
+                "Secrets",
+                "Security",
+                ".NET",
+                "Interview"
+              ]
+            },
+            {
+              "name": "10-api-management.md",
+              "path": "src/Interview/Azure/10-api-management.md",
+              "isDirectory": false,
+              "title": "Azure API Management",
+              "summary": "Products, subscriptions and the policy pipeline; the policies worth memorising (validate-jwt, rate-limit-by-key, caching, rewrite); versions vs revisions; tiers; and putting APIM in front of a .NET API with a managed identity.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "API-Management",
+                "API-Gateway",
+                "Policies",
+                "Interview"
+              ]
+            },
+            {
+              "name": "11-observability-and-kql.md",
+              "path": "src/Interview/Azure/11-observability-and-kql.md",
+              "isDirectory": false,
+              "title": "Observability, App Insights & KQL",
+              "summary": "Azure Monitor's data model, the Azure Monitor OpenTelemetry Distro for ASP.NET Core, correlation and sampling, availability tests and alerts — plus the KQL queries you should be able to write on a whiteboard.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "Observability",
+                "Application-Insights",
+                "OpenTelemetry",
+                "KQL",
+                "Interview"
+              ]
+            },
+            {
+              "name": "12-hands-on-labs.md",
+              "path": "src/Interview/Azure/12-hands-on-labs.md",
+              "isDirectory": false,
+              "title": "Azure Hands-on Labs",
+              "summary": "Nine build-it-yourself labs on one running example — App Service slots, a Flex Consumption function, Cosmos partition-key RU measurement, a Service Bus dead-letter drill, Key Vault + sentinel refresh, KEDA scaling, APIM and KQL — each ending in the sentence it earns you in an interview.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "Hands-On",
+                "Labs",
+                "Azure-CLI",
+                ".NET",
+                "Interview"
+              ]
+            },
+            {
+              "name": "readme.md",
+              "path": "src/Interview/Azure/readme.md",
+              "isDirectory": false,
+              "title": "Azure Interview Hub",
+              "summary": "A 12-chapter, hands-on Azure interview track for .NET developers — compute, storage, messaging, security, gateways and observability — with nine labs, the 12 answers to have word-perfect, a 20-question self-test, and where the AZ-204 certification went.",
+              "updated": "2026-09-03",
+              "tags": [
+                "Azure",
+                "Cloud",
+                "Interview",
+                ".NET",
+                "AZ-204",
+                "AI-200"
+              ]
+            }
+          ]
+        },
+        {
           "name": "CSharp-DotNet",
           "path": "src/Interview/CSharp-DotNet",
           "isDirectory": true,
@@ -1266,14 +1522,15 @@
           "path": "src/Interview/readme.md",
           "isDirectory": false,
           "title": "Interview Prep",
-          "summary": "One home for three interview tracks — a 10-chapter C# / .NET deep dive, a 13-chapter SQL track and an 18-chapter senior/architect track — with a map of which track owns which topic.",
-          "updated": "2026-09-02",
+          "summary": "One home for four interview tracks — a 10-chapter C# / .NET deep dive, a 13-chapter SQL track, an 18-chapter senior/architect track and a 12-chapter hands-on Azure track — with a map of which track owns which topic.",
+          "updated": "2026-09-03",
           "tags": [
             "Interview",
             "C#",
             ".NET",
             "SQL",
             "Architecture",
+            "Azure",
             "System-Design"
           ]
         }
