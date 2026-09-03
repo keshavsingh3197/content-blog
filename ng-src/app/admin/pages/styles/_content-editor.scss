@@ -1,0 +1,26 @@
+/* Markdown content editor. */
+
+/* ── Content editor ───────────────────────────────────── */
+/* minmax(0,1fr) + min-width:0 let the columns shrink so wide content (code
+   blocks, long lines) scrolls internally instead of blowing out the page. */
+.edit-grid {
+  display: grid; grid-template-columns: 340px minmax(0, 1fr);
+  gap: 1.25rem; align-items: start;
+  & > * { min-width: 0; }
+}
+.editor-panel { min-width: 0; }
+.editor-panel .panel-head { justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+.seg { display: inline-flex; gap: 0.2rem; background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 0.2rem;
+  button { border: none; background: none; padding: 0.3rem 0.7rem; border-radius: var(--radius-xs); font-size: 0.78rem;
+    font-weight: 600; color: var(--text-secondary); cursor: pointer;
+    &.on { background: var(--bg-primary); color: var(--accent); box-shadow: var(--shadow-xs); } } }
+.editor-body { display: grid; min-height: 460px;
+  & > * { min-width: 0; }
+  &.split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  &.write, &.preview { grid-template-columns: minmax(0, 1fr); } }
+.md-input { width: 100%; border: none; outline: none; resize: none; padding: 1.25rem; font-family: var(--font-mono);
+  font-size: 0.88rem; line-height: 1.65; background: var(--bg-primary); color: var(--text-primary);
+  border-right: 1px solid var(--border-color); min-height: 460px; }
+.md-preview { padding: 1.25rem 1.5rem; overflow-x: auto; overflow-y: auto; }
+.md-preview.markdown-body { padding: 1.25rem 1.5rem; }
+.md-preview :where(pre, table) { max-width: 100%; }

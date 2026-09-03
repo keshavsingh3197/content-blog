@@ -1,0 +1,27 @@
+/* ============================================================
+   Admin Console - stylesheet
+   ============================================================
+
+   Attached to AdminLayoutComponent with ViewEncapsulation.None rather than
+   listed in angular.json, so it ships inside the lazy /admin chunk and blog
+   readers never download it. It was previously @imported into the public
+   ng-src/styles.scss, which put all of it in the global bundle.
+
+   Design tokens are NOT redefined here - this sheet consumes the :root
+   tokens from the public stylesheet, which loads on every route.
+   ============================================================ */
+
+@use './styles/shell';
+@use './styles/web-ui-bridge';
+@use './styles/sidebar';
+@use './styles/topbar';
+@use './styles/page-header';
+@use './styles/buttons';
+@use './styles/panels';
+@use './styles/fields';
+@use './styles/dialog';
+@use './styles/onboarding';
+@use './styles/toasts';
+@use './styles/tables';
+@use './styles/moderation';
+@use './styles/responsive';

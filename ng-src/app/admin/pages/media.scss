@@ -1,0 +1,5 @@
+/* Media-library-only: asset grid and uploader.
+   Rides its page component (ViewEncapsulation.None) so it loads with that
+   route, not with the console shell. */
+
+@use './styles/media';

@@ -1,0 +1,30 @@
+/* Token bridge for @keshavsingh3197/web-ui.
+
+   The package is deliberately theme-agnostic: its components paint themselves
+   from a small set of CSS variables that each consuming app is expected to
+   define. Our design system names the same concepts differently, so without
+   this every Brand* component would render unstyled - var() with no definition
+   falls back to the property's initial value, which is transparent text on a
+   transparent box rather than a visible error.
+
+   Scoped to the admin shell rather than :root because web-ui is only used in
+   the console; the public site keeps its own vocabulary untouched.
+
+   web-ui name   ->  ours
+   --bg              --bg-secondary   (control surfaces: pager buttons, inputs)
+   --surface         --bg-primary     (panel/card surface)
+   --border          --border-color
+   --brand           --accent
+   --brand-text      --accent-contrast (text ON a brand-filled surface)
+   --text            --text-primary
+   --muted           --text-muted */
+
+.admin-shell {
+  --bg: var(--bg-secondary);
+  --surface: var(--bg-primary);
+  --border: var(--border-color);
+  --brand: var(--accent);
+  --brand-text: var(--accent-contrast);
+  --text: var(--text-primary);
+  --muted: var(--text-muted);
+}

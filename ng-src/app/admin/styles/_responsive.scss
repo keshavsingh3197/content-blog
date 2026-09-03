@@ -1,0 +1,22 @@
+/* Admin breakpoints. */
+
+/* ── Responsive ───────────────────────────────────────── */
+@media (max-width: 992px) {
+  .admin-shell { grid-template-columns: 1fr; }
+  .admin-sidebar {
+    position: fixed; top: 0; bottom: 0; left: 0; width: 264px; z-index: 5100;
+    transform: translateX(-100%); transition: transform var(--transition-normal);
+    &.open { transform: none; box-shadow: var(--shadow-lg); }
+  }
+  .admin-burger { display: inline-flex; }
+  .admin-backdrop { display: block; }
+  .edit-grid { grid-template-columns: 1fr; }
+  .editor-body.split { grid-template-columns: 1fr; }
+  .md-input { border-right: none; border-bottom: 1px solid var(--border-color); min-height: 260px; }
+  .hide-sm { display: none; }
+}
+
+@media (max-width: 768px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .admin-content { padding: 1.15rem; }
+}

@@ -1,0 +1,23 @@
+/* Toast notifications. */
+
+/* ── Toasts ───────────────────────────────────────────── */
+.admin-toast-host {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999;
+  display: flex; flex-direction: column; gap: 0.6rem; max-width: 360px;
+}
+.admin-toast {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.85rem 1rem; border-radius: var(--radius-sm);
+  background: var(--bg-primary); border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg); font-size: 0.88rem; font-weight: 500;
+  animation: toast-in 0.32s var(--ease-out);
+  i:first-child { font-size: 1.05rem; }
+  button { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; }
+  &.success i:first-child { color: var(--accent-success); }
+  &.error i:first-child { color: var(--accent-danger); }
+  &.info i:first-child { color: var(--accent); }
+  &.success { border-left: 3px solid var(--accent-success); }
+  &.error { border-left: 3px solid var(--accent-danger); }
+  &.info { border-left: 3px solid var(--accent); }
+}
+@keyframes toast-in { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }

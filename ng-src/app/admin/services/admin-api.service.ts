@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { API_BASE } from '../api.config';
+import { API_BASE } from '../../core/api.config';
 import { ContentListItem, ContentTopic, Link, MediaListItem } from '../admin.models';
 
 @Injectable({ providedIn: 'root' })

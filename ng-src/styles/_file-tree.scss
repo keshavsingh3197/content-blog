@@ -1,0 +1,43 @@
+/* Sidebar file tree. */
+
+/* ── File Tree ────────────────────────────────────────── */
+.tree-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem;
+}
+
+.tree-item { margin: 0; }
+
+.tree-folder,
+.tree-file {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+
+  i { color: var(--text-muted); transition: color var(--transition-fast); }
+
+  &:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+    i { color: var(--accent); }
+  }
+
+  span { flex: 1; }
+}
+
+.tree-file i.text-primary { color: var(--accent) !important; }
+
+.tree-children {
+  display: block;
+  padding-left: 0.65rem;
+  border-left: 1px solid var(--border-color);
+  margin-left: 1.15rem;
+}

@@ -1,0 +1,197 @@
+/* Rendered markdown body and code-block wrapper. */
+
+/* ── Markdown Body ────────────────────────────────────── */
+.markdown-body {
+  padding: 2.5rem;
+  color: var(--text-primary);
+  line-height: 1.75;
+  font-size: 1.02rem;
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-top: 2.25rem;
+    margin-bottom: 1rem;
+    line-height: 1.25;
+    scroll-margin-top: calc(var(--navbar-height) + 1rem);
+  }
+
+  h1 {
+    font-size: 2.1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  h2 {
+    font-size: 1.65rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  h3 { font-size: 1.3rem; color: var(--text-primary); }
+  h4 { font-size: 1.1rem; }
+
+  p { margin-bottom: 1.25rem; }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--transition-fast);
+    &:hover { border-bottom-color: var(--accent); }
+  }
+
+  ul, ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+  }
+
+  li { margin-bottom: 0.45rem; }
+
+  li::marker { color: var(--accent); }
+
+  blockquote {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 0.85rem 1.35rem;
+    margin: 1.5rem 0;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--text-secondary);
+
+    p:last-child { margin-bottom: 0; }
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.75rem auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    display: block;
+    overflow-x: auto;
+    font-size: 0.925rem;
+  }
+
+  th, td {
+    padding: 0.7rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  th {
+    background: var(--bg-secondary);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background var(--transition-fast); }
+  tbody tr:hover td { background: var(--bg-secondary); }
+
+  code:not(pre code) {
+    background: var(--accent-soft);
+    color: var(--accent-hover);
+    padding: 0.15em 0.4em;
+    border-radius: var(--radius-xs);
+    font-size: 0.86em;
+    font-weight: 500;
+    font-family: var(--font-mono);
+  }
+
+  pre {
+    margin: 0;
+    padding: 1.35rem 1.5rem;
+    background: #0d1117 !important;
+    border-radius: 0;
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: #c9d1d9;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 2.5rem 0;
+  }
+
+  /* Mermaid diagrams (```mermaid fences, rendered client-side by ngx-markdown) */
+  .mermaid {
+    margin: 1.75rem 0;
+    padding: 1.5rem 1rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+    text-align: center;
+    line-height: normal;
+
+    svg {
+      max-width: 100%;
+      height: auto;
+      display: inline-block;
+    }
+  }
+
+  /* Keep the raw diagram source from flashing before mermaid.run() swaps in the SVG.
+     The delayed animation is a safety net: if rendering never completes (parse error,
+     bundle blocked) the source becomes visible instead of vanishing for good. */
+  .mermaid:not([data-processed]) {
+    opacity: 0;
+    animation: mermaid-source-fallback 0s linear 2.5s forwards;
+  }
+}
+
+@keyframes mermaid-source-fallback {
+  to { opacity: 1; }
+}
+
+/* ── Code Block Wrapper ───────────────────────────────── */
+.code-block-wrapper {
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+
+  .code-actions {
+    background: #161b22;
+    padding: 0.45rem 0.85rem;
+    display: flex;
+    justify-content: flex-end;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .copy-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.78);
+    border-radius: var(--radius-xs);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-fast);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+    }
+  }
+}

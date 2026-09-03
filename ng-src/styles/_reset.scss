@@ -1,0 +1,65 @@
+/* Reset and element defaults. */
+
+/* ── Reset & Base ─────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  line-height: 1.65;
+  margin: 0;
+  padding-top: var(--navbar-height);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+/*
+  The page grows with the window rather than leaving a fixed 1240px island in the middle of a 4K
+  display. It is still capped, because a line of prose stretched across an ultrawide monitor is
+  unreadable — what the extra room buys is side rails (section list, contents) and wider code
+  blocks, not longer lines. The article's own measure is held separately by `--reader-measure`.
+*/
+.container {
+  max-width: var(--content-max);
+  width: 100%;
+  padding-inline: clamp(0.85rem, 2vw, 2rem);
+}
+
+.container-reader {
+  max-width: var(--reader-max);
+}
+
+@media (min-width: 1400px) {
+  :root { --content-max: 1360px; --reader-max: 1500px; }
+}
+
+@media (min-width: 1700px) {
+  :root { --content-max: 1480px; --reader-max: 1760px; --reader-measure: 110ch; }
+}
+
+@media (min-width: 2100px) {
+  :root { --content-max: 1560px; --reader-max: 2000px; --reader-measure: 115ch; }
+}
+
+@media (min-width: 2600px) {
+  /* Past this point the limit is the eye, not the display: stop widening and centre instead. */
+  :root { --content-max: 1600px; --reader-max: 2200px; --reader-measure: 118ch; }
+}
+
+::selection {
+  background: var(--accent-soft-strong);
+  color: var(--text-primary);
+}

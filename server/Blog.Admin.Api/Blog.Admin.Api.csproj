@@ -8,13 +8,23 @@
     <AssemblyName>Blog.Admin.Api</AssemblyName>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <!--
-      The private KeshavSingh.* feed needs PACKAGES_READ_TOKEN. When it is absent we skip those
-      references so restore can't 401. This deterministically covers GitHub's hosted automatic
-      NuGet dependency submission (which has no access to repo secrets), while the real Docker /
-      Render build — which exports PACKAGES_READ_TOKEN before restore — still includes them.
+      The private KeshavSingh.* feed needs PACKAGES_READ_TOKEN. Three distinct situations, so
+      two independent switches rather than one fused flag:
+
+        siblings on disk      -> UseLocalProjectReferences: build against the sibling source
+                                 (parent CLAUDE.md: local checkouts win over published packages).
+        no siblings, token    -> restore the published packages from GitHub Packages.
+        no siblings, no token -> SkipPrivatePackages: omit the references entirely so restore
+                                 cannot 401. This is what GitHub's hosted automatic NuGet
+                                 dependency submission job hits - it restores but never builds,
+                                 so the missing references are harmless there.
+
+      Pass -p:UseLocalProjectReferences=false to force a real registry restore.
     -->
     <UseLocalProjectReferences Condition="'$(UseLocalProjectReferences)' == '' and Exists('..\..\..\shared-security\src\KeshavSingh.Security\KeshavSingh.Security.csproj')">true</UseLocalProjectReferences>
-    <SkipPrivatePackages Condition="'$(UseLocalProjectReferences)' == 'true' or '$(PACKAGES_READ_TOKEN)' == ''">true</SkipPrivatePackages>
+    <UseLocalProjectReferences Condition="'$(UseLocalProjectReferences)' == ''">false</UseLocalProjectReferences>
+    <SkipPrivatePackages Condition="'$(UseLocalProjectReferences)' != 'true' and '$(PACKAGES_READ_TOKEN)' == ''">true</SkipPrivatePackages>
+    <SkipPrivatePackages Condition="'$(SkipPrivatePackages)' == ''">false</SkipPrivatePackages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,18 +37,18 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(SkipPrivatePackages)' != 'true'">
+  <ItemGroup Condition="'$(UseLocalProjectReferences)' != 'true' and '$(SkipPrivatePackages)' != 'true'">
     <!-- Shared security + auth packages from GitHub Packages. Restore reads the "github"
          source in the repo-root nuget.config, which needs the PACKAGES_READ_TOKEN env var.
-         GitHub's hosted automatic NuGet dependency submission job cannot read this private
-         feed, so that specific job skips these references instead of failing restore. -->
+         Used only when there is no sibling checkout and a token is present; see the
+         PropertyGroup above for the other two cases. -->
     <PackageReference Include="KeshavSingh.Security" Version="0.6.0" />
     <PackageReference Include="KeshavSingh.Auth" Version="0.10.0" />
     <PackageReference Include="KeshavSingh.Mongo.NoSql" Version="0.4.0" />
     <PackageReference Include="KeshavSingh.Core" Version="0.6.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(SkipPrivatePackages)' == 'true'">
+  <ItemGroup Condition="'$(UseLocalProjectReferences)' == 'true'">
     <ProjectReference Include="..\..\..\shared-security\src\KeshavSingh.Security\KeshavSingh.Security.csproj" />
     <ProjectReference Include="..\..\..\shared-security\src\KeshavSingh.Auth\KeshavSingh.Auth.csproj" />
     <ProjectReference Include="..\..\..\KeshavSingh-Packages-Nosql\src\KeshavSingh.Mongo.NoSql\KeshavSingh.Mongo.NoSql.csproj" />

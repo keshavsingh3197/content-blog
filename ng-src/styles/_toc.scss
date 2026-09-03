@@ -1,0 +1,108 @@
+/* Table of contents, desktop and mobile. */
+
+/* ── Table of Contents ────────────────────────────────── */
+.toc-sidebar {
+  order: 2;
+
+  @media (min-width: 1100px) {
+    position: sticky;
+    top: calc(var(--navbar-height) + 1.5rem);
+    max-height: calc(100vh - var(--navbar-height) - 3rem);
+    overflow-y: auto;
+  }
+
+  @media (max-width: 1099px) { display: none; }
+}
+
+.toc-panel {
+  background: transparent;
+}
+
+.toc-title {
+  color: var(--text-muted);
+  padding: 0.5rem 1rem;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+
+  i { color: var(--accent); }
+}
+
+.toc-nav {
+  padding: 0.25rem 0;
+  border-left: 1px solid var(--border-color);
+  margin-left: 1rem;
+}
+
+.toc-link {
+  display: block;
+  padding: 0.35rem 1rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  border-left: 2px solid transparent;
+  margin-left: -1px;
+  transition: var(--transition-fast);
+  word-break: break-word;
+
+  &:hover {
+    color: var(--accent);
+    border-left-color: var(--border-strong);
+  }
+
+  &.toc-active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+
+  &.toc-h1 { padding-left: 1rem; font-weight: 600; }
+  &.toc-h2 { padding-left: 1.5rem; }
+  &.toc-h3 { padding-left: 2.25rem; font-size: 0.78rem; }
+}
+
+/* ── Mobile TOC ───────────────────────────────────────── */
+.mobile-toc {
+  display: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-primary);
+
+  @media (max-width: 1099px) { display: block; }
+}
+
+.mobile-toc-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  background: var(--bg-primary);
+  border: none;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+
+  i:first-child { color: var(--accent); }
+  &:hover { background: var(--bg-secondary); }
+}
+
+.mobile-toc-nav {
+  max-height: 0;
+  overflow: hidden;
+  background: var(--bg-primary);
+  transition: max-height 0.3s ease;
+
+  &.open {
+    max-height: 420px;
+    overflow-y: auto;
+    border-top: 1px solid var(--border-color);
+    padding: 0.35rem 0;
+  }
+}

@@ -1,0 +1,36 @@
+/* Dashboard architecture diagram. */
+
+/* ── Architecture diagram ─────────────────────────────── */
+.diagram-panel .arch {
+  display: flex; align-items: stretch; gap: 0.3rem;
+  padding: 1.75rem 1.25rem; overflow-x: auto; flex-wrap: nowrap;
+}
+.arch-node {
+  flex: 1 0 130px; min-width: 130px;
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.3rem;
+  padding: 1.1rem 0.85rem; border-radius: var(--radius);
+  border: 1px solid var(--border-color); background: var(--bg-secondary);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+
+  i { font-size: 1.4rem; color: var(--accent); }
+  strong { font-size: 0.9rem; }
+  small { font-size: 0.72rem; color: var(--text-muted); }
+  &:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+
+  &.ui i { color: #6366f1; }
+  &.gate i { color: #e11d48; }
+  &.api i { color: #f59e0b; }
+  &.db i { color: #10b981; }
+}
+.arch-flow {
+  flex: 0 1 70px; min-width: 46px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35rem;
+  .arch-label { font-size: 0.66rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+  .arch-line { position: relative; width: 100%; height: 2px; background: var(--border-strong); border-radius: 2px; overflow: hidden; }
+  .arch-pulse {
+    position: absolute; top: 0; left: -40%; width: 40%; height: 100%;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation: arch-pulse 2s linear infinite;
+  }
+}
+@keyframes arch-pulse { from { left: -40%; } to { left: 100%; } }

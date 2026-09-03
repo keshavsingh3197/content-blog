@@ -2,14 +2,14 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
-import { NavbarComponent } from './components/navbar/navbar.component';
-import { FooterComponent } from './components/footer/footer.component';
-import { ReadingProgressComponent } from './components/reading-progress/reading-progress.component';
-import { ThemeService } from './services/theme.service';
-import { VisitTrackingService } from './services/visit-tracking.service';
-import { RuntimeConfigService } from './services/runtime-config.service';
-import { I18nService } from './services/i18n.service';
-import { AuthService } from './admin/services/auth.service';
+import { NavbarComponent } from './layout/navbar/navbar.component';
+import { FooterComponent } from './layout/footer/footer.component';
+import { ReadingProgressComponent } from './layout/reading-progress/reading-progress.component';
+import { ThemeService } from './core/services/theme.service';
+import { VisitTrackingService } from './core/services/visit-tracking.service';
+import { RuntimeConfigService } from './core/services/runtime-config.service';
+import { I18nService } from './core/services/i18n.service';
+import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',

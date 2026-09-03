@@ -95,7 +95,7 @@ Write them as ordinary **relative markdown links** and they just work:
 **Why this needs code at all:** the app uses hash routing, so the browser resolves a relative href
 against the *site root* rather than against the markdown file — `Interview/02-…md` becomes
 `/Interview/02-…md`, misses, and falls through `404.html` to the home page.
-[`ContentService.rewriteDocumentLinks`](ng-src/app/services/content.service.ts) rewrites relative
+[`ContentService.rewriteDocumentLinks`](ng-src/app/core/services/content.service.ts) rewrites relative
 document links to `#/file?path=…` (or `#/folder?path=…`) before render, leaving the href real so
 hover previews, middle-click and open-in-new-tab still behave.
 
@@ -126,7 +126,7 @@ flowchart LR
 - The Mermaid bundle is ~3.5 MB, so it is **not** in `angular.json > scripts` (that would load it on
   every page view and blow the 2 MB initial budget). It is copied to `assets/mermaid/` as a build
   asset and injected as a `<script>` on demand by
-  [`MermaidLoaderService`](ng-src/app/services/mermaid-loader.service.ts) — only for documents that
+  [`MermaidLoaderService`](ng-src/app/core/services/mermaid-loader.service.ts) — only for documents that
   actually contain a mermaid fence.
 - `deterministicIds: true` is **required** in the mermaid config. Without it mermaid falls back to
   `Date.now()` for the svg id, so every diagram rendered in the same millisecond shares one id — and
@@ -223,7 +223,7 @@ rules are documented in the admin repo: `admin/docs/LOCALIZATION.md`.
 
 The client is the shared **`@keshavsingh3197/web-config`** package (repo `KeshavSingh-Packages-Web`) — the
 same one the admin app and the portfolio use — wrapped by a thin signal-based adapter in
-[ng-src/app/services/i18n.service.ts](ng-src/app/services/i18n.service.ts). Installing it needs
+[ng-src/app/core/services/i18n.service.ts](ng-src/app/core/services/i18n.service.ts). Installing it needs
 `PACKAGES_READ_TOKEN` (see `.npmrc`); before the first publish, `tsconfig.json` falls back to the
 sibling checkout's `dist/`, so run `npm run build` in that repo once.
 

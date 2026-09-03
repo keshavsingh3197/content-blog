@@ -2,28 +2,11 @@
 //
 // Login, 2FA-enrollment and settings shapes used to live here. They belonged to endpoints this
 // app no longer has — identity is the provider's, and the settings screen is gone.
-
-export type Role = 'Admin' | 'Editor' | 'Viewer';
-
-export interface UserProfile {
-  id: string;
-  email: string;
-  username?: string | null;
-  displayName: string;
-  roles: Role[];
-  twoFactorEnabled: boolean;
-  mustChangePassword: boolean;
-}
-
-/**
- * Session returned by the central IdP's /sso/session. No refresh token here — it lives only in
- * the HttpOnly SSO cookie.
- */
-export interface SsoSession {
-  accessToken: string;
-  accessTokenExpiresAt: string;
-  user: UserProfile;
-}
+//
+// Identity types (Role, UserProfile, SsoSession) moved to core/models/auth.models.ts — the public
+// site needs them as well, and core cannot depend on this feature. Re-exported here so admin code
+// keeps importing them from one place.
+export type { Role, UserProfile, SsoSession } from '../core/models/auth.models';
 
 export interface ContentListItem {
   id: string;

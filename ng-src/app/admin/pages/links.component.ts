@@ -4,8 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminApiService } from '../services/admin-api.service';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../services/toast.service';
+import { BrandDataTableComponent, BrandTableColumn } from '@keshavsingh3197/web-ui';
 import { Link } from '../admin.models';
 
 interface LinkModel {
@@ -23,7 +24,7 @@ interface LinkModel {
   selector: 'app-admin-links',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BrandDataTableComponent],
   template: `
     <section class="page-head">
       <div><h1 class="page-title">Links</h1>
@@ -34,42 +35,41 @@ interface LinkModel {
     </section>
 
     <div class="panel">
-      <div class="table-wrap">
-        <table class="admin-table">
-          <thead>
-            <tr><th>Link</th><th>Category</th><th>Order</th><th>Visible</th><th></th></tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let l of links(); trackBy: trackId" @rowIn>
-              <td>
-                <div class="cell-user">
-                  <span class="link-ico"><i class="fas" [ngClass]="l.icon || 'fa-link'"></i></span>
-                  <span>
-                    <strong>{{ l.title }}</strong>
-                    <small><a [href]="l.url" target="_blank" rel="noopener" class="muted">{{ l.url }}</a></small>
-                  </span>
-                </div>
-              </td>
-              <td><span class="pill folder" *ngIf="l.category">{{ l.category }}</span>
-                <span class="muted" *ngIf="!l.category">—</span></td>
-              <td class="muted">{{ l.order }}</td>
-              <td>
-                <span class="badge" [class.on]="l.visible" [class.off]="!l.visible">
-                  {{ l.visible ? 'Visible' : 'Hidden' }}
+      <brand-data-table
+        [columns]="columns"
+        [rows]="links()"
+        [trackBy]="trackRow"
+        searchPlaceholder="Search links…"
+        defaultSortKey="order"
+      >
+        <ng-template let-l>
+          <tr @rowIn>
+            <td>
+              <div class="cell-user">
+                <span class="link-ico"><i class="fas" [ngClass]="l.icon || 'fa-link'"></i></span>
+                <span>
+                  <strong>{{ l.title }}</strong>
+                  <small><a [href]="l.url" target="_blank" rel="noopener" class="muted">{{ l.url }}</a></small>
                 </span>
-              </td>
-              <td class="row-actions" *ngIf="canWrite()">
-                <button class="icon-btn" (click)="openEdit(l)" title="Edit"><i class="fas fa-pen"></i></button>
-                <button class="icon-btn danger" (click)="remove(l)" title="Delete"><i class="fas fa-trash"></i></button>
-              </td>
-              <td *ngIf="!canWrite()"></td>
-            </tr>
-            <tr *ngIf="!loading() && links().length === 0">
-              <td colspan="5" class="empty-row"><i class="fas fa-link-slash"></i> No links yet.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              </div>
+            </td>
+            <td><span class="pill folder" *ngIf="l.category">{{ l.category }}</span>
+              <span class="muted" *ngIf="!l.category">—</span></td>
+            <td class="muted">{{ l.order }}</td>
+            <td>
+              <span class="badge" [class.on]="l.visible" [class.off]="!l.visible">
+                {{ l.visible ? 'Visible' : 'Hidden' }}
+              </span>
+            </td>
+            <td class="row-actions" *ngIf="canWrite()">
+              <button class="icon-btn" (click)="openEdit(l)" title="Edit"><i class="fas fa-pen"></i></button>
+              <button class="icon-btn danger" (click)="remove(l)" title="Delete"><i class="fas fa-trash"></i></button>
+            </td>
+            <td *ngIf="!canWrite()"></td>
+          </tr>
+        </ng-template>
+        <div table-empty><i class="fas fa-link-slash"></i> No links yet.</div>
+      </brand-data-table>
     </div>
 
     <div class="admin-dialog-scrim" *ngIf="editing()" (click)="close()">
@@ -144,6 +144,19 @@ export class LinksComponent implements OnInit {
 
   canWrite = computed(() => this.auth.hasRole('Admin', 'Editor'));
 
+  /**
+   * `value` feeds search, sort and the filter dropdowns, so it must produce the same text the cell
+   * shows — the Visible column renders a badge, not the boolean, so searching "Hidden" works.
+   * The actions column has no value and is therefore never sortable.
+   */
+  readonly columns: BrandTableColumn<Link>[] = [
+    { key: 'title', label: 'Link', value: l => l.title },
+    { key: 'category', label: 'Category', value: l => l.category ?? '', filterable: true },
+    { key: 'order', label: 'Order', value: l => l.order },
+    { key: 'visible', label: 'Visible', value: l => (l.visible ? 'Visible' : 'Hidden'), filterable: true },
+    { key: 'actions', label: '' },
+  ];
+
   ngOnInit(): void { this.load(); }
 
   load(): void {
@@ -199,7 +212,7 @@ export class LinksComponent implements OnInit {
       });
   }
 
-  trackId = (_: number, l: Link) => l.id;
+  trackRow = (l: Link) => l.id;
 
   private blank(): LinkModel {
     return { title: '', url: '', category: '', description: '', icon: '', order: 0, visible: true };

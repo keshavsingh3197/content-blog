@@ -1,0 +1,21 @@
+/* Panel headings and moderation-list cells.
+
+   The hand-rolled filter bar that used to live here - a path input, Apply/Clear
+   buttons and a "show hidden & deleted" checkbox - is gone. brand-data-table's
+   toolbar covers it: the search box replaces the path input, and the Document
+   and State columns are `filterable`, so each offers a dropdown of the values
+   actually present instead of a free-text box and a single checkbox. */
+
+.panel-heading {
+  margin: 0; padding: 0.9rem 1.25rem;
+  font-size: 0.92rem; font-weight: 700;
+  border-bottom: 1px solid var(--border-color); background: var(--bg-secondary);
+}
+
+.pad { padding: 1.1rem 1.25rem; }
+
+/* A comment body in a table cell: two lines of plain text, never expanded to full height. */
+.comment-preview {
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; white-space: pre-wrap; color: var(--text-secondary);
+}
