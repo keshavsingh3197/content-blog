@@ -115,6 +115,60 @@ security headers, and the anonymous `/health` probe that pings Mongo). There are
 settings — `Mongo:ConnectionString`, `Jwt:SigningKey`, `Encryption:DataKey` — plus `Media:*`; the
 Mongo-backed settings singleton and its refresh service are gone.
 
+## Where the Angular code lives
+
+`ng-src/app/` is split by lifetime, not by file type:
+
+| | |
+| --- | --- |
+| `core/` | app-wide singletons and contracts: `api.config.ts`, `content-path.ts`, the eight services, `authInterceptor`, identity types |
+| `shared/` | used by two or more features (breadcrumb, translate pipe) |
+| `layout/` | the chrome `AppComponent` renders: navbar, footer, reading-progress |
+| `features/` | one folder per routed view; a component used by exactly one feature lives *inside* it (`features/home/search/`, `features/content-view/comments/`) |
+| `admin/` | the lazy `/admin` console |
+
+Nothing outside `admin/` imports from `admin/`, and `core/` imports nothing from
+`admin/` — that edge is what moved `api.config.ts` and `AuthService` into `core/`. Keep it that
+way; the check is `grep -rn "admin/" ng-src/app --include='*.ts' | grep -v '^ng-src/app/admin/'`.
+
+## Styles: partials, and who loads them
+
+There is no CSS framework — Bootstrap was removed once it turned out only 8% of its selectors were
+reachable from our markup and none of its JS was called at all. `ng-src/styles/_elements.scss`
+(Reboot equivalents) and `_utilities.scss` (grid, spacing/flex/text utilities, and the alert, badge,
+spinner, nav/navbar/dropdown structure it used to supply) replace it, in the cascade position
+Bootstrap occupied.
+
+Both entry sheets contain **only `@use` lines**. Sass emits each module in the order listed, so the
+`@use` order *is* the cascade order — insert a new partial at its cascade position, don't append.
+
+The admin console's CSS is deliberately **not** in `angular.json`. It rides
+`AdminLayoutComponent` (`styleUrl: '../admin.scss'`, `ViewEncapsulation.None`) so it ships in the
+lazy `/admin` chunk; page-only sheets ride their own page components the same way. It used to be
+`@import`ed into the public `styles.scss`, which put the whole console theme in every reader's
+bundle. That is why `anyComponentStyle` is 24/32kB rather than the 4/8kB default: the console theme
+is one deliberate console-wide sheet, not a runaway component style.
+
+## The shared UI kit
+
+The admin list screens render through `<brand-data-table>` from `@keshavsingh3197/web-ui`. Two
+things to know before touching them:
+
+- The package paints itself from `--bg`, `--surface`, `--border`, `--brand`, `--brand-text`,
+  `--text` and `--muted`, which our design system does not define.
+  `admin/styles/_web-ui-bridge.scss` maps them onto our tokens, scoped to `.admin-shell`. An
+  unmapped token does not throw — `var()` with no definition falls back to the property's initial
+  value, so a missing entry shows up as an invisible control, not an error.
+- `brand-data-table` uses emulated encapsulation and no `::ng-deep`, so its `th, td` and row
+  hover/striping rules do **not** reach the `<tr>`/`<td>` a caller projects through
+  `<ng-template>` — which is the usage its own docstring shows. `admin/styles/_tables.scss`
+  restyles the projected cells from the admin theme, matched to the package's own values. Fix it in
+  the package (`:host ::ng-deep`, or `ViewEncapsulation.None`) and that block can go.
+
+Both admin lists filter **client-side** now. The API still accepts `q` / `path`, but
+`brand-data-table` always renders its own search box and running both would put two search boxes
+for the same thing on one screen.
+
 ## Traps
 
 - **net10.0** is authoritative (`Blog.Admin.Api.csproj`, `server/Dockerfile` `sdk:10.0`). `readme.md`
