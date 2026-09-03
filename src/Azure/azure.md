@@ -1,4 +1,15 @@
-# Azure
+---
+title: Azure Automation & Logic Apps
+summary: Automation Accounts, runbooks and modules, plus Logic Apps — what each is for, how they differ from Azure Functions, and when to reach for which.
+tags: [Azure, Automation, Logic-Apps, Runbook, Integration]
+updated: 2026-09-03
+---
+
+# Azure Automation & Logic Apps
+
+> Reference notes on the two "no-code / low-code" automation services. For the developer interview
+> track — compute, storage, messaging, security and observability in C# — see
+> [Interview → Azure](../Interview/Azure/readme.md).
 
 ## Automation Account
 
@@ -49,3 +60,48 @@ as a single process.
 - `Scope:` A runbook typically contains code for a specific automation task, while a module contains a collection of related cmdlets and functions that can be used across multiple runbooks.
 
 ## Logic App
+
+- **Azure Logic Apps** is a cloud integration service for building *workflows* that connect systems,
+  data and services — with hundreds of prebuilt **connectors** (Office 365, Salesforce, SAP, SQL,
+  Service Bus, Blob Storage, HTTP, FTP) instead of hand-written client code.
+- A workflow is a **trigger** plus a sequence of **actions**, designed visually or in JSON
+  (Workflow Definition Language), with built-in retries, error handling and long-running state.
+
+### Triggers and actions
+
+| Concept | Meaning |
+| --- | --- |
+| **Trigger** | Starts the workflow — recurrence (schedule), request (HTTP), or a connector event (new email, new blob, queue message) |
+| **Action** | A step: call a connector, an HTTP endpoint, an Azure Function, or another workflow |
+| **Control** | Condition, switch, for-each (with concurrency control), until, scope, terminate |
+| **Connector** | Managed (hosted by Azure, per-execution cost) or built-in (runs in the engine, faster and cheaper) |
+
+### Consumption vs Standard
+
+| | **Consumption** | **Standard** |
+| --- | --- | --- |
+| Hosting | Multi-tenant, pay per action executed | Single-tenant, App Service plan-like pricing |
+| Workflows per resource | One | **Many** |
+| Stateless workflows | ❌ | ✅ (lower latency, no run history) |
+| VNet integration / private endpoints | limited | ✅ |
+| Local development | limited | ✅ (VS Code, runs on the Azure Functions runtime) |
+
+### Logic Apps vs Azure Functions vs Automation runbooks
+
+| | **Logic Apps** | **Azure Functions** | **Automation runbook** |
+| --- | --- | --- | --- |
+| You write | A workflow (visual/JSON) | Code (C#, Python, …) | A PowerShell/Python script |
+| Best at | Integrating SaaS and Azure services, long-running approvals | Custom logic, APIs, event processing | Operating Azure itself — VM lifecycle, patching, cleanup |
+| State | Durable by design | Stateless (Durable Functions for state) | Job-scoped |
+| Reach for it when | The work is "connect A to B with rules" | The work is "run my code on an event" | The work is "administer the estate on a schedule" |
+
+A common shape combines them: a Logic App orchestrates the business workflow and calls an Azure
+Function for the one step that needs real code.
+
+### Related
+
+- [Interview → Azure → 08 Messaging & Events](../Interview/Azure/08-messaging-and-events.md) — Service
+  Bus, Event Grid and Event Hubs, the services Logic Apps most often sits between.
+- [Logic Apps documentation](https://learn.microsoft.com/en-us/azure/logic-apps/)
+- [Azure Automation documentation](https://learn.microsoft.com/en-us/azure/automation/)
+

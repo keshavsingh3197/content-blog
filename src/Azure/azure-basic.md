@@ -1,4 +1,15 @@
-# Azure
+---
+title: Azure Fundamentals
+summary: Azure Resource Manager, regions and availability zones with the region-vs-zone trade-off, and the IaaS/PaaS/SaaS/FaaS hosting models with a mnemonic for the stack layers.
+tags: [Azure, Cloud, Fundamentals, Regions, IaaS, PaaS]
+updated: 2026-09-03
+---
+
+# Azure Fundamentals
+
+> Reference notes. The interview-shaped version — the resource hierarchy, control plane vs data
+> plane, composite SLA arithmetic, RBAC vs Policy and Bicep — is
+> [Interview → Azure → 01 Fundamentals & Governance](../Interview/Azure/01-fundamentals-and-governance.md).
 
 ## Azure Resource Manager [ARM]
  - It is the **main control layer (brain)** in Azure that creates, manages, and organizes all resources like VMs, databases, storage, etc

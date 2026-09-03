@@ -10,6 +10,9 @@ updated: 2026-09-02
 > Cloud service & deployment models, the shared-responsibility line, serverless & storage,
 > Infrastructure-as-Code, cloud-native web/data, networking, and the Well-Architected pillars —
 > across **Azure** and **AWS** for the .NET ecosystem.
+>
+> **Azure depth lives elsewhere.** This chapter is the cross-cloud map; for service-by-service Azure
+> with C# and `az` commands, see the [Azure track](../Azure/readme.md).
 
 ## Service Models — who manages what
 

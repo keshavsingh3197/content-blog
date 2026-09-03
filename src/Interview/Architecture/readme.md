@@ -50,4 +50,4 @@ jump to a weak area.
 - [15 — Observability & Monitoring](15-observability-and-monitoring.md) — logs/metrics/traces, OpenTelemetry, ELK, Grafana/Prometheus, APM/COTS tools.
 - [16 — Web & Frontend](16-web-and-frontend.md) — HTTP/WebSockets, full-stack, SPA design, advanced React & Angular.
 
-> Related deep-dives already in this blog: [C#](../CSharp-DotNet/readme.md), [Modern C#](../../CSharp/modern-csharp.md), [GOF patterns](../../GOF/GOF.md), [SQL track](../SQL/readme.md), [Azure](../../Azure/azure.md), [AWS](../../AWS/aws.md), [Containerization](../../Containerization/K8/k8.md).
+> Related deep-dives already in this blog: [C#](../CSharp-DotNet/readme.md), [Modern C#](../../CSharp/modern-csharp.md), [GOF patterns](../../GOF/GOF.md), [SQL track](../SQL/readme.md), [Azure track](../Azure/readme.md), [AWS](../../AWS/aws.md), [Containerization](../../Containerization/K8/k8.md).
