@@ -69,7 +69,6 @@
 .visible { visibility: visible !important; }
 .border-0 { border: 0 !important; }
 .list-unstyled { padding-left: 0; list-style: none; }
-.fixed-top { position: fixed; top: 0; right: 0; left: 0; z-index: 1030; }
 
 @media (min-width: 992px) {
   .order-lg-2 { order: 2 !important; }
@@ -325,3 +324,12 @@
   .navbar-toggler { transition: none; }
   .nav-link { transition: none; }
 }
+
+/* ── Positioning helpers ──────────────────────────────── */
+/* Last on purpose. `.fixed-top` and `.navbar` sit on the same <nav>, both are
+   single-class selectors, so whichever is declared later wins - and `.navbar`
+   sets `position: relative`. Declared earlier, `.fixed-top` lost, the navbar
+   fell back into normal flow, and body's `padding-top: var(--navbar-height)`
+   left an empty band the height of the navbar above it. Bootstrap avoided this
+   by shipping helpers after components; keep new helpers down here too. */
+.fixed-top { position: fixed; top: 0; right: 0; left: 0; z-index: 1030; }
