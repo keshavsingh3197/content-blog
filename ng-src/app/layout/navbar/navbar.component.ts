@@ -71,27 +71,6 @@ const THEME_OPTIONS: ReadonlyArray<{ value: ThemePreference; icon: string; label
               <i class="fas fa-folder" aria-hidden="true"></i>{{ node.name }}
               <i class="fas fa-chevron-down topic-strip-caret" aria-hidden="true"></i>
             </button>
-            <ul
-              class="topic-menu"
-              *ngIf="openDropdown === node.name"
-              [style.top.px]="dropdownTop"
-              [style.left.px]="dropdownLeft"
-              role="list"
-            >
-              <li>
-                <a class="topic-menu-item topic-menu-all" href="#" (click)="navigateToFolder($event, node)">
-                  <i class="fas fa-folder-open" aria-hidden="true"></i>
-                  {{ i18n.t('blog.nav.browseFolder', { name: node.name }) }}
-                </a>
-              </li>
-              <li><hr class="topic-menu-divider"></li>
-              <li *ngFor="let child of node.children">
-                <a class="topic-menu-item" href="#" (click)="navigateToFile($event, child)">
-                  <i class="fas" [ngClass]="child.isDirectory ? 'fa-folder' : 'fa-file-lines'" aria-hidden="true"></i>
-                  <span class="topic-menu-label">{{ childLabel(child) }}</span>
-                </a>
-              </li>
-            </ul>
           </li>
         </ul>
 
@@ -161,6 +140,40 @@ const THEME_OPTIONS: ReadonlyArray<{ value: ThemePreference; icon: string; label
         </div>
       </div>
     </nav>
+
+    <!--
+      The open topic menu, rendered OUTSIDE the nav element on purpose.
+
+      It is position:fixed and placed from the toggle's own rect, and three separate ancestor
+      properties would otherwise interfere with that: the strip's overflow-x:auto clips it, a
+      mask-image on the strip clips its entire painted subtree, and the navbar's backdrop-filter
+      makes the navbar - not the viewport - its containing block. Rendering it as a sibling of the
+      bar removes all three at once, and only one menu is ever open, so one element is enough.
+
+      (No backticks in this comment: it lives inside a TypeScript template literal.)
+    -->
+    <ul
+      class="topic-menu"
+      *ngIf="openMenuNode as node"
+      [style.top.px]="dropdownTop"
+      [style.left.px]="dropdownLeft"
+      (click)="$event.stopPropagation()"
+      role="list"
+    >
+      <li>
+        <a class="topic-menu-item topic-menu-all" href="#" (click)="navigateToFolder($event, node)">
+          <i class="fas fa-folder-open" aria-hidden="true"></i>
+          {{ i18n.t('blog.nav.browseFolder', { name: node.name }) }}
+        </a>
+      </li>
+      <li><hr class="topic-menu-divider"></li>
+      <li *ngFor="let child of node.children">
+        <a class="topic-menu-item" href="#" (click)="navigateToFile($event, child)">
+          <i class="fas" [ngClass]="child.isDirectory ? 'fa-folder' : 'fa-file-lines'" aria-hidden="true"></i>
+          <span class="topic-menu-label">{{ childLabel(child) }}</span>
+        </a>
+      </li>
+    </ul>
 
     <!-- Small-screen drawer -->
     <div class="nav-drawer-backdrop" *ngIf="drawerOpen" (click)="closeDrawer()" role="presentation"></div>
@@ -253,6 +266,11 @@ export class NavbarComponent implements OnInit {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  /** The folder whose menu is open, or null. Drives the single menu rendered outside the bar. */
+  get openMenuNode(): FileNode | null {
+    return this.topNodes.find(node => node.name === this.openDropdown) ?? null;
   }
 
   /** The configured brand label, itself a translation key so it follows the chosen language. */

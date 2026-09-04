@@ -26,6 +26,16 @@ interface TopicCard {
   folderName: string;
 }
 
+/** A {@link TopicCard} that has been matched to a real folder — the only kind the grid renders. */
+interface ResolvedCard extends TopicCard {
+  node: FileNode;
+}
+
+/** Case- and separator-insensitive form, for comparing a config value with a folder name. */
+function normalizeFolderName(name: string): string {
+  return name.toLowerCase().replace(/[\s_-]+/g, '');
+}
+
 /**
  * The blog home page. The hero copy comes from the translation catalogue and the topic cards from the
  * `blog.topics` config document — adding a topic is a config edit plus two strings, not a deploy.
@@ -99,16 +109,16 @@ interface TopicCard {
         <div class="topic-grid">
           <button
             class="topic-card"
-            *ngFor="let topic of cards(); let i = index"
+            *ngFor="let card of cards(); let i = index"
             [appReveal]="i * 45"
-            (click)="navigateToTopic(topic)"
-            [attr.aria-label]="i18n.t('blog.nav.browseFolder', { name: cardLabel(topic) })"
+            (click)="navigateToTopic(card)"
+            [attr.aria-label]="i18n.t('blog.nav.browseFolder', { name: cardLabel(card) })"
           >
-            <span class="topic-icon-chip" [style.background]="topic.color">
-              <i class="fas topic-icon" [ngClass]="topic.icon" aria-hidden="true"></i>
+            <span class="topic-icon-chip" [style.background]="card.color">
+              <i class="fas topic-icon" [ngClass]="card.icon" aria-hidden="true"></i>
             </span>
-            <span class="topic-title">{{ cardLabel(topic) }}</span>
-            <span class="topic-count">{{ cardDescription(topic) }}</span>
+            <span class="topic-title">{{ cardLabel(card) }}</span>
+            <span class="topic-count">{{ cardDescription(card) }}</span>
             <span class="topic-arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
           </button>
         </div>
@@ -197,13 +207,29 @@ export class HomeComponent implements OnInit {
   }
 
   /**
-   * What the grid actually renders. When the config has no topic cards — a fresh deployment, or an
-   * IdP that is briefly unreachable — the top-level folders of the content tree stand in, so the
-   * home page still offers a way into the library instead of an empty band under a heading.
+   * What the grid actually renders.
+   *
+   * Every card is resolved against the content tree first and **dropped if it resolves to
+   * nothing**. `folderName` is a hand-typed config value pointing at a folder in a different
+   * system, so the two drift: at the time of writing the live config shipped `Interview-Prep`
+   * (the folder is `Interview`) and `SQL` (no such folder), and both rendered as cards that
+   * silently did nothing when clicked. A card that cannot lead anywhere is worse than no card.
+   *
+   * When the config has no topic cards at all — a fresh deployment, or an IdP that is briefly
+   * unreachable — the top-level folders stand in, so the home page still offers a way into the
+   * library instead of an empty band under a heading.
    */
-  cards(): TopicCard[] {
+  cards(): ResolvedCard[] {
     const configured = this.topics();
-    if (configured.length) return configured;
+
+    if (configured.length) {
+      return configured
+        .map(topic => {
+          const node = this.resolveFolder(topic.folderName);
+          return node ? { ...topic, node } : null;
+        })
+        .filter((card): card is ResolvedCard => card !== null);
+    }
 
     return this.topFolders.map((folder, index) => ({
       nameKey: folder.name,
@@ -211,19 +237,43 @@ export class HomeComponent implements OnInit {
       icon: FOLDER_ICONS[index % FOLDER_ICONS.length],
       color: FOLDER_COLORS[index % FOLDER_COLORS.length],
       folderName: folder.name,
+      node: folder,
     }));
   }
 
-  /** A configured card labels itself through the catalogue; a derived one is already a folder name. */
-  cardLabel(topic: TopicCard): string {
-    return topic.descriptionKey ? this.i18n.t(topic.nameKey) : topic.nameKey;
+  /**
+   * Find the top-level folder a card names, forgiving the ways the two spellings drift apart.
+   *
+   * Exact match first, then case- and separator-insensitive (`Interview Prep` / `interview_prep`),
+   * then a unique prefix — which is what makes the configured `Interview-Prep` reach the
+   * `Interview` folder. The prefix step requires exactly one candidate, so it can only ever
+   * disambiguate, never guess between two folders.
+   */
+  private resolveFolder(folderName: string): FileNode | null {
+    if (!folderName) return null;
+
+    const exact = this.topFolders.find(n => n.name === folderName);
+    if (exact) return exact;
+
+    const wanted = normalizeFolderName(folderName);
+    if (!wanted) return null;
+
+    const insensitive = this.topFolders.find(n => normalizeFolderName(n.name) === wanted);
+    if (insensitive) return insensitive;
+
+    const prefixed = this.topFolders.filter(n => wanted.startsWith(normalizeFolderName(n.name)));
+    return prefixed.length === 1 ? prefixed[0] : null;
   }
 
-  cardDescription(topic: TopicCard): string {
-    if (topic.descriptionKey) return this.i18n.t(topic.descriptionKey);
-    const folder = this.topFolders.find(n => n.name === topic.folderName);
+  /** A configured card labels itself through the catalogue; a derived one is already a folder name. */
+  cardLabel(card: ResolvedCard): string {
+    return card.descriptionKey ? this.i18n.t(card.nameKey) : card.nameKey;
+  }
+
+  cardDescription(card: ResolvedCard): string {
+    if (card.descriptionKey) return this.i18n.t(card.descriptionKey);
     return this.i18n.t('blog.folder.fileCount', {
-      count: folder ? this.contentService.countFiles([folder]) : 0,
+      count: this.contentService.countFiles([card.node]),
     });
   }
 
@@ -247,11 +297,8 @@ export class HomeComponent implements OnInit {
     else this.tree.collapseAll();
   }
 
-  navigateToTopic(topic: TopicCard): void {
-    const topicNode = this.nodes.find(n => n.name === topic.folderName);
-    if (topicNode) {
-      void this.router.navigate(['/folder'], { queryParams: { path: topicNode.path } });
-    }
+  navigateToTopic(card: ResolvedCard): void {
+    void this.router.navigate(['/folder'], { queryParams: { path: card.node.path } });
   }
 
   onFileSelected(node: FileNode): void {

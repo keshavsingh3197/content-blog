@@ -16,6 +16,10 @@
   background: transparent;
 }
 
+/* The track sits above the palette so it stays visible over ordinary page chrome, but on a phone
+   the palette is a full-height sheet and the bar would draw a stripe across its top edge. */
+body.palette-open .reading-progress-track { display: none; }
+
 .reading-progress-bar {
   height: 100%;
   width: 0;
@@ -99,9 +103,6 @@
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
-  /* Fade the edge so a clipped topic reads as "more to scroll" rather than as a cut-off word. */
-  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 1.5rem), transparent 100%);
-  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 1.5rem), transparent 100%);
 
   &::-webkit-scrollbar { display: none; }
 
@@ -144,10 +145,14 @@
 
 /* ── Topic menu ───────────────────────────────────────── */
 /*
-  Anchored to the viewport, not to the toggle. The strip sets `overflow-x: auto`, and any overflow
-  other than `visible` clips absolutely positioned descendants — so a menu positioned against its
-  `.topic-strip-item` opened and was immediately clipped to nothing. NavbarComponent reads the
-  toggle's rect and passes the coordinates in.
+  Anchored to the viewport, and rendered as a sibling of <nav> rather than inside the strip — see
+  the note on the element in NavbarComponent's template. Anything that clips or re-parents a fixed
+  descendant breaks it, and the strip had three such properties between it and the bar: the
+  `overflow-x: auto` it needs to scroll, a `mask-image` edge fade (which clips the whole painted
+  subtree, and made the menu invisible outright), and the navbar's `backdrop-filter`, which makes
+  the navbar the containing block for fixed descendants. The fade is gone; the menu moved out.
+
+  NavbarComponent reads the toggle's rect on open and passes the coordinates in.
 */
 .topic-menu {
   position: fixed;
