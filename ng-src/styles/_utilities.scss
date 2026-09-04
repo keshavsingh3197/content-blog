@@ -48,7 +48,8 @@
   .col-lg-7 { flex: 0 0 auto; width: 58.33333333%; }
 }
 
-/* `.container` lives in _reset.scss - it is ours, not Bootstrap's. */
+/* `.container` lives in _reset.scss, which owns its width, padding AND centring -
+   Bootstrap used to supply the auto margins that rule did not restate. */
 .container-fluid {
   --gutter-x: 1.5rem;
   width: 100%;
@@ -99,7 +100,7 @@
 .fw-medium   { font-weight: 500 !important; }
 .fw-semibold { font-weight: 600 !important; }
 .fw-bold     { font-weight: 700 !important; }
-.h6 { font-size: 1rem; font-weight: 500; line-height: 1.2; margin-bottom: 0.5rem; }
+.h6 { font-size: 1rem; font-weight: 500; line-height: 1.2; margin-top: 0; margin-bottom: 0.5rem; }
 .text-center { text-align: center !important; }
 .text-decoration-none { text-decoration: none !important; }
 .text-primary { color: var(--accent) !important; }
