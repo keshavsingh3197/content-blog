@@ -1,11 +1,17 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil, switchMap, map } from 'rxjs/operators';
 import { ContentService } from '../../core/services/content.service';
+import { I18nService } from '../../core/services/i18n.service';
+import { LibraryService } from '../../core/services/library.service';
 import { FileNode } from '../../core/models/file-node.model';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../shared/components/breadcrumb/breadcrumb.component';
+import { RevealDirective } from '../../shared/directives/reveal.directive';
 import { parseDocName } from '../../core/utils/doc-name';
 import { normalizeFolderPath } from '../../core/content-path';
 
@@ -20,54 +26,110 @@ const FOLDER_COLORS: string[] = [
   'linear-gradient(135deg,#f7971e,#ffd200)',
 ];
 
+/**
+ * A folder's contents: its sections, then its documents.
+ *
+ * Everything user-facing here used to be hardcoded English — "Documents", "This folder is empty.",
+ * "files" — which meant switching language left this one page untranslated. It reads from the
+ * catalogue like the rest of the site now.
+ *
+ * The filter is client-side and deliberately so: the whole tree is already in memory from
+ * `structure.json`, so filtering costs nothing and works with no API.
+ */
 @Component({
   selector: 'app-folder-view',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, BreadcrumbComponent],
+  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbComponent, RevealDirective],
   template: `
     <div class="container mt-4">
       <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
 
       <div *ngIf="!folderNode" class="alert alert-warning">
-        <i class="fas fa-exclamation-triangle me-2"></i>Folder not found.
+        <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>{{ i18n.t('blog.folder.notFound') }}
       </div>
 
       <ng-container *ngIf="folderNode">
-        <!-- Sub-folders -->
-        <div *ngIf="subFolders.length > 0" class="mb-4">
-          <h2 class="section-heading mb-3">
-            <i class="fas fa-folder-open me-2"></i>{{ folderNode.name }}
-          </h2>
-          <div class="row">
-            <div class="col-6 col-md-4 col-lg-3 mb-3" *ngFor="let folder of subFolders; let i = index">
-              <button
-                class="topic-card w-100"
-                (click)="openFolder(folder)"
-                [attr.aria-label]="'Browse ' + folder.name"
-              >
-                <span class="topic-icon-chip" [style.background]="folderColor(i)">
-                  <i class="fas fa-folder topic-icon"></i>
-                </span>
-                <div class="topic-title">{{ folder.name }}</div>
-                <div class="topic-count">{{ childFileCount(folder) }} files</div>
-              </button>
-            </div>
+        <header class="folder-head">
+          <div class="folder-head-main">
+            <h1 class="folder-title">
+              <i class="fas fa-folder-open" aria-hidden="true"></i>{{ folderNode.name }}
+            </h1>
+            <p class="folder-meta">{{ i18n.t('blog.folder.fileCount', { count: totalFiles }) }}</p>
           </div>
-        </div>
+
+          <!-- Up one level. The breadcrumb offers the same jump, but on a phone it collapses to
+               icons, so the explicit control is what actually gets used there. -->
+          <a
+            class="folder-up"
+            *ngIf="parentPath !== null"
+            [routerLink]="['/folder']"
+            [queryParams]="parentPath ? { path: parentPath } : {}"
+          >
+            <i class="fas fa-turn-up" aria-hidden="true"></i>{{ i18n.t('blog.folder.parent') }}
+          </a>
+        </header>
+
+        <!-- Sub-folders -->
+        <section *ngIf="subFolders.length > 0" class="mb-4">
+          <h2 class="section-heading mb-3">
+            <i class="fas fa-diagram-project" aria-hidden="true"></i>{{ i18n.t('blog.folder.subFolders') }}
+            <span class="section-count">{{ subFolders.length }}</span>
+          </h2>
+          <div class="topic-grid">
+            <button
+              class="topic-card"
+              *ngFor="let folder of subFolders; let i = index"
+              [appReveal]="i * 45"
+              (click)="openFolder(folder)"
+              [attr.aria-label]="i18n.t('blog.nav.browseFolder', { name: folder.name })"
+            >
+              <span class="topic-icon-chip" [style.background]="folderColor(i)">
+                <i class="fas fa-folder topic-icon" aria-hidden="true"></i>
+              </span>
+              <span class="topic-title">{{ folder.name }}</span>
+              <span class="topic-count">{{ i18n.t('blog.folder.fileCount', { count: childFileCount(folder) }) }}</span>
+              <span class="topic-arrow"><i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </button>
+          </div>
+        </section>
 
         <!-- Documents in this folder -->
-        <div *ngIf="files.length > 0">
-          <h2 class="section-heading mb-3">
-            <i class="fas fa-file-lines me-2 text-primary"></i>Documents
-            <span class="section-count">{{ files.length }}</span>
-          </h2>
+        <section *ngIf="files.length > 0">
+          <div class="list-head">
+            <h2 class="section-heading">
+              <i class="fas fa-file-lines" aria-hidden="true"></i>{{ i18n.t('blog.folder.documents') }}
+              <span class="section-count">{{ visibleFiles.length }}</span>
+            </h2>
+
+            <!-- Only worth the space once the list is long enough to need it. -->
+            <label class="inline-filter" *ngIf="files.length > 6">
+              <i class="fas fa-filter" aria-hidden="true"></i>
+              <span class="visually-hidden">{{ i18n.t('blog.folder.filter') }}</span>
+              <input
+                type="text"
+                [placeholder]="i18n.t('blog.folder.filter')"
+                [(ngModel)]="filter"
+                (ngModelChange)="applyFilter()"
+                (keydown.escape)="clearFilter()"
+              >
+              <button type="button" *ngIf="filter" (click)="clearFilter()"
+                      [attr.aria-label]="i18n.t('common.actions.clear')">
+                <i class="fas fa-times" aria-hidden="true"></i>
+              </button>
+            </label>
+          </div>
+
+          <div class="alert alert-info" *ngIf="!visibleFiles.length">
+            <i class="fas fa-info-circle me-2" aria-hidden="true"></i>{{ i18n.t('blog.folder.noMatches') }}
+          </div>
+
           <div class="doc-list">
             <button
               class="doc-card"
-              *ngFor="let file of files; let i = index"
+              *ngFor="let file of visibleFiles; let i = index"
               (click)="openFile(file)"
-              [attr.aria-label]="'Read ' + docTitle(file)"
+              [attr.aria-label]="i18n.t('blog.folder.read', { name: docTitle(file) })"
             >
               <!-- A leading number in the filename is the chapter order — surface it as a badge
                    so a numbered series reads as a sequence rather than a list of filenames. -->
@@ -79,32 +141,42 @@ const FOLDER_COLORS: string[] = [
                 <span class="doc-summary" *ngIf="file.summary">{{ file.summary }}</span>
                 <span class="doc-file">{{ file.name }}</span>
               </span>
-              <i class="fas fa-arrow-right doc-go"></i>
+              <i class="fas fa-bookmark doc-saved" *ngIf="library.isBookmarked(file.path)"
+                 [title]="i18n.t('blog.bookmarks.saved')" aria-hidden="true"></i>
+              <i class="fas fa-arrow-right doc-go" aria-hidden="true"></i>
             </button>
           </div>
-        </div>
+        </section>
 
         <div *ngIf="subFolders.length === 0 && files.length === 0" class="alert alert-info">
-          <i class="fas fa-info-circle me-2"></i>This folder is empty.
+          <i class="fas fa-info-circle me-2" aria-hidden="true"></i>{{ i18n.t('blog.folder.empty') }}
         </div>
       </ng-container>
     </div>
   `
 })
 export class FolderViewComponent implements OnInit, OnDestroy {
+  protected readonly i18n = inject(I18nService);
+  protected readonly library = inject(LibraryService);
+
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly contentService = inject(ContentService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   folderNode: FileNode | null = null;
   subFolders: FileNode[] = [];
   files: FileNode[] = [];
+  /** `files` after the filter box; the same array when the box is empty. */
+  visibleFiles: FileNode[] = [];
   breadcrumbs: BreadcrumbItem[] = [];
+  filter = '';
+  totalFiles = 0;
+
+  /** Path of the containing folder, `''` for the root listing, or null when there is no parent. */
+  parentPath: string | null = null;
 
   private destroy$ = new Subject<void>();
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private contentService: ContentService,
-    private cdr: ChangeDetectorRef
-  ) {}
 
   ngOnInit(): void {
     this.route.queryParams.pipe(
@@ -124,10 +196,33 @@ export class FolderViewComponent implements OnInit, OnDestroy {
         // Show root
         this.folderNode = { name: 'src', path: 'src', isDirectory: true, children: nodes };
       }
+
+      const slash = path.lastIndexOf('/');
+      this.parentPath = !path || path === 'src' ? null : slash > 0 ? path.slice(0, slash) : '';
+
       this.subFolders = this.folderNode?.children?.filter(n => n.isDirectory) ?? [];
       this.files = this.folderNode?.children?.filter(n => !n.isDirectory) ?? [];
+      this.totalFiles = this.folderNode ? this.contentService.countFiles([this.folderNode]) : 0;
+      this.filter = '';
+      this.applyFilter();
       this.cdr.markForCheck();
     });
+  }
+
+  applyFilter(): void {
+    const needle = this.filter.trim().toLowerCase();
+    this.visibleFiles = needle
+      ? this.files.filter(file =>
+          this.docTitle(file).toLowerCase().includes(needle) ||
+          file.name.toLowerCase().includes(needle) ||
+          (file.summary ?? '').toLowerCase().includes(needle))
+      : this.files;
+    this.cdr.markForCheck();
+  }
+
+  clearFilter(): void {
+    this.filter = '';
+    this.applyFilter();
   }
 
   folderColor(index: number): string {
@@ -152,11 +247,11 @@ export class FolderViewComponent implements OnInit, OnDestroy {
   }
 
   openFolder(node: FileNode): void {
-    this.router.navigate(['/folder'], { queryParams: { path: node.path } });
+    void this.router.navigate(['/folder'], { queryParams: { path: node.path } });
   }
 
   openFile(node: FileNode): void {
-    this.router.navigate(['/file'], { queryParams: { path: node.path } });
+    void this.router.navigate(['/file'], { queryParams: { path: node.path } });
   }
 
   private buildBreadcrumbs(path: string): void {

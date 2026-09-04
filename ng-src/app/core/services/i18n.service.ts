@@ -3,6 +3,7 @@ import { Observable, from } from 'rxjs';
 import { LocalizationClient, PublicLocale, TranslationBundle } from '@keshavsingh3197/web-config';
 import { IDP_BASE } from '../api.config';
 import { RuntimeConfigService } from './runtime-config.service';
+import { fallbackString } from '../i18n/fallback-strings';
 
 export type { TranslationBundle } from '@keshavsingh3197/web-config';
 
@@ -75,12 +76,19 @@ export class I18nService {
   }
 
   /**
-   * Translates a key, interpolating `{name}` placeholders. A missing key renders as the key itself,
-   * which makes gaps visible on the page instead of shipping a blank label.
+   * Translates a key, interpolating `{name}` placeholders.
+   *
+   * Resolution is catalogue → built-in English → the key itself. The catalogue wins whenever it
+   * defines the key, so translation stays a database edit; the built-in table only covers keys the
+   * catalogue has not been given yet. Without that middle step a feature shipped ahead of its
+   * catalogue entry renders `blog.reader.textSize` on the page where a label belongs — the client
+   * returns the key unchanged when it cannot resolve one.
    */
   t(key: string, params?: Record<string, string | number>): string {
     this.bundle();
-    return this.client.t(key, params);
+    const translated = this.client.t(key, params);
+    if (translated !== key) return translated;
+    return fallbackString(key, params) ?? key;
   }
 
   /** Resolves a config entry that holds a translation key; a plain entry is returned as-is. */
@@ -88,6 +96,15 @@ export class I18nService {
     this.bundle();
     this.config.config();
     return this.client.configText(key, fallback);
+  }
+
+  /**
+   * True when the catalogue actually defines `key`. Used where the UI would rather render nothing
+   * than a placeholder — an optional tagline, say — instead of the built-in English.
+   */
+  has(key: string): boolean {
+    this.bundle();
+    return this.client.t(key) !== key;
   }
 
   formatDate(value: string | Date | null | undefined): string {

@@ -61,7 +61,10 @@ sibling checkouts (`shared-security`, `KeshavSingh-Packages-*`) when `PACKAGES_R
 ## Route/link quirks (hash routing)
 
 - All routes use hash URLs (`/#/...`), so GitHub Pages needs no rewrite rules.
-- Relative markdown links are rewritten at render by `ContentService.rewriteDocumentLinks` (`ng-src/app/core/services/content.service.ts`); bare `#heading` links are intercepted to scroll instead. A broken relative link silently lands on `404.html`.
+- Routes: `/` (home), `/file?path=`, `/folder?path=`, `/tags`, `/bookmarks`, lazy `/admin`, and a
+  `**` catch-all that renders `NotFoundComponent` rather than redirecting to the home page.
+- Relative markdown links are rewritten at render by `ContentService.rewriteDocumentLinks` (`ng-src/app/core/services/content.service.ts`); bare `#heading` links are intercepted to scroll instead. A broken relative link lands on the 404 view (or on `404.html` first, for a non-hash URL).
+- Global search is ⌘K / Ctrl+K, or `/` outside a text field; `SearchOverlayService` is how any component opens it.
 - Mermaid diagrams are loaded **lazily** (`MermaidLoaderService`), not via `angular.json > scripts` (keeps the 2 MB initial budget). `deterministicIds: true` is **required** in the mermaid config. Quote node labels, use `<br/>` for line breaks, avoid raw `<`,`>`,`&`.
 
 ## Runtime endpoints in ng-src/index.html

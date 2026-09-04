@@ -1,10 +1,11 @@
-/* Folder-view document list, section count pill, markdown link affordances. */
+/* Document lists (folder view, tag results, reading list), the section-count pill, and the
+   markdown link affordances. */
 
 /* ── Section count pill ───────────────────────────────── */
 .section-count {
-  margin-left: 0.6rem;
+  margin-left: 0.3rem;
   padding: 0.1rem 0.55rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--accent-soft);
   color: var(--accent);
   font-size: 0.72rem;
@@ -12,7 +13,7 @@
   letter-spacing: 0.02em;
 }
 
-/* ── Document list (folder view) ──────────────────────── */
+/* ── Document list ────────────────────────────────────── */
 .doc-list {
   display: grid;
   gap: 0.6rem;
@@ -29,6 +30,7 @@
   border-radius: var(--radius);
   background: var(--bg-primary);
   color: var(--text-primary);
+  font-family: inherit;
   cursor: pointer;
   text-decoration: none;
   box-shadow: var(--shadow-xs);
@@ -41,7 +43,7 @@
     border-color: var(--border-strong);
     box-shadow: var(--shadow-md);
 
-    .doc-index { background: var(--gradient-primary); color: #fff; }
+    .doc-index { background: var(--gradient-primary); color: var(--on-brand); }
     .doc-go { opacity: 1; transform: translateX(0); color: var(--accent); }
   }
 
@@ -71,6 +73,8 @@
     gap: 0.15rem;
     min-width: 0;
     flex: 1;
+    color: inherit;
+    text-decoration: none;
   }
 
   .doc-title {
@@ -99,6 +103,8 @@
     white-space: nowrap;
   }
 
+  .doc-saved { flex: 0 0 auto; color: var(--accent); font-size: 0.8rem; }
+
   .doc-go {
     flex: 0 0 auto;
     color: var(--text-muted);
@@ -109,6 +115,78 @@
   }
 }
 
+/*
+  The reading-list rows carry their own remove button, so the row itself cannot be the link — a
+  button inside a button is invalid, and an <a> wrapping a <button> swallows the button's click.
+  The row is a plain container; the body is the link and the button is its sibling.
+*/
+.doc-card-static {
+  cursor: default;
+
+  &:hover { transform: none; }
+  &:hover .doc-index { background: var(--bg-secondary); color: var(--text-muted); }
+
+  .doc-body:hover .doc-title { color: var(--accent); }
+}
+
+.doc-remove {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition-fast);
+
+  &:hover {
+    color: var(--accent-danger);
+    background: var(--accent-danger-soft);
+    border-color: var(--accent-danger);
+  }
+}
+
+/* ── Reading history ──────────────────────────────────── */
+.history-list {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition-fast);
+
+  > i { color: var(--text-muted); flex: 0 0 auto; font-size: 0.85rem; }
+
+  .history-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .history-date {
+    flex: 0 0 auto;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &:hover { background: var(--accent-soft); color: var(--accent); > i { color: var(--accent); } }
+}
+
 @media (max-width: 575.98px) {
   .doc-card {
     padding: 0.8rem 0.9rem;
@@ -116,13 +194,19 @@
     .doc-index { width: 2rem; height: 2rem; font-size: 0.8rem; }
     .doc-go { display: none; }
   }
+
+  .history-row .history-date { display: none; }
 }
 
 /* ── Markdown link affordances ────────────────────────── */
 .markdown-body {
-  /* An external link is worth flagging: it leaves the site and opens a new tab. */
+  /* An external link is worth flagging: it leaves the site and opens a new tab.
+     The glyph is ↗ (U+2197) — it has to be written as a CSS escape, because a bare `97` in a
+     `content` string is the literal two characters, which is exactly what used to be rendered
+     after every external link. The trailing space terminates the escape sequence so a following
+     hex digit is not swallowed into it. */
   a.external-link::after {
-    content: '97';           /* ↗ */
+    content: '\2197 ';
     font-size: 0.8em;
     margin-left: 0.15em;
     opacity: 0.7;

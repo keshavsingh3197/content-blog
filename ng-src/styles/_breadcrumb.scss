@@ -71,7 +71,9 @@
   padding: 0.85rem 1.5rem;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  /* Tighter than it was: the bar now ends in a group of four actions, and a 1.5rem gap between
+     every fact pushed them onto their own line well above the phone breakpoint. */
+  gap: 0.6rem 1.25rem;
   flex-wrap: wrap;
   border-bottom: 1px solid var(--border-color);
 
@@ -85,27 +87,5 @@
     i { color: var(--accent); }
   }
 
-  /* Actions sit at the far end of the bar, after the read-only facts. */
-  .meta-action {
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    padding: 0.3rem 0.75rem;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-pill);
-    background: var(--bg-primary);
-    color: var(--text-secondary);
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition-fast);
-
-    i { color: var(--accent); }
-
-    &:hover {
-      color: var(--accent);
-      border-color: var(--accent);
-      box-shadow: var(--shadow-xs);
-    }
-  }
+  /* The actions themselves live in _reader.scss, next to the popover one of them opens. */
 }

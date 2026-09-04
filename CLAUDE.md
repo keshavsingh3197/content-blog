@@ -92,6 +92,15 @@ rows, so **don't hardcode display text or URLs** — add a config/i18n key and r
 accessors (which handle the not-yet-loaded case; nothing throws, the `fallback` argument is only
 what to paint before the API answers).
 
+`I18nService.t()` resolves **catalogue → `core/i18n/fallback-strings.ts` → the key itself**. The
+package's own `t()` renders a missing key *as the key*, which was fine while every key shipped
+together with its catalogue seed and is not fine for a feature that lands ahead of the database
+edit — the reader gets `blog.content.textSize` where a label belongs. The catalogue still wins for
+every key it defines, in every language, so translating remains a database edit and nothing in that
+table can override a translator. **Add a key to `FALLBACK_STRINGS` whenever you render one**; the
+consequence of forgetting is a debug token on the page, not a build failure. `has(key)` reports
+whether the catalogue itself defines a key, for the places that would rather render nothing.
+
 ## Anonymous surface on the API
 
 Most endpoints are `[Authorize]` by default with role gates on top, but the public site calls a few
@@ -121,11 +130,24 @@ Mongo-backed settings singleton and its refresh service are gone.
 
 | | |
 | --- | --- |
-| `core/` | app-wide singletons and contracts: `api.config.ts`, `content-path.ts`, the eight services, `authInterceptor`, identity types |
-| `shared/` | used by two or more features (breadcrumb, translate pipe) |
-| `layout/` | the chrome `AppComponent` renders: navbar, footer, reading-progress |
+| `core/` | app-wide singletons and contracts: `api.config.ts`, `content-path.ts`, `i18n/fallback-strings.ts`, the services, `authInterceptor`, identity types |
+| `shared/` | used by two or more features (breadcrumb, translate pipe, `RevealDirective`) |
+| `layout/` | the chrome `AppComponent` renders: navbar, footer, reading-progress, back-to-top, command palette |
 | `features/` | one folder per routed view; a component used by exactly one feature lives *inside* it (`features/home/search/`, `features/content-view/comments/`) |
 | `admin/` | the lazy `/admin` console |
+
+Reader-local state (bookmarks, reading history, tree expansion, text size/measure, recent searches)
+lives in `localStorage` behind root services — `LibraryService`, `ReaderPrefsService`,
+`TreeStateService` — never on the server. The blog has no reader accounts, so the alternative to
+browser storage is not "synced", it is "an identity system for a bookmark button". Every accessor
+is wrapped in try/catch: these services are injected during bootstrap, and a browser that blocks
+site data throws on `localStorage` itself, which would take the whole site down over a preference.
+
+Search has exactly one implementation. `ContentService.searchDocuments` ranks the in-memory
+`structure.json` (title-prefix > tag > filename > summary > path, AND across terms) and
+`CommandPaletteComponent` is the only thing that renders it — reached from ⌘K/Ctrl+K, `/`, the
+navbar button, and the home hero's `SearchLauncherComponent`, which is a styled button, not a
+second search box.
 
 Nothing outside `admin/` imports from `admin/`, and `core/` imports nothing from
 `admin/` — that edge is what moved `api.config.ts` and `AuthService` into `core/`. Keep it that
@@ -136,8 +158,16 @@ way; the check is `grep -rn "admin/" ng-src/app --include='*.ts' | grep -v '^ng-
 There is no CSS framework — Bootstrap was removed once it turned out only 8% of its selectors were
 reachable from our markup and none of its JS was called at all. `ng-src/styles/_elements.scss`
 (Reboot equivalents) and `_utilities.scss` (grid, spacing/flex/text utilities, and the alert, badge,
-spinner, nav/navbar/dropdown structure it used to supply) replace it, in the cascade position
-Bootstrap occupied.
+spinner and nav structure it used to supply) replace it, in the cascade position Bootstrap occupied.
+`_utilities.scss` shrank again with the navbar rebuild: the collapse, the toggler, the dropdown
+menus, `.navbar-expand-lg` and `.container-fluid` are gone, because `NavbarComponent` renders a
+topic strip, viewport-anchored menus and a drawer, none of which reuse Bootstrap's shapes. The
+file's rule stands — add a selector back only when markup needs it.
+
+Shared component styles live in `_buttons.scss` (`.btn-solid`/`.btn-outline`, `.inline-filter`,
+`.list-head`, `.empty-state`) and motion primitives in `_animations.scss` (`.reveal`, the route
+enter, the shared keyframes). Article chrome — the meta-bar actions, the typography popover, the
+prev/next pager, related reading, heading anchors — is `_reader.scss`.
 
 Both entry sheets contain **only `@use` lines**. Sass emits each module in the order listed, so the
 `@use` order *is* the cascade order — insert a new partial at its cascade position, don't append.
@@ -180,7 +210,10 @@ for the same thing on one screen.
   `index.html → 404.html`, and `deploy-static/admin/index.html` is a plain meta-refresh so the clean
   `/admin` URL bounces to `/#/admin/login`.
 - Relative markdown links only work because `ContentService.rewriteDocumentLinks` rewrites them to
-  `#/file?path=…` before render; a broken one silently lands on the home page via `404.html`.
+  `#/file?path=…` before render. A broken one now lands on `NotFoundComponent` (the `**` route),
+  which says so and offers search — it used to `redirectTo: ''`, so a stale link dropped the reader
+  on the home page with no sign anything had gone wrong. `404.html` is still the Pages-level
+  fallback for a non-hash URL.
 - Mermaid is injected on demand by `MermaidLoaderService` (not `angular.json > scripts`) to stay
   under the 2 MB initial budget, and `deterministicIds: true` is required or same-millisecond
   diagrams share an SVG id and restyle each other. Quote node labels, `<br/>` for breaks, no raw
@@ -188,6 +221,12 @@ for the same thing on one screen.
 - `provideMarkdown` is left at its default `SecurityContext.HTML` sanitization (DOMPurify) — keep it
   that way; the admin preview binds untrusted markdown through the same path.
 - `.markdownlint.yaml` sets `MD024 siblings_only` for content prose.
+- `ThemeService` is tri-state — `light` / `dark` / **`system`**, defaulting to `system`. `theme()` is
+  the *resolved* palette and is what anything reacting to appearance must read (the Mermaid
+  re-render does); `preference()` is what the reader picked. `index.html` carries a small pre-boot
+  script that reproduces the same resolution order, because the service only runs after the bundle
+  has been fetched and parsed — long enough for a dark-mode reader to get a full white flash.
+  Both write `data-theme`, `color-scheme` and `<meta name="theme-color">`; keep the two in step.
 - The csproj/tsconfig prefer **sibling checkouts** of the `KeshavSingh.*` / `@keshavsingh3197/*`
   repos over the published packages when they exist (`SkipPrivatePackages`, tsconfig `paths`
   fallback to `../KeshavSingh-Packages-Web/dist`); see the parent `/mnt/d/GITHUB/CLAUDE.md`.

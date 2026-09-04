@@ -1,0 +1,319 @@
+/* Article chrome: the meta-bar actions, the typography popover, the prev/next pager, related
+   reading, and the heading anchors. */
+
+/* ── Meta bar actions ─────────────────────────────────── */
+.content-meta .meta-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.content-meta .meta-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+
+  i { color: var(--accent); }
+
+  &:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    box-shadow: var(--shadow-xs);
+  }
+
+  /* Saved state. Reads as "on" rather than as another available action. */
+  &.meta-action-on {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+/* ── Reading options popover ──────────────────────────── */
+.reader-settings { position: relative; }
+
+.reader-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: var(--z-floating);
+  width: 15rem;
+  padding: 0.85rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-xl);
+  animation: pop-in 0.16s var(--ease-out) both;
+}
+
+.reader-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+
+  .reader-row-label {
+    flex: 1;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+}
+
+.reader-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.15rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  background: var(--bg-secondary);
+
+  button {
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+
+    &:hover:not(:disabled) { background: var(--accent-soft); color: var(--accent); }
+    &:disabled { opacity: 0.35; cursor: not-allowed; }
+  }
+
+  .reader-value {
+    min-width: 3.1rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.reader-reset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.4rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+
+  &:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+/* ── Heading anchors ──────────────────────────────────── */
+/*
+  Hidden until the heading is hovered or the anchor itself has focus — visible at all times it
+  would read as part of the heading. `:focus-within` is what keeps it reachable by keyboard.
+*/
+.markdown-body {
+  h2, h3 { position: relative; }
+
+  .heading-anchor {
+    margin-left: 0.45rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    text-decoration: none;
+    border-bottom: 0;
+    opacity: 0;
+    transition: opacity var(--transition-fast), color var(--transition-fast);
+
+    &:hover { color: var(--accent); }
+  }
+
+  h2:hover .heading-anchor,
+  h3:hover .heading-anchor,
+  h2:focus-within .heading-anchor,
+  h3:focus-within .heading-anchor,
+  .heading-anchor:focus-visible { opacity: 1; }
+}
+
+/* ── Prev / next pager ────────────────────────────────── */
+.doc-pager {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin: 2rem 0 0;
+
+  @media (min-width: 640px) { grid-template-columns: 1fr 1fr; }
+}
+
+.pager-spacer { display: none; @media (min-width: 640px) { display: block; } }
+
+.pager-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  text-decoration: none;
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-fast), box-shadow var(--transition-normal),
+    border-color var(--transition-normal);
+  min-width: 0;
+
+  .pager-dir {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .pager-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+  }
+
+  &.pager-prev:hover { transform: translateX(-3px); }
+  &.pager-next:hover { transform: translateX(3px); }
+
+  /* "Next" is right-aligned so the pair reads as a spread rather than as two stacked cards. */
+  &.pager-next { text-align: right; .pager-dir { justify-content: flex-end; } }
+}
+
+/* ── Related reading ──────────────────────────────────── */
+.related { margin-top: 2.5rem; }
+
+.related-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 1rem;
+
+  i { color: var(--accent); font-size: 0.9em; }
+}
+
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: 0.75rem;
+}
+
+.related-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: transform var(--transition-fast), border-color var(--transition-normal),
+    box-shadow var(--transition-normal);
+
+  .related-title { font-size: 0.92rem; font-weight: 600; line-height: 1.4; }
+
+  .related-summary {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .related-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: auto; }
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-md);
+    .related-title { color: var(--accent); }
+  }
+}
+
+/* ── Folder header ────────────────────────────────────── */
+.folder-head {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+
+  .folder-head-main { flex: 1; min-width: 0; }
+
+  .folder-title {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 0.2rem;
+    font-size: clamp(1.4rem, 3.5vw, 1.9rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    overflow-wrap: anywhere;
+
+    i { color: var(--accent); font-size: 0.85em; }
+  }
+
+  .folder-meta { margin: 0; color: var(--text-muted); font-size: 0.85rem; }
+}
+
+.folder-up {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition-fast);
+
+  i { color: var(--accent); }
+
+  &:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+}

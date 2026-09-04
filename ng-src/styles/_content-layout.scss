@@ -10,6 +10,15 @@
   /* Two columns: article, then the contents rail on the right. */
   @media (min-width: 1100px) {
     grid-template-columns: minmax(0, 1fr) 250px;
+
+    /*
+      Cap the article at the reader's measure here too, not just in the three-column layout below.
+      Without this the "line width" control in the reading-options popover did nothing at all
+      between 1100px and 1600px, because `--reader-measure` was only referenced by the wide grid.
+      At the default measure the track is narrower than the cap anyway, so nothing moves until the
+      reader actually narrows it.
+    */
+    .content-main { max-width: var(--reader-measure); }
   }
 
   /*

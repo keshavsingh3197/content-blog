@@ -48,7 +48,12 @@
 
   /* Everything that exists only to navigate. */
   .navbar,
+  .nav-drawer,
+  .nav-drawer-backdrop,
+  .skip-link,
+  .palette-backdrop,
   .site-footer,
+  .reading-progress-track,
   .reading-progress-bar,
   .toc-sidebar,
   .mobile-toc,
@@ -56,7 +61,12 @@
   .breadcrumb-nav,
   .back-to-top,
   .code-actions,
-  .search-container,
+  .doc-pager,
+  .related,
+  .heading-anchor,
+  .hero-search,
+  .hero-orbs,
+  .meta-actions,
   .meta-action,
   .no-print {
     display: none !important;

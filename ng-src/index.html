@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Deep-dive engineering guides on C#/.NET, Azure, AWS, Docker, Kubernetes, SQL, design patterns and more.">
-  <meta name="theme-color" content="#6366f1">
+  <!-- Both are re-written at runtime by ThemeService; these are the values for the light
+       palette, which is what the pre-boot script below falls back to. -->
+  <meta name="theme-color" content="#f6f7f9">
+  <meta name="color-scheme" content="light dark">
   <title>Content Blog — Engineering Knowledge Base</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -13,6 +16,32 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!--
+    Paint the theme before Angular boots.
+
+    ThemeService applies `data-theme` in its constructor, but that runs after the bundle has been
+    fetched, parsed and bootstrapped — long enough for a dark-mode reader to get a full white
+    flash on every cold load. This reproduces exactly its resolution order (stored choice, else
+    the OS preference) in a few lines, and fails silently to the light default: it is the same
+    guard the service needs, because a browser that blocks site data throws on the accessor.
+  -->
+  <script>
+    (function () {
+      try {
+        var stored = null;
+        try { stored = localStorage.getItem('theme'); } catch (e) { /* storage blocked */ }
+        var dark = stored === 'dark' ||
+          ((stored === null || stored === 'system') &&
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        var theme = dark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.style.colorScheme = theme;
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', dark ? '#0b0f17' : '#f6f7f9');
+      } catch (e) { /* the light default stands */ }
+    })();
+  </script>
+
   <!--
     Admin API endpoint. This is NOT a secret — it's just a public URL, safe to commit.
     For local dev the app defaults to http://localhost:5080/api. For the GitHub Pages

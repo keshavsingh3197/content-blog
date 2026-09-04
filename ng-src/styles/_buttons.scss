@@ -1,0 +1,158 @@
+/* Shared controls: solid/outline buttons, inline filters and empty states.
+
+   These used to be re-declared per feature (the comment thread's own .btn-accent/.btn-ghost, the
+   folder view's inline markup). Anything used by two or more views belongs here; the comment
+   thread's scoped pair stays where it is because it deliberately overrides an admin class. */
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn-solid,
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.15rem;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+}
+
+.btn-solid {
+  border: 1px solid transparent;
+  background: var(--gradient-primary);
+  color: var(--on-brand);
+
+  &:hover:not(:disabled) { box-shadow: var(--shadow-accent); transform: translateY(-1px); }
+}
+
+.btn-outline {
+  border: 1px solid var(--border-strong);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+
+  &:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+}
+
+.btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+
+/* ── Inline filter field ──────────────────────────────── */
+/* A local narrowing control, distinct from the global palette: it filters what is already on the
+   page rather than searching the library, so it is deliberately quieter. */
+.inline-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  max-width: 22rem;
+  flex: 1 1 14rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  background: var(--bg-primary);
+  color: var(--text-muted);
+  transition: var(--transition-fast);
+
+  > i { flex: 0 0 auto; font-size: 0.8rem; }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: inherit;
+    /* 16px on touch: below that iOS Safari zooms the page when the field takes focus. */
+    font-size: 1rem;
+
+    &:focus { outline: none; }
+    &::placeholder { color: var(--text-muted); }
+  }
+
+  button {
+    flex: 0 0 auto;
+    border: 0;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.15rem;
+    line-height: 0;
+
+    &:hover { color: var(--accent); }
+  }
+
+  &:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  @media (min-width: 576px) {
+    input { font-size: 0.88rem; }
+  }
+}
+
+/* Heading on the left, filter (or an action) on the right, stacking on a phone. */
+.list-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+
+  > .section-heading { margin-bottom: 0; margin-right: auto; }
+}
+
+/* ── Empty states ─────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.85rem;
+  padding: 3rem 1.5rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+}
+
+.empty-state-lg { padding: clamp(3rem, 12vh, 6rem) 1.5rem; }
+
+.empty-state-icon { font-size: 2rem; color: var(--text-muted); opacity: 0.6; }
+
+.empty-state-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.empty-state-text {
+  margin: 0;
+  max-width: 44ch;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.empty-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 0.35rem;
+}
+
+.not-found-code {
+  font-family: var(--font-mono);
+  font-size: clamp(3.5rem, 12vw, 6rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  background: var(--gradient-brand-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

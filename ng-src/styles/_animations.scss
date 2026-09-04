@@ -1,0 +1,70 @@
+/* Motion primitives: the scroll reveal, the route enter, and the shared keyframes.
+
+   Everything here is opt-in and everything here is cancelled by the reduced-motion block in
+   _accessibility.scss, which zeroes durations globally. The one rule that block cannot fix is a
+   starting state that never gets animated away, so `.reveal` is applied by RevealDirective ONLY
+   when the reader has not asked for reduced motion — a hidden element with no animation is missing
+   content, not a missing flourish. */
+
+/* ── Scroll reveal ────────────────────────────────────── */
+/*
+  `.reveal.reveal` is a deliberate specificity bump, not a typo. Every element this is applied to —
+  .topic-card, .doc-card, .recent-card, .related-card — declares its own `transition` for the hover
+  lift, and those component partials are emitted *after* this file. At equal specificity the later
+  rule wins, so a single `.reveal` had its transition (and with it the stagger delay) silently
+  replaced by the card's. Two classes (0,2,0) beat one (0,1,0) regardless of order.
+
+  RevealDirective strips both classes once the transition has finished, which hands the element
+  back to its component's own transition — otherwise every revealed card would keep hovering at
+  the reveal's 0.5s instead of its own 0.16s for the rest of the session.
+*/
+.reveal.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.5s var(--ease-out) var(--reveal-delay, 0ms),
+    transform 0.5s var(--ease-out) var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.reveal.reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Route enter ──────────────────────────────────────── */
+/*
+  Two names, one animation. <main> survives navigation, so the keyframe would otherwise play once
+  on load and never again: an animation replays when its *name* changes, not when an attribute
+  does. AppComponent alternates the two classes on every NavigationEnd.
+*/
+.route-enter-a { animation: route-in-a 0.34s var(--ease-out) both; }
+.route-enter-b { animation: route-in-b 0.34s var(--ease-out) both; }
+
+@keyframes route-in-a {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes route-in-b {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── Shared keyframes ─────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* A slow drift for the hero's background orbs. Purely decorative and behind `aria-hidden`. */
+@keyframes orb-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33%      { transform: translate3d(4%, -6%, 0) scale(1.08); }
+  66%      { transform: translate3d(-5%, 4%, 0) scale(0.95); }
+}
