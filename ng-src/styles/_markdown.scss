@@ -5,7 +5,10 @@
   padding: 2.5rem;
   color: var(--text-primary);
   line-height: 1.75;
-  font-size: 1.02rem;
+  /* The prose scales with the reader's chosen text size; everything sized in `em` below follows
+     it, and the chrome around the article deliberately does not. ReaderPrefsService owns the
+     custom property, and `_tokens.scss` gives it the default of 1. */
+  font-size: calc(1.02rem * var(--reader-text-scale, 1));
 
   h1, h2, h3, h4, h5, h6 {
     color: var(--text-primary);
@@ -118,6 +121,8 @@
     background: #0d1117 !important;
     border-radius: 0;
     font-family: var(--font-mono);
+    /* Absolute, so code does NOT follow --reader-text-scale: enlarging a fixed-width block
+       overflows it sideways long before the prose becomes comfortable. */
     font-size: 0.86rem;
     line-height: 1.7;
     overflow-x: auto;

@@ -2,25 +2,14 @@
 
 /* ── Hero ─────────────────────────────────────────────── */
 .hero-section {
-  background: var(--gradient-primary);
-  color: #fff;
-  padding: 4.5rem 0 3.5rem;
   position: relative;
+  background: var(--gradient-primary);
+  color: var(--on-brand);
+  padding: clamp(3rem, 7vw, 5.5rem) 0 clamp(2.5rem, 5vw, 4rem);
   overflow: hidden;
   isolation: isolate;
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 80% at 85% 10%, rgba(255, 255, 255, 0.22), transparent 60%),
-      radial-gradient(ellipse 50% 60% at 10% 100%, rgba(168, 85, 247, 0.35), transparent 60%);
-    pointer-events: none;
-    z-index: -1;
-  }
-
-  /* subtle dotted texture */
+  /* Dotted texture, faded out toward the bottom so the edge is not a hard line. */
   &::after {
     content: '';
     position: absolute;
@@ -32,59 +21,153 @@
     pointer-events: none;
     z-index: -1;
   }
+}
 
-  .hero-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    padding: 0.35rem 0.85rem;
-    border-radius: var(--radius-pill);
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(6px);
-    margin-bottom: 1.25rem;
+/* Three slow-drifting blurred discs. Decorative, `aria-hidden`, and cheap: transform and opacity
+   only, so each one stays on its own compositor layer and never triggers layout. */
+.hero-orbs {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+
+  span {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.5;
+    animation: orb-drift 26s ease-in-out infinite;
   }
 
-  .hero-title {
-    font-size: clamp(2rem, 4.5vw, 3.25rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.08;
-    margin-bottom: 1rem;
+  span:nth-child(1) {
+    width: 34rem; height: 34rem;
+    top: -14rem; right: -8rem;
+    background: rgba(255, 255, 255, 0.5);
   }
 
-  .hero-subtitle {
-    font-size: clamp(1rem, 1.5vw, 1.15rem);
-    opacity: 0.92;
-    max-width: 46ch;
-    margin-bottom: 2rem;
-    line-height: 1.6;
+  span:nth-child(2) {
+    width: 28rem; height: 28rem;
+    bottom: -14rem; left: -6rem;
+    background: rgba(168, 85, 247, 0.65);
+    animation-delay: -9s;
   }
 
-  .hero-stats {
-    display: flex;
-    gap: 2.5rem;
+  span:nth-child(3) {
+    width: 20rem; height: 20rem;
+    top: 30%; left: 45%;
+    background: rgba(56, 189, 248, 0.4);
+    animation-delay: -17s;
+  }
+}
 
-    .stat-item {
-      .stat-number {
-        font-size: 1.9rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        display: block;
-        line-height: 1;
-      }
+.hero-grid {
+  position: relative;
+  display: flex;
+}
 
-      .stat-label {
-        font-size: 0.8rem;
-        font-weight: 500;
-        opacity: 0.82;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
+.hero-copy {
+  width: 100%;
+  max-width: 46rem;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
+  margin-bottom: 1.25rem;
+}
+
+.hero-title {
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+  margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
+  opacity: 0.92;
+  max-width: 52ch;
+  margin-bottom: 1.75rem;
+  line-height: 1.6;
+}
+
+/* ── Hero search ──────────────────────────────────────── */
+/* Styled as a field because that is what it is understood to be; it opens the palette, which owns
+   the actual input. One search implementation, two entry points. */
+.hero-search {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 34rem;
+  padding: 0.9rem 1rem 0.9rem 1.15rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.85);
+  font-family: inherit;
+  font-size: 0.975rem;
+  text-align: left;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: var(--transition-normal);
+
+  .hero-search-icon { flex: 0 0 auto; opacity: 0.85; }
+  .hero-search-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .hero-search-kbd {
+    flex: 0 0 auto;
+    padding: 0.1rem 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: var(--radius-xs);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.22);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+}
+
+/* ── Hero stats ───────────────────────────────────────── */
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2.5rem;
+  margin-top: 2rem;
+
+  .stat-item {
+    .stat-number {
+      font-size: clamp(1.5rem, 3vw, 1.9rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: block;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      opacity: 0.82;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
   }
 }

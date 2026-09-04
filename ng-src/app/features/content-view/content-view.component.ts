@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, OnDestroy, ElementRef, ViewChild,
+  Component, OnInit, OnDestroy, ElementRef, ViewChild, HostListener,
   ChangeDetectionStrategy, ChangeDetectorRef, effect, inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -12,11 +12,14 @@ import { PageStatsService } from '../../core/services/page-stats.service';
 import { MermaidLoaderService } from '../../core/services/mermaid-loader.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { I18nService } from '../../core/services/i18n.service';
+import { LibraryService } from '../../core/services/library.service';
+import { ReaderPrefsService, MEASURE_STEPS, TEXT_SCALES } from '../../core/services/reader-prefs.service';
 import { FileNode } from '../../core/models/file-node.model';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../shared/components/breadcrumb/breadcrumb.component';
 import { CommentsComponent } from './comments/comments.component';
 import { parseDocName } from '../../core/utils/doc-name';
 import { normalizeContentPath } from '../../core/content-path';
+import { RevealDirective } from '../../shared/directives/reveal.directive';
 
 export interface TocItem {
   level: number;
@@ -34,7 +37,7 @@ interface TagChip {
   selector: 'app-content-view',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, BreadcrumbComponent, MarkdownModule, CommentsComponent],
+  imports: [CommonModule, RouterModule, BreadcrumbComponent, MarkdownModule, CommentsComponent, RevealDirective],
   template: `
     <div class="container container-reader mt-4">
       <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
@@ -82,16 +85,20 @@ interface TagChip {
             <i class="fas fa-list me-2"></i>{{ i18n.t('blog.content.contents') }}
             <i class="fas ms-auto" [class.fa-chevron-down]="!tocOpen" [class.fa-chevron-up]="tocOpen"></i>
           </button>
+          <!-- The single inner wrapper is required by the 0fr->1fr grid animation in _toc.scss:
+               the collapsing row has to be one child, not one per link. -->
           <nav class="mobile-toc-nav" [class.open]="tocOpen">
-            <a
-              *ngFor="let item of toc"
-              [href]="'#' + item.id"
-              class="toc-link"
-              [class.toc-h1]="item.level === 1"
-              [class.toc-h2]="item.level === 2"
-              [class.toc-h3]="item.level === 3"
-              (click)="scrollToHeading($event, item.id); tocOpen = false"
-            >{{ item.text }}</a>
+            <div class="mobile-toc-inner">
+              <a
+                *ngFor="let item of toc"
+                [href]="'#' + item.id"
+                class="toc-link"
+                [class.toc-h1]="item.level === 1"
+                [class.toc-h2]="item.level === 2"
+                [class.toc-h3]="item.level === 3"
+                (click)="scrollToHeading($event, item.id); tocOpen = false"
+              >{{ item.text }}</a>
+            </div>
           </nav>
         </div>
         <!-- TOC sidebar (desktop) -->
@@ -132,13 +139,92 @@ interface TagChip {
                 <i class="fas fa-eye"></i>&nbsp;{{ i18n.t('blog.content.views', { count: views }) }}
               </span>
               <!--
-                Pushed to the end of the bar so the action never sits between two read-only facts.
-                Hidden from print itself: a button is noise on paper.
+                Pushed to the end of the bar so the actions never sit between two read-only facts.
+                Hidden from print itself: buttons are noise on paper.
               -->
-              <button class="meta-action no-print" type="button" (click)="print()"
-                      [title]="i18n.t('blog.content.print')">
-                <i class="fas fa-print"></i>&nbsp;{{ i18n.t('blog.content.print') }}
-              </button>
+              <div class="meta-actions no-print">
+                <button
+                  class="meta-action"
+                  type="button"
+                  [class.meta-action-on]="library.isBookmarked(currentPath)"
+                  (click)="toggleBookmark()"
+                  [attr.aria-pressed]="library.isBookmarked(currentPath)"
+                  [title]="library.isBookmarked(currentPath)
+                    ? i18n.t('blog.bookmarks.remove') : i18n.t('blog.bookmarks.add')"
+                >
+                  <!-- Solid when saved, outline when not: the state has to read at a glance,
+                       and Font Awesome 6 Free ships both weights of this glyph. -->
+                  <i aria-hidden="true"
+                     [ngClass]="library.isBookmarked(currentPath) ? 'fas fa-bookmark' : 'far fa-bookmark'"></i>
+                  <span class="meta-action-label">
+                    {{ library.isBookmarked(currentPath)
+                        ? i18n.t('blog.bookmarks.saved') : i18n.t('blog.bookmarks.add') }}
+                  </span>
+                </button>
+
+                <button class="meta-action" type="button" (click)="share()"
+                        [title]="i18n.t('blog.content.share')">
+                  <i class="fas" [ngClass]="linkCopied ? 'fa-check' : 'fa-link'" aria-hidden="true"></i>
+                  <span class="meta-action-label">
+                    {{ linkCopied ? i18n.t('blog.content.linkCopied') : i18n.t('blog.content.share') }}
+                  </span>
+                </button>
+
+                <!-- Typography. A popover rather than a settings page: it is adjusted while
+                     reading, and the effect has to be visible as it changes. -->
+                <div class="reader-settings">
+                  <button class="meta-action" type="button" (click)="toggleReaderPanel($event)"
+                          [attr.aria-expanded]="readerPanelOpen"
+                          [title]="i18n.t('blog.content.readerSettings')">
+                    <i class="fas fa-text-height" aria-hidden="true"></i>
+                    <span class="meta-action-label">{{ i18n.t('blog.content.readerSettings') }}</span>
+                  </button>
+
+                  <div class="reader-panel" *ngIf="readerPanelOpen" (click)="$event.stopPropagation()">
+                    <div class="reader-row">
+                      <span class="reader-row-label">{{ i18n.t('blog.content.textSize') }}</span>
+                      <div class="reader-stepper">
+                        <button type="button" (click)="prefs.stepText(-1)"
+                                [disabled]="prefs.textScale() === minTextScale"
+                                [attr.aria-label]="i18n.t('blog.content.textSmaller')"><i class="fas fa-minus" aria-hidden="true"></i></button>
+                        <span class="reader-value">{{ textScalePercent }}%</span>
+                        <button type="button" (click)="prefs.stepText(1)"
+                                [disabled]="prefs.textScale() === maxTextScale"
+                                [attr.aria-label]="i18n.t('blog.content.textLarger')"><i class="fas fa-plus" aria-hidden="true"></i></button>
+                      </div>
+                    </div>
+
+                    <div class="reader-row">
+                      <span class="reader-row-label">{{ i18n.t('blog.content.lineWidth') }}</span>
+                      <div class="reader-stepper">
+                        <button type="button" (click)="prefs.stepMeasure(-1)"
+                                [disabled]="prefs.measure() === minMeasure"
+                                [attr.aria-label]="i18n.t('blog.content.widthNarrow')">
+                          <i class="fas fa-compress" aria-hidden="true"></i>
+                        </button>
+                        <span class="reader-value">{{ prefs.measure() }}ch</span>
+                        <button type="button" (click)="prefs.stepMeasure(1)"
+                                [disabled]="prefs.measure() === maxMeasure"
+                                [attr.aria-label]="i18n.t('blog.content.widthWide')">
+                          <i class="fas fa-expand" aria-hidden="true"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <button type="button" class="reader-reset" (click)="prefs.reset()"
+                            [disabled]="!prefs.isCustomised()">
+                      <i class="fas fa-rotate-left" aria-hidden="true"></i>
+                      {{ i18n.t('blog.content.resetSettings') }}
+                    </button>
+                  </div>
+                </div>
+
+                <button class="meta-action" type="button" (click)="print()"
+                        [title]="i18n.t('blog.content.print')">
+                  <i class="fas fa-print" aria-hidden="true"></i>
+                  <span class="meta-action-label">{{ i18n.t('blog.content.print') }}</span>
+                </button>
+              </div>
             </div>
 
             <!-- Tags. Authored in the document's front matter; folder-derived when it has none. -->
@@ -171,17 +257,62 @@ interface TagChip {
             </div>
           </div>
 
+          <!--
+            Sequential navigation. The section rail carries the same links, but only appears at
+            >=1600px — below that there was no way from the end of one chapter to the next short of
+            going back to the folder listing.
+          -->
+          <nav class="doc-pager no-print" *ngIf="previousDoc || nextDoc"
+               [attr.aria-label]="i18n.t('blog.content.inThisFolder')">
+            <a
+              class="pager-link pager-prev"
+              *ngIf="previousDoc"
+              [routerLink]="['/file']"
+              [queryParams]="{ path: previousDoc.path }"
+            >
+              <span class="pager-dir"><i class="fas fa-arrow-left" aria-hidden="true"></i>{{ i18n.t('blog.content.previous') }}</span>
+              <span class="pager-title">{{ docLabel(previousDoc) }}</span>
+            </a>
+            <!-- Placeholder so "next" stays on the right when there is no "previous". -->
+            <span class="pager-spacer" *ngIf="!previousDoc" aria-hidden="true"></span>
+
+            <a
+              class="pager-link pager-next"
+              *ngIf="nextDoc"
+              [routerLink]="['/file']"
+              [queryParams]="{ path: nextDoc.path }"
+            >
+              <span class="pager-dir">{{ i18n.t('blog.content.next') }}<i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+              <span class="pager-title">{{ docLabel(nextDoc) }}</span>
+            </a>
+          </nav>
+
+          <!-- Related reading, by shared tags. Absent for an untagged document rather than
+               falling back to "anything in the same folder", which the pager already covers. -->
+          <section class="related no-print" *ngIf="related.length" [appReveal]="0">
+            <h2 class="related-heading">
+              <i class="fas fa-diagram-project" aria-hidden="true"></i>{{ i18n.t('blog.content.related') }}
+            </h2>
+            <div class="related-grid">
+              <a
+                class="related-card"
+                *ngFor="let doc of related; let i = index"
+                [appReveal]="i * 40"
+                [routerLink]="['/file']"
+                [queryParams]="{ path: doc.path }"
+              >
+                <span class="related-title">{{ docLabel(doc) }}</span>
+                <span class="related-summary" *ngIf="doc.summary">{{ doc.summary }}</span>
+                <span class="related-tags" *ngIf="doc.tags?.length">
+                  <span class="tag-chip tag-chip-sm" *ngFor="let tag of (doc.tags || []).slice(0, 3)">{{ tag }}</span>
+                </span>
+              </a>
+            </div>
+          </section>
+
           <app-comments [path]="currentPath"></app-comments>
         </div>
       </div>
-
-      <!-- Back to top -->
-      <button
-        class="back-to-top no-print"
-        [class.visible]="showBackToTop"
-        (click)="scrollToTop()"
-        [attr.aria-label]="i18n.t('blog.content.backToTop')"
-      ><i class="fas fa-arrow-up"></i></button>
     </div>
   `
 })
@@ -205,13 +336,28 @@ export class ContentViewComponent implements OnInit, OnDestroy {
   breadcrumbs: BreadcrumbItem[] = [];
   toc: TocItem[] = [];
   activeTocId = '';
-  showBackToTop = false;
   tocOpen = false;
   currentPath = '';
 
-  /** Documents in the same folder, for the wide-viewport section rail. */
+  /** Documents in the same folder, for the section rail and the prev/next pager. */
   siblings: FileNode[] = [];
   folderName = '';
+
+  /** Neighbours in the folder's own order, or null at either end of the sequence. */
+  previousDoc: FileNode | null = null;
+  nextDoc: FileNode | null = null;
+
+  /** Documents sharing tags with this one. Empty for an untagged document. */
+  related: FileNode[] = [];
+
+  /** True for two seconds after a successful share, so the button can confirm itself. */
+  linkCopied = false;
+  readerPanelOpen = false;
+
+  readonly minTextScale = TEXT_SCALES[0];
+  readonly maxTextScale = TEXT_SCALES[TEXT_SCALES.length - 1];
+  readonly minMeasure = MEASURE_STEPS[0];
+  readonly maxMeasure = MEASURE_STEPS[MEASURE_STEPS.length - 1];
 
   /** The navigation tree, once it arrives; the source for the rail and the metadata fallback. */
   private structure: FileNode[] = [];
@@ -234,6 +380,13 @@ export class ContentViewComponent implements OnInit, OnDestroy {
   private readonly mermaidLoader = inject(MermaidLoaderService);
   private readonly themeService = inject(ThemeService);
   readonly i18n = inject(I18nService);
+  readonly library = inject(LibraryService);
+  readonly prefs = inject(ReaderPrefsService);
+
+  /** The reader's text size as a percentage, for the stepper's readout. */
+  get textScalePercent(): number {
+    return Math.round(this.prefs.textScale() * 100);
+  }
 
   /** Diagrams bake their colours in at render time, so re-render them when the theme flips. */
   private readonly themeEffect = effect(() => {
@@ -252,7 +405,6 @@ export class ContentViewComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private scrollHandler = () => {
-    this.showBackToTop = window.scrollY > 400;
     this.updateActiveToc();
     this.cdr.markForCheck();
   };
@@ -302,6 +454,9 @@ export class ContentViewComponent implements OnInit, OnDestroy {
         this.buildBreadcrumbs(path);
         this.fileName = path.split('/').pop() || path;
         this.applyStructureMetadata();
+        // Recorded now, with whatever title is available, so "continue reading" is right even if
+        // the reader leaves before the document finishes rendering. The <h1> refines it below.
+        this.library.recordRead(path, this.displayTitle());
         window.scrollTo({ top: 0, behavior: 'instant' });
         this.cdr.markForCheck();
         return this.contentService.getFile(path);
@@ -360,6 +515,11 @@ export class ContentViewComponent implements OnInit, OnDestroy {
     this.currentPath = '';
     this.fileName = '';
     this.breadcrumbs = [];
+    this.previousDoc = null;
+    this.nextDoc = null;
+    this.related = [];
+    this.linkCopied = false;
+    this.readerPanelOpen = false;
   }
   /**
    * Count this read and show the running total. The server decides whether it counts — a refresh by
@@ -377,6 +537,63 @@ export class ContentViewComponent implements OnInit, OnDestroy {
   /** Hand the sheet to the browser. Everything print-specific is done in CSS, not by cloning DOM. */
   print(): void {
     window.print();
+  }
+
+  /** Save or unsave this document. The stored title is whatever the reader can see right now. */
+  toggleBookmark(): void {
+    if (!this.currentPath) return;
+    this.library.toggleBookmark(this.currentPath, this.displayTitle());
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Share the document. The native share sheet where the browser has one (phones, and Safari), the
+   * clipboard everywhere else. Both paths are permission-gated and both can be declined, so a
+   * failure is silent rather than an error the reader can do nothing about.
+   */
+  share(): void {
+    const url = this.sourceUrl;
+    const title = this.displayTitle();
+
+    const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
+    if (typeof nav.share === 'function') {
+      nav.share({ title, url }).catch(() => this.copyLink(url));
+      return;
+    }
+    this.copyLink(url);
+  }
+
+  private copyLink(url: string): void {
+    if (!window.isSecureContext || !navigator.clipboard) return;
+    navigator.clipboard.writeText(url).then(() => {
+      this.linkCopied = true;
+      this.cdr.markForCheck();
+      setTimeout(() => {
+        this.linkCopied = false;
+        this.cdr.markForCheck();
+      }, 2000);
+    }).catch(() => {
+      // Clipboard permission denied. The address bar still holds the link.
+    });
+  }
+
+  toggleReaderPanel(e: Event): void {
+    e.stopPropagation();
+    this.readerPanelOpen = !this.readerPanelOpen;
+    this.cdr.markForCheck();
+  }
+
+  /** Any click outside the popover closes it — it is a transient control, not a mode. */
+  @HostListener('document:click')
+  closeReaderPanel(): void {
+    if (!this.readerPanelOpen) return;
+    this.readerPanelOpen = false;
+    this.cdr.markForCheck();
+  }
+
+  /** The best title available right now: front matter, then the rendered `<h1>`, then the filename. */
+  private displayTitle(): string {
+    return this.docTitle || parseDocName(this.fileName).title || this.fileName;
   }
 
   /** The rail shows titles, falling back to the filename-derived label for untitled documents. */
@@ -400,6 +617,15 @@ export class ContentViewComponent implements OnInit, OnDestroy {
 
     this.folderName = folder?.name ?? folderPath.split('/').pop() ?? '';
     this.siblings = (folder?.children ?? []).filter(child => !child.isDirectory);
+
+    // The pager walks the folder in the order the tree gives, which is the order the generator
+    // emitted — i.e. filename order, so a numbered series reads as a sequence.
+    const position = this.siblings.findIndex(doc => doc.path === this.currentPath);
+    this.previousDoc = position > 0 ? this.siblings[position - 1] : null;
+    this.nextDoc =
+      position >= 0 && position < this.siblings.length - 1 ? this.siblings[position + 1] : null;
+
+    this.related = this.contentService.relatedDocuments(this.currentPath, this.structure, 4);
 
     const node = this.contentService.findNodeByPath(this.currentPath, this.structure);
     if (!node) return;
@@ -425,14 +651,11 @@ export class ContentViewComponent implements OnInit, OnDestroy {
     requestAnimationFrame(() => {
       this.processCodeBlocks();
       this.buildToc();       // assigns heading ids — must run before processLinks()
+      this.addHeadingAnchors();
       this.processLinks();
       this.useHeadingAsBreadcrumbLabel();
       this.cdr.markForCheck();
     });
-  }
-
-  scrollToTop(): void {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   scrollToHeading(e: Event, id: string): void {
@@ -482,6 +705,9 @@ export class ContentViewComponent implements OnInit, OnDestroy {
     if (!title || !this.breadcrumbs.length) return;
 
     if (!this.docTitle) this.docTitle = title;
+    // The history entry was written before the markdown rendered, so it still holds the
+    // filename-derived label; replace it with the document's real heading.
+    this.library.refreshTitle(this.currentPath, title);
 
     const last = this.breadcrumbs[this.breadcrumbs.length - 1];
     this.breadcrumbs = [...this.breadcrumbs.slice(0, -1), { ...last, label: title, exact: true }];
@@ -553,6 +779,39 @@ export class ContentViewComponent implements OnInit, OnDestroy {
 
   private slugify(text: string): string {
     return text.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+  }
+
+  /**
+   * Give every heading a link to itself.
+   *
+   * Deep-linking into a long article is the normal way one gets shared — "see the section on
+   * cancellation" — and until now the only way to get that URL was to open the contents rail and
+   * copy from the address bar afterwards. Runs after {@link buildToc}, which is what assigns the
+   * ids these anchors point at.
+   */
+  private addHeadingAnchors(): void {
+    const el = this.contentDiv?.nativeElement;
+    if (!el) return;
+
+    el.querySelectorAll<HTMLElement>('h2[id], h3[id]').forEach(heading => {
+      if (heading.querySelector('.heading-anchor')) return;
+
+      const anchor = document.createElement('a');
+      anchor.className = 'heading-anchor no-print';
+      anchor.href = `${this.sourceUrl}#${heading.id}`;
+      anchor.textContent = '#';
+      anchor.setAttribute('aria-label', this.i18n.t('blog.content.copyHeadingLink'));
+      anchor.title = this.i18n.t('blog.content.copyHeadingLink');
+
+      anchor.addEventListener('click', event => {
+        event.preventDefault();
+        // Scroll rather than let the href run: under hash routing an `#…` href replaces the route.
+        heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        this.copyLink(anchor.href);
+      });
+
+      heading.appendChild(anchor);
+    });
   }
 
   private processCodeBlocks(): void {

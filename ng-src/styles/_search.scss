@@ -1,91 +1,218 @@
-/* Search field and result list. */
+/* The global search overlay (command palette). */
 
-/* ── Search ───────────────────────────────────────────── */
-.search-container {
-  position: relative;
+/* ── Backdrop ─────────────────────────────────────────── */
+.palette-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-palette);
+  display: flex;
+  justify-content: center;
+  /* Sits high on the screen rather than centred: the result list grows downward, and a centred
+     dialog would jump upward as it filled. */
+  align-items: flex-start;
+  padding: clamp(0.75rem, 8vh, 6rem) 1rem 1rem;
+  background: var(--overlay-scrim);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fade-in 0.16s var(--ease-out) both;
+}
 
-  .search-input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
+.palette {
+  width: 100%;
+  max-width: 42rem;
+  max-height: min(70vh, 40rem);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  animation: pop-in 0.18s var(--ease-out) both;
+}
 
-    .search-icon {
-      position: absolute;
-      left: 1rem;
-      color: rgba(255, 255, 255, 0.75);
-      z-index: 1;
-      pointer-events: none;
-    }
+/* ── Field ────────────────────────────────────────────── */
+.palette-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  flex: 0 0 auto;
+
+  .palette-field-icon { color: var(--text-muted); flex: 0 0 auto; }
+}
+
+.palette-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: inherit;
+  /* 16px minimum: anything smaller makes iOS Safari zoom the page on focus, which on a modal
+     leaves the reader looking at a magnified corner of it. */
+  font-size: 1rem;
+
+  &:focus { outline: none; }
+  &::placeholder { color: var(--text-muted); }
+}
+
+.palette-clear {
+  flex: 0 0 auto;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 0;
+  border-radius: var(--radius-xs);
+
+  &:hover { color: var(--accent); }
+}
+
+.palette-esc {
+  display: none;
+  flex: 0 0 auto;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+
+  @media (min-width: 576px) { display: block; }
+}
+
+/* ── Result list ──────────────────────────────────────── */
+.palette-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.4rem;
+}
+
+.palette-group {
+  margin: 0.4rem 0.6rem 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.palette-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 2.5rem 1rem;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.palette-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+
+  .palette-row-icon { flex: 0 0 auto; width: 1.1rem; text-align: center; color: var(--text-muted); }
+
+  .palette-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+
+  .palette-row-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .search-input {
-    width: 100%;
-    padding: 0.9rem 1rem 0.9rem 2.85rem;
-    border-radius: var(--radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.14);
-    color: #fff;
-    font-size: 0.975rem;
-    backdrop-filter: blur(12px);
-    transition: var(--transition-normal);
-
-    &::placeholder { color: rgba(255, 255, 255, 0.7); }
-
-    &:focus {
-      outline: none;
-      border-color: rgba(255, 255, 255, 0.7);
-      background: rgba(255, 255, 255, 0.22);
-      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
-    }
+  .palette-row-sub {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .search-clear {
-    position: absolute;
-    right: 0.85rem;
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.75);
-    cursor: pointer;
-    padding: 0.25rem;
-    line-height: 0;
+  .palette-row-tags { display: none; gap: 0.3rem; flex: 0 0 auto; }
 
-    &:hover { color: #fff; }
+  .palette-row-enter { flex: 0 0 auto; color: var(--accent); opacity: 0; font-size: 0.8rem; }
+
+  /* One highlight, driven by `activeIndex`, so the keyboard cursor and the mouse cursor cannot
+     disagree — `mouseenter` moves activeIndex rather than adding a second :hover style. */
+  &.palette-row-active {
+    background: var(--accent-soft);
+
+    .palette-row-icon { color: var(--accent); }
+    .palette-row-enter { opacity: 1; }
   }
 
-  .search-results {
-    position: absolute;
-    top: calc(100% + 10px);
-    left: 0;
-    right: 0;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-lg);
-    z-index: 1000;
-    max-height: 340px;
-    overflow-y: auto;
-    padding: 0.35rem;
-
-    .search-result-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.7rem 0.85rem;
-      cursor: pointer;
-      border-radius: var(--radius-xs);
-      transition: background var(--transition-fast);
-      color: var(--text-primary);
-
-      i { color: var(--accent); }
-
-      &:hover { background: var(--accent-soft); }
-    }
-
-    .search-no-results {
-      padding: 1.25rem;
-      color: var(--text-muted);
-      text-align: center;
-      font-size: 0.9rem;
-    }
+  @media (min-width: 640px) {
+    .palette-row-tags { display: flex; }
   }
 }
+
+.palette-mark {
+  background: var(--accent-soft-strong);
+  color: var(--accent);
+  padding: 0;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+.palette-tag {
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-pill);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Footer hints ─────────────────────────────────────── */
+.palette-foot {
+  display: none;
+  flex: 0 0 auto;
+  gap: 1.25rem;
+  padding: 0.55rem 1rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+
+  span { display: inline-flex; align-items: center; gap: 0.35rem; }
+
+  kbd {
+    padding: 0.05rem 0.35rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+  }
+
+  /* Keyboard hints are noise on a touch device, and the space is better spent on results. */
+  @media (min-width: 640px) { display: flex; }
+}
+
+/* The page must not scroll behind the palette. */
+body.palette-open { overflow: hidden; }

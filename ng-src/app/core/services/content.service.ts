@@ -4,6 +4,27 @@ import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { tap, catchError, map, shareReplay } from 'rxjs/operators';
 import { FileNode, TagSummary } from '../models/file-node.model';
 import { normalizeContentPath } from '../content-path';
+import { parseDocName } from '../utils/doc-name';
+
+/** One ranked search result. `title` is what the reader will see, already resolved. */
+export interface SearchHit {
+  node: FileNode;
+  title: string;
+  /** Higher is a better match; only meaningful relative to the other hits in the same search. */
+  score: number;
+  /** Tags that matched a search term, so the result can show *why* it was returned. */
+  matchedTags: string[];
+}
+
+/** True when `term` starts a word in `text` — "core" matching "ASP.NET Core" but not "hardcore". */
+function wordStarts(text: string, term: string): boolean {
+  let index = text.indexOf(term);
+  while (index >= 0) {
+    if (index === 0 || /[^a-z0-9]/.test(text[index - 1])) return true;
+    index = text.indexOf(term, index + 1);
+  }
+  return false;
+}
 
 /** The `key: value` pairs of a markdown front-matter block, as authored. */
 export interface FrontMatter {
@@ -63,25 +84,86 @@ export class ContentService {
     return this.fileCache.get(path)!;
   }
 
-  searchFiles(query: string, nodes: FileNode[]): FileNode[] {
-    if (!query.trim()) return [];
-    const q = query.toLowerCase();
-    const results: FileNode[] = [];
-    const matches = (node: FileNode) =>
-      node.name.toLowerCase().includes(q) ||
-      (node.title?.toLowerCase().includes(q) ?? false) ||
-      (node.tags ?? []).some(tag => tag.toLowerCase().includes(q));
+  /**
+   * Rank the library against `query`.
+   *
+   * The old predicate answered "does this string appear anywhere in the node" and returned matches
+   * in tree order, which put `src/AWS/…` above an exact title hit further down. Scoring instead
+   * lets the obvious answer come first: a title that *starts* with what was typed beats a title
+   * that merely contains it, which beats a tag, which beats a path fragment. Every term has to
+   * match something (AND, not OR), so a second word narrows a search rather than widening it.
+   *
+   * Everything here reads `structure.json`, which is already in memory — no document is fetched, so
+   * searching stays instant and works offline exactly as it does online.
+   */
+  searchDocuments(query: string, nodes: FileNode[], limit = 40): SearchHit[] {
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) return [];
 
-    const searchRecursive = (items: FileNode[]) => {
+    const hits: SearchHit[] = [];
+
+    const walk = (items: FileNode[]) => {
       for (const node of items) {
-        if (!node.isDirectory && matches(node)) {
-          results.push(node);
+        if (!node.isDirectory) {
+          const scored = this.scoreDocument(node, terms);
+          if (scored) hits.push(scored);
         }
-        if (node.children) searchRecursive(node.children);
+        if (node.children) walk(node.children);
       }
     };
-    searchRecursive(nodes);
-    return results;
+    walk(nodes);
+
+    return hits
+      .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+      .slice(0, limit);
+  }
+
+  /** A hit for `node`, or null when any term fails to match. */
+  private scoreDocument(node: FileNode, terms: string[]): SearchHit | null {
+    const title = node.title || parseDocName(node.name).title;
+    const haystacks = {
+      title: title.toLowerCase(),
+      name: node.name.toLowerCase(),
+      summary: (node.summary ?? '').toLowerCase(),
+      path: node.path.toLowerCase(),
+      tags: (node.tags ?? []).map(tag => tag.toLowerCase()),
+    };
+
+    let score = 0;
+    const matchedTags = new Set<string>();
+
+    for (const term of terms) {
+      let best = 0;
+
+      if (haystacks.title === term) best = Math.max(best, 120);
+      else if (haystacks.title.startsWith(term)) best = Math.max(best, 90);
+      else if (wordStarts(haystacks.title, term)) best = Math.max(best, 70);
+      else if (haystacks.title.includes(term)) best = Math.max(best, 45);
+
+      for (const tag of haystacks.tags) {
+        if (tag === term) { best = Math.max(best, 60); matchedTags.add(tag); }
+        else if (tag.startsWith(term)) { best = Math.max(best, 40); matchedTags.add(tag); }
+      }
+
+      if (haystacks.name.includes(term)) best = Math.max(best, 30);
+      if (haystacks.summary.includes(term)) best = Math.max(best, 25);
+      if (haystacks.path.includes(term)) best = Math.max(best, 12);
+
+      // AND across terms: a document that matches "kubernetes" but not "network" is not a hit for
+      // "kubernetes network", however strongly it matched the first word.
+      if (best === 0) return null;
+      score += best;
+    }
+
+    // A shorter title containing the same match is the more precise answer, so break ties toward it.
+    score += Math.max(0, 24 - title.length / 4);
+
+    return {
+      node,
+      title,
+      score,
+      matchedTags: [...matchedTags],
+    };
   }
 
   // ── Front matter ────────────────────────────────────────────────────────────────────────────
@@ -233,6 +315,64 @@ export class ContentService {
 
     walk(nodes);
     return results.sort((a, b) => a.path.localeCompare(b.path));
+  }
+
+  /** Every document in the tree, in tree order. */
+  allDocuments(nodes: FileNode[]): FileNode[] {
+    const documents: FileNode[] = [];
+    const walk = (items: FileNode[]) => {
+      for (const node of items) {
+        if (!node.isDirectory) documents.push(node);
+        if (node.children) walk(node.children);
+      }
+    };
+    walk(nodes);
+    return documents;
+  }
+
+  /**
+   * The most recently revised documents, newest first.
+   *
+   * `updated` is whatever the author typed in the front matter, so it is sorted as a string rather
+   * than parsed: ISO dates (`2026-03-14`) sort correctly that way, and anything else at least
+   * sorts consistently instead of becoming `Invalid Date`. Documents with no `updated` are left
+   * out entirely — the section is "recently updated", and a document with no date is not a claim
+   * about recency.
+   */
+  recentlyUpdated(nodes: FileNode[], limit = 6): FileNode[] {
+    return this.allDocuments(nodes)
+      .filter(node => !!node.updated)
+      .sort((a, b) => (b.updated ?? '').localeCompare(a.updated ?? ''))
+      .slice(0, limit);
+  }
+
+  /**
+   * Documents worth reading next to `path`, ranked by how much of its tag set they share, with a
+   * nudge for living in the same folder. Excludes the document itself.
+   *
+   * Tags are the only cross-cutting signal `structure.json` carries — the folder tree is a single
+   * hierarchy, so without them "related" could only ever mean "adjacent".
+   */
+  relatedDocuments(path: string, nodes: FileNode[], limit = 4): FileNode[] {
+    const source = this.findNodeByPath(path, nodes);
+    if (!source) return [];
+
+    const wanted = new Set((source.tags ?? []).map(tag => ContentService.tagSlug(tag)));
+    if (!wanted.size) return [];
+
+    const folder = path.slice(0, path.lastIndexOf('/'));
+
+    return this.allDocuments(nodes)
+      .filter(node => node.path !== path)
+      .map(node => {
+        const shared = (node.tags ?? []).filter(tag => wanted.has(ContentService.tagSlug(tag))).length;
+        const sameFolder = folder && node.path.startsWith(`${folder}/`) ? 0.5 : 0;
+        return { node, score: shared + sameFolder };
+      })
+      .filter(entry => entry.score > 0)
+      .sort((a, b) => b.score - a.score || a.node.path.localeCompare(b.node.path))
+      .slice(0, limit)
+      .map(entry => entry.node);
   }
 
   countFiles(nodes: FileNode[]): number {

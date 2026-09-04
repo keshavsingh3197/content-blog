@@ -93,16 +93,31 @@
   &:hover { background: var(--bg-secondary); }
 }
 
+/*
+  Animated with `grid-template-rows: 0fr -> 1fr` rather than a max-height guess. The old 420px cap
+  silently truncated the contents of any article with more than ~14 headings — which is most of
+  them — and there is no height that is both large enough for the longest document and quick
+  enough for the shortest.
+*/
 .mobile-toc-nav {
-  max-height: 0;
-  overflow: hidden;
+  display: grid;
+  grid-template-rows: 0fr;
   background: var(--bg-primary);
-  transition: max-height 0.3s ease;
+  transition: grid-template-rows 0.28s var(--ease-out);
+
+  .mobile-toc-inner {
+    min-height: 0;
+    overflow: hidden;
+  }
 
   &.open {
-    max-height: 420px;
-    overflow-y: auto;
+    grid-template-rows: 1fr;
     border-top: 1px solid var(--border-color);
-    padding: 0.35rem 0;
+
+    .mobile-toc-inner {
+      max-height: 60vh;
+      overflow-y: auto;
+      padding: 0.35rem 0;
+    }
   }
 }

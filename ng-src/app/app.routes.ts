@@ -18,8 +18,17 @@ export const routes: Routes = [
     loadComponent: () => import('./features/tags-view/tags-view.component').then(m => m.TagsViewComponent)
   },
   {
+    path: 'bookmarks',
+    loadComponent: () => import('./features/bookmarks/bookmarks.component').then(m => m.BookmarksComponent)
+  },
+  {
     path: 'admin',
     loadChildren: () => import('./admin/admin.routes').then(m => m.ADMIN_ROUTES)
   },
-  { path: '**', redirectTo: '' }
+  // A wrong address says so rather than redirecting to the home page, where the reader would be
+  // left guessing whether the link was broken or the site simply has nothing there.
+  {
+    path: '**',
+    loadComponent: () => import('./features/not-found/not-found.component').then(m => m.NotFoundComponent)
+  }
 ];

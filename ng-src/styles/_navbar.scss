@@ -1,134 +1,273 @@
-/* Reading-progress bar, glass navbar and its controls. */
+/* Reading-progress bar, glass navbar, topic menus, theme menu and the small-screen drawer. */
 
 /* ── Reading Progress ─────────────────────────────────── */
-.reading-progress-bar {
+/*
+  A track plus a fill, rather than a bare bar: the track carries the progressbar role and its
+  aria-valuenow, which needs an element that exists whether or not the reader has scrolled.
+*/
+.reading-progress-track {
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
   height: 3px;
+  z-index: var(--z-progress);
+  pointer-events: none;
+  background: transparent;
+}
+
+.reading-progress-bar {
+  height: 100%;
+  width: 0;
   background: var(--gradient-primary);
   border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
-  z-index: 99999;
   transition: width 0.1s linear;
   box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
 }
 
 /* ── Navbar (glass) ───────────────────────────────────── */
 .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-navbar);
   height: var(--navbar-height);
-  background: var(--surface-glass) !important;
+  display: flex;
+  align-items: center;
+  background: var(--surface-glass);
   backdrop-filter: saturate(180%) blur(16px);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-xs);
+}
 
-  .navbar-brand {
-    font-size: 1.3rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
+.navbar-inner {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: clamp(0.6rem, 2vw, 2rem);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
 
+.navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  /* Shrink, don't grow. `flex: 0 0 auto` would refuse to give up width, so on a narrow phone the
+     brand pushed the controls off the right-hand edge instead of ellipsising — which is exactly
+     what the overflow rules on `.navbar-brand-text` are there to do. */
+  flex: 0 1 auto;
+  min-width: 0;
+
+  i { color: var(--accent); }
+
+  .navbar-brand-text {
     background: var(--gradient-brand-text);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-
-    i {
-      -webkit-text-fill-color: initial;
-      color: var(--accent);
-    }
-  }
-
-  .nav-link {
-    color: var(--text-secondary) !important;
-    font-weight: 500;
-    font-size: 0.925rem;
-    border-radius: var(--radius-sm);
-    padding: 0.45rem 0.85rem !important;
-    transition: color var(--transition-fast), background var(--transition-fast);
-
-    i {
-      color: var(--text-muted);
-      transition: color var(--transition-fast);
-    }
-
-    &:hover,
-    &[aria-expanded='true'] {
-      color: var(--accent) !important;
-      background: var(--accent-soft);
-
-      i { color: var(--accent); }
-    }
-  }
-
-  .dropdown-menu {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-lg);
-    padding: 0.4rem;
-    min-width: 220px;
-    margin-top: 0.5rem;
-
-    .dropdown-item {
-      border-radius: var(--radius-xs);
-      color: var(--text-secondary);
-      font-weight: 500;
-      font-size: 0.9rem;
-      padding: 0.5rem 0.85rem;
-      transition: background var(--transition-fast), color var(--transition-fast);
-
-      &:hover,
-      &:focus {
-        background: var(--accent-soft);
-        color: var(--accent);
-      }
-    }
-
-    .dropdown-divider {
-      border-color: var(--border-color);
-    }
-  }
-
-  .navbar-toggler {
-    color: var(--text-primary);
-    &:focus { box-shadow: none; }
-  }
-
-  /*
-    The topic list grows with the content tree, and the bar has a fixed height — so once the
-    topics no longer fit they must scroll sideways rather than wrap onto a second row and push
-    the page down behind the header.
-  */
-  @media (min-width: 992px) {
-    /*
-      A flex item will not shrink below its content width unless min-width is cleared, so without
-      this the overflow-x below never engages: the topic list keeps its full width and shoves the
-      theme, language and tag controls off the right-hand edge of the screen.
-    */
-    /* Keep the scrolling topic list clear of the controls it would otherwise slide under. */
-    .navbar-collapse { min-width: 0; margin-right: 0.75rem; }
-
-    .navbar-nav {
-      min-width: 0;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      overflow-y: hidden;
-      scrollbar-width: none;
-
-      &::-webkit-scrollbar { display: none; }
-
-      .nav-item { flex: 0 0 auto; }
-      .nav-link { white-space: nowrap; }
-    }
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
-/* A control that belongs to the whole site (tag index), sized to match the theme toggle. */
+/* ── Topic strip ──────────────────────────────────────── */
+/*
+  The topic list grows with the content tree and the bar has a fixed height, so once the topics no
+  longer fit they scroll sideways rather than wrap onto a second row and push the page down behind
+  the header. `min-width: 0` is what makes that work: a flex item will not shrink below its content
+  width without it, so the strip would otherwise shove the controls off the right edge.
+*/
+.topic-strip {
+  display: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: 0.15rem;
+  margin: 0 0.5rem 0 0.75rem;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  /* Fade the edge so a clipped topic reads as "more to scroll" rather than as a cut-off word. */
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 1.5rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 1.5rem), transparent 100%);
+
+  &::-webkit-scrollbar { display: none; }
+
+  @media (min-width: 992px) { display: flex; }
+}
+
+.topic-strip-item { flex: 0 0 auto; }
+
+.topic-strip-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast),
+    border-color var(--transition-fast);
+
+  i { color: var(--text-muted); transition: color var(--transition-fast), transform var(--transition-fast); }
+
+  .topic-strip-caret { font-size: 0.62em; }
+
+  &:hover,
+  &.topic-strip-open {
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-color: var(--accent-soft-strong);
+    i { color: var(--accent); }
+  }
+
+  &.topic-strip-open .topic-strip-caret { transform: rotate(180deg); }
+}
+
+/* ── Topic menu ───────────────────────────────────────── */
+/*
+  Anchored to the viewport, not to the toggle. The strip sets `overflow-x: auto`, and any overflow
+  other than `visible` clips absolutely positioned descendants — so a menu positioned against its
+  `.topic-strip-item` opened and was immediately clipped to nothing. NavbarComponent reads the
+  toggle's rect and passes the coordinates in.
+*/
+.topic-menu {
+  position: fixed;
+  z-index: calc(var(--z-navbar) + 1);
+  min-width: 260px;
+  max-width: min(340px, calc(100vw - 1rem));
+  max-height: min(70vh, 30rem);
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.4rem;
+  list-style: none;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-xl);
+  animation: pop-in 0.16s var(--ease-out) both;
+}
+
+.topic-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius-xs);
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+
+  i { color: var(--text-muted); width: 1rem; text-align: center; flex: 0 0 auto; }
+
+  .topic-menu-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: var(--accent-soft);
+    color: var(--accent);
+    i { color: var(--accent); }
+  }
+
+  &.topic-menu-all { font-weight: 600; color: var(--text-primary); }
+}
+
+.topic-menu-divider {
+  margin: 0.35rem 0.25rem;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  opacity: 1;
+}
+
+/* ── Right-hand controls ──────────────────────────────── */
+.navbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+/* The search affordance reads as a field so it is recognised as one, but it is a button: it opens
+   the palette, which owns the only real input on the site. */
+.nav-search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 40px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+
+  .nav-search-label { display: none; }
+
+  .nav-search-kbd {
+    display: none;
+    padding: 0.1rem 0.4rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xs);
+    background: var(--bg-primary);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    line-height: 1.4;
+  }
+
+  &:hover,
+  &:focus-visible {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  /* Widen into a search *field* in two steps. A single 15rem jump at 768px left the topic strip
+     with almost no room at the 992px breakpoint, where the strip first appears. */
+  @media (min-width: 768px) {
+    min-width: 10rem;
+    padding-right: 0.5rem;
+
+    .nav-search-label { display: block; margin-right: auto; }
+    .nav-search-kbd { display: block; }
+  }
+
+  @media (min-width: 1200px) { min-width: 15rem; }
+}
+
+/* A control that belongs to the whole site, sized to match the theme toggle. */
 .nav-icon-btn,
 .theme-toggle-btn {
+  position: relative;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
@@ -153,3 +292,265 @@
 
 /* Only the theme toggle tilts — it is the one control whose icon is the thing being switched. */
 .theme-toggle-btn:hover { transform: rotate(-15deg); }
+
+.nav-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--gradient-primary);
+  color: var(--on-brand);
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+  box-shadow: var(--shadow-xs);
+}
+
+/* The tag shortcut is the first thing to go when the bar runs out of room — the drawer and the
+   palette both still reach it. */
+.nav-tags { display: none; @media (min-width: 576px) { display: flex; } }
+
+/* ── Language picker ──────────────────────────────────── */
+.lang-picker {
+  display: none;
+  align-items: center;
+  margin: 0;
+
+  @media (min-width: 992px) { display: inline-flex; }
+
+  select {
+    height: 40px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-pill);
+    padding: 0 0.6rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    max-width: 8.5rem;
+  }
+
+  /* Options render in the OS palette, so they need explicit colours to stay readable. */
+  option { color: #111; background: #fff; }
+}
+
+/* ── Theme menu ───────────────────────────────────────── */
+.theme-control { position: relative; }
+
+.theme-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: calc(var(--z-navbar) + 1);
+  min-width: 11rem;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-xl);
+  animation: pop-in 0.16s var(--ease-out) both;
+}
+
+.theme-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition-fast);
+
+  i:first-child { width: 1rem; text-align: center; color: var(--text-muted); }
+
+  .theme-menu-tick { margin-left: auto; color: var(--accent); font-size: 0.75rem; }
+
+  &:hover { background: var(--accent-soft); color: var(--accent); i:first-child { color: var(--accent); } }
+
+  &.theme-menu-active { color: var(--accent); font-weight: 600; i:first-child { color: var(--accent); } }
+}
+
+/* ── Burger ───────────────────────────────────────────── */
+.navbar-burger {
+  @media (min-width: 992px) { display: none; }
+}
+
+.burger {
+  display: grid;
+  gap: 3px;
+  width: 16px;
+
+  span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+  }
+
+  &.burger-open {
+    span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+    span:nth-child(2) { opacity: 0; }
+    span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+  }
+}
+
+/* ── Small-screen drawer ──────────────────────────────── */
+/*
+  A drawer, not an inline collapse. The old collapse expanded inside a `position: fixed` bar of
+  fixed height, so the menu overflowed the header and floated over the page it was navigating away
+  from with no backdrop to explain it.
+*/
+.nav-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-drawer-scrim);
+  background: var(--overlay-scrim);
+  backdrop-filter: blur(2px);
+  animation: fade-in 0.2s var(--ease-out) both;
+}
+
+.nav-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: var(--z-drawer);
+  width: min(20rem, 88vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
+  box-shadow: var(--shadow-xl);
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform var(--transition-normal), visibility var(--transition-normal);
+
+  &.nav-drawer-open { transform: none; visibility: visible; }
+
+  /* Above the expand breakpoint the topic strip is the menu; the drawer must not be reachable by
+     keyboard from there, and `display: none` is what takes it out of the tab order. */
+  @media (min-width: 992px) { display: none; }
+}
+
+.nav-drawer-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+
+  .nav-drawer-title {
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-right: auto;
+  }
+}
+
+.nav-drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.6rem;
+  overscroll-behavior: contain;
+}
+
+.drawer-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition-fast);
+
+  i { color: var(--accent); width: 1.1rem; text-align: center; }
+  .nav-badge { position: static; margin-left: auto; }
+
+  &:hover { background: var(--accent-soft); color: var(--accent); }
+}
+
+.drawer-divider {
+  margin: 0.6rem 0.5rem;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  opacity: 1;
+}
+
+/* `<details>` gives the accordion for free — open/closed state, keyboard operation and the
+   disclosure semantics — with no component state to keep in step. */
+.drawer-group {
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.15rem;
+
+  &[open] > .drawer-group-summary { color: var(--accent); background: var(--accent-soft); }
+}
+
+.drawer-group-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  transition: var(--transition-fast);
+
+  &::-webkit-details-marker { display: none; }
+
+  i { color: var(--text-muted); width: 1.1rem; text-align: center; }
+  &:hover { background: var(--accent-soft); color: var(--accent); }
+}
+
+.drawer-count {
+  margin-left: auto;
+  padding: 0.05rem 0.45rem;
+  border-radius: var(--radius-pill);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.drawer-sublink {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.8rem 0.5rem 1.9rem;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  text-decoration: none;
+  border-radius: var(--radius-xs);
+  transition: var(--transition-fast);
+
+  i { color: var(--text-muted); font-size: 0.8em; }
+
+  &:hover { background: var(--accent-soft); color: var(--accent); }
+  &.drawer-sublink-all { font-weight: 600; color: var(--text-primary); }
+}
+
+/* The page behind a drawer must not scroll — on a phone the scroll otherwise continues into the
+   article the moment the drawer's own list reaches its end. */
+body.drawer-open { overflow: hidden; }
