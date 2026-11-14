@@ -6,11 +6,12 @@ import { HttpClient } from '@angular/common/http';
 import { provideMarkdown } from 'ngx-markdown';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { loadingInterceptor } from './core/interceptors/loading.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withHashLocation()),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([loadingInterceptor, authInterceptor])),
     provideAnimations(),
     // Rendered markdown — including the admin preview bound with [data] — is sanitized by default:
     // ngx-markdown's default `sanitize` is SecurityContext.HTML, which runs DOMpurify over the HTML

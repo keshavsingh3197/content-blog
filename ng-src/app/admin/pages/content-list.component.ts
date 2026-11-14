@@ -6,6 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminApiService } from '../services/admin-api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../services/toast.service';
+import { LoadingStateComponent } from '../../shared/components/loading-state/loading-state.component';
 import { BrandDataTableComponent, BrandTableColumn } from '@keshavsingh3197/web-ui';
 import { ContentListItem } from '../admin.models';
 
@@ -13,7 +14,7 @@ import { ContentListItem } from '../admin.models';
   selector: 'app-admin-content-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, BrandDataTableComponent],
+  imports: [CommonModule, RouterModule, BrandDataTableComponent, LoadingStateComponent],
   template: `
     <section class="page-head">
       <div><h1 class="page-title">Content</h1>
@@ -24,7 +25,9 @@ import { ContentListItem } from '../admin.models';
     </section>
 
     <div class="panel">
+      <app-loading-state *ngIf="loading()" variant="rows" [count]="5" />
       <brand-data-table
+        *ngIf="!loading()"
         [columns]="columns"
         [rows]="items()"
         [trackBy]="trackRow"

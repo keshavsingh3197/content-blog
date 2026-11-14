@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommentBan, CommentsService, ModeratedComment } from '../../core/services/comments.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../services/toast.service';
+import { LoadingStateComponent } from '../../shared/components/loading-state/loading-state.component';
 import { BrandDataTableComponent, BrandTableColumn } from '@keshavsingh3197/web-ui';
 
 /**
@@ -19,7 +20,7 @@ import { BrandDataTableComponent, BrandTableColumn } from '@keshavsingh3197/web-
   selector: 'app-admin-comments',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, BrandDataTableComponent],
+  imports: [CommonModule, BrandDataTableComponent, LoadingStateComponent],
   animations: [
     trigger('rowIn', [
       transition(':enter', [
@@ -35,12 +36,12 @@ import { BrandDataTableComponent, BrandTableColumn } from '@keshavsingh3197/web-
         <p class="page-sub">Reader comments across the blog. Newest first.</p>
       </div>
       <button class="btn-primary" (click)="reload()" [disabled]="loading()">
-        <i class="fas fa-rotate"></i> Refresh
+        <i class="fas fa-rotate" [class.fa-spin]="loading()"></i> Refresh
       </button>
     </section>
 
     <div class="panel">
-      <p class="muted pad" *ngIf="loading()">Loading…</p>
+      <app-loading-state *ngIf="loading()" variant="rows" [count]="5" />
 
       <brand-data-table
         *ngIf="!loading()"

@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, shareReplay } from 'rxjs';
+import { silentHttpContext } from '../interceptors/loading.interceptor';
 import { ADMIN_APP_URL, IDP_BASE } from '../api.config';
 import { Role, SsoSession, UserProfile } from '../models/auth.models';
 
@@ -38,7 +39,7 @@ export class AuthService {
 
   /** Replay the most recent (in-flight or completed) exchange so concurrent callers share it. */
   private readonly sharedRefresh: Observable<SsoSession> = this.http
-    .post<SsoSession>(`${this.idp}/sso/session`, {}, { withCredentials: true })
+    .post<SsoSession>(`${this.idp}/sso/session`, {}, { withCredentials: true, context: silentHttpContext() })
     .pipe(
       tap(session => this.setSession(session)),
       shareReplay({ bufferSize: 1, refCount: true })

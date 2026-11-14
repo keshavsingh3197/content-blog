@@ -8,6 +8,7 @@ import { ADMIN_APP_URL } from '../../../core/api.config';
 import { AuthService } from '../../../core/services/auth.service';
 import { Comment, CommentsService } from '../../../core/services/comments.service';
 import { I18nService } from '../../../core/services/i18n.service';
+import { LoadingStateComponent } from '../../../shared/components/loading-state/loading-state.component';
 
 /**
  * The discussion under a document.
@@ -23,7 +24,7 @@ import { I18nService } from '../../../core/services/i18n.service';
   selector: 'app-comments',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LoadingStateComponent],
   template: `
     <section class="comments no-print" *ngIf="path">
       <h2 class="comments-heading">
@@ -31,9 +32,7 @@ import { I18nService } from '../../../core/services/i18n.service';
         <span class="section-count" *ngIf="comments.length">{{ comments.length }}</span>
       </h2>
 
-      <div class="comments-state" *ngIf="loading">
-        <i class="fas fa-spinner fa-spin me-2"></i>{{ i18n.t('common.state.loading') }}
-      </div>
+      <app-loading-state *ngIf="loading" variant="rows" [count]="2" />
 
       <div class="alert alert-warning" *ngIf="loadError">
         <i class="fas fa-exclamation-triangle me-2"></i>{{ i18n.t('blog.comments.loadFailed') }}
@@ -76,6 +75,7 @@ import { I18nService } from '../../../core/services/i18n.service';
                   </button>
                   <button type="button" class="btn-accent" [disabled]="saving || !isValid(editDraft)"
                           (click)="saveEdit(c)">
+                    <span class="btn-spin" *ngIf="saving" aria-hidden="true"></span>
                     {{ i18n.t('common.actions.save') }}
                   </button>
                 </span>
@@ -106,7 +106,8 @@ import { I18nService } from '../../../core/services/i18n.service';
         <div class="comment-form-foot">
           <span class="comment-count">{{ draft.length }} / {{ maxLength }}</span>
           <button type="submit" class="btn-accent" [disabled]="saving || !isValid(draft)">
-            <i class="fas fa-paper-plane me-2"></i>{{ i18n.t('blog.comments.post') }}
+            <span class="btn-spin" *ngIf="saving" aria-hidden="true"></span>
+            <i class="fas fa-paper-plane me-2" *ngIf="!saving" aria-hidden="true"></i>{{ i18n.t('blog.comments.post') }}
           </button>
         </div>
       </form>

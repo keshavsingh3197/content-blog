@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminApiService } from '../services/admin-api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../services/toast.service';
+import { LoadingStateComponent } from '../../shared/components/loading-state/loading-state.component';
 import { MediaListItem } from '../admin.models';
 
 @Component({
@@ -13,7 +14,7 @@ import { MediaListItem } from '../admin.models';
   styleUrl: './media.scss',
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, LoadingStateComponent],
   template: `
     <section class="page-head">
       <div><h1 class="page-title">Media</h1>
@@ -31,10 +32,12 @@ import { MediaListItem } from '../admin.models';
       </label>
     </div>
 
-    <div class="media-grid">
+    <app-loading-state *ngIf="loading()" variant="cards" [count]="6" />
+
+    <div class="media-grid" *ngIf="!loading()">
       <figure class="media-card" *ngFor="let m of items(); trackBy: trackId" @rowIn>
         <div class="media-thumb">
-          <img [src]="url(m)" [alt]="m.fileName" loading="lazy">
+          <img [src]="url(m)" [alt]="m.fileName" loading="lazy" decoding="async">
         </div>
         <figcaption>
           <span class="media-name" [title]="m.fileName">{{ m.fileName }}</span>
