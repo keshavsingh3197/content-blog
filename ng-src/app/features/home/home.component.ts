@@ -12,6 +12,7 @@ import { FileTreeComponent } from './file-tree/file-tree.component';
 import { TreeStateService } from './file-tree/tree-state.service';
 import { SearchLauncherComponent } from './search/search-launcher.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
+import { LoadingStateComponent } from '../../shared/components/loading-state/loading-state.component';
 import { parseDocName } from '../../core/utils/doc-name';
 
 /**
@@ -49,7 +50,7 @@ function normalizeFolderName(name: string): string {
   selector: 'app-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FileTreeComponent, SearchLauncherComponent, RevealDirective],
+  imports: [CommonModule, RouterModule, FileTreeComponent, SearchLauncherComponent, RevealDirective, LoadingStateComponent],
   template: `
     <section class="hero-section">
       <div class="hero-orbs" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -65,15 +66,15 @@ function normalizeFolderName(name: string): string {
 
           <div class="hero-stats">
             <div class="stat-item">
-              <span class="stat-number">{{ fileCount }}</span>
+              <span class="stat-number">{{ loading ? '…' : fileCount }}</span>
               <span class="stat-label">{{ i18n.t('blog.hero.stat.articles') }}</span>
             </div>
             <div class="stat-item">
-              <span class="stat-number">{{ topics().length || topFolders.length }}</span>
+              <span class="stat-number">{{ loading ? '…' : (topics().length || topFolders.length) }}</span>
               <span class="stat-label">{{ i18n.t('blog.hero.stat.topics') }}</span>
             </div>
             <div class="stat-item">
-              <span class="stat-number">{{ tagCount }}</span>
+              <span class="stat-number">{{ loading ? '…' : tagCount }}</span>
               <span class="stat-label">{{ i18n.t('blog.tags.title') }}</span>
             </div>
             <div class="stat-item">
@@ -106,7 +107,8 @@ function normalizeFolderName(name: string): string {
         <h2 class="section-heading">
           <i class="fas fa-layer-group" aria-hidden="true"></i>{{ i18n.t('blog.section.browseTopics') }}
         </h2>
-        <div class="topic-grid">
+        <app-loading-state *ngIf="loading" variant="cards" [count]="6" />
+        <div class="topic-grid" *ngIf="!loading">
           <button
             class="topic-card"
             *ngFor="let card of cards(); let i = index"
@@ -167,15 +169,16 @@ function normalizeFolderName(name: string): string {
           </div>
 
           <app-file-tree
-            *ngIf="nodes.length > 0"
+            *ngIf="!loading && nodes.length > 0"
             [nodes]="nodes"
             (fileSelected)="onFileSelected($event)">
           </app-file-tree>
 
-          <div class="loading-spinner" *ngIf="nodes.length === 0">
-            <div class="spinner-border" role="status" aria-hidden="true"></div>
-            <span>{{ i18n.t('common.state.loading') }}</span>
-          </div>
+          <app-loading-state *ngIf="loading" variant="rows" [count]="5" />
+
+          <p class="tags-empty" *ngIf="!loading && nodes.length === 0">
+            <i class="fas fa-circle-info" aria-hidden="true"></i>{{ i18n.t('blog.folder.empty') }}
+          </p>
         </div>
       </section>
     </div>
@@ -196,6 +199,7 @@ export class HomeComponent implements OnInit {
   recent: FileNode[] = [];
   fileCount = 0;
   tagCount = 0;
+  loading = true;
 
   /**
    * The cards, from config. The fallback is empty rather than a duplicate list: the seeded config
@@ -278,13 +282,21 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.contentService.getStructure().subscribe(nodes => {
-      this.nodes = nodes;
-      this.topFolders = nodes.filter(n => n.isDirectory);
-      this.fileCount = this.contentService.countFiles(nodes);
-      this.tagCount = this.contentService.buildTagIndex(nodes).length;
-      this.recent = this.contentService.recentlyUpdated(nodes, 6);
-      this.cdr.markForCheck();
+    this.loading = true;
+    this.contentService.getStructure().subscribe({
+      next: nodes => {
+        this.nodes = nodes;
+        this.topFolders = nodes.filter(n => n.isDirectory);
+        this.fileCount = this.contentService.countFiles(nodes);
+        this.tagCount = this.contentService.buildTagIndex(nodes).length;
+        this.recent = this.contentService.recentlyUpdated(nodes, 6);
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
     });
   }
 

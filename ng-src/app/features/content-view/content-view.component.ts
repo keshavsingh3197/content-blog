@@ -20,6 +20,7 @@ import { CommentsComponent } from './comments/comments.component';
 import { parseDocName } from '../../core/utils/doc-name';
 import { normalizeContentPath } from '../../core/content-path';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
+import { LoadingStateComponent } from '../../shared/components/loading-state/loading-state.component';
 
 export interface TocItem {
   level: number;
@@ -37,7 +38,7 @@ interface TagChip {
   selector: 'app-content-view',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, BreadcrumbComponent, MarkdownModule, CommentsComponent, RevealDirective],
+  imports: [CommonModule, RouterModule, BreadcrumbComponent, MarkdownModule, CommentsComponent, RevealDirective, LoadingStateComponent],
   template: `
     <div class="container container-reader mt-4">
       <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
@@ -310,7 +311,11 @@ interface TagChip {
             </div>
           </section>
 
-          <app-comments [path]="currentPath"></app-comments>
+          @defer (on viewport) {
+            <app-comments [path]="currentPath"></app-comments>
+          } @placeholder {
+            <app-loading-state variant="rows" [count]="2" />
+          }
         </div>
       </div>
     </div>
@@ -653,8 +658,18 @@ export class ContentViewComponent implements OnInit, OnDestroy {
       this.buildToc();       // assigns heading ids — must run before processLinks()
       this.addHeadingAnchors();
       this.processLinks();
+      this.processMedia();
       this.useHeadingAsBreadcrumbLabel();
       this.cdr.markForCheck();
+    });
+  }
+
+  private processMedia(): void {
+    const el = this.contentDiv?.nativeElement;
+    if (!el) return;
+    el.querySelectorAll('img').forEach((img: HTMLImageElement) => {
+      if (!img.getAttribute('loading')) img.loading = 'lazy';
+      if (!img.getAttribute('decoding')) img.decoding = 'async';
     });
   }
 

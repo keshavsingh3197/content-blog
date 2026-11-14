@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { API_BASE } from '../api.config';
+import { silentHttpContext } from '../interceptors/loading.interceptor';
 
 export interface PageStat {
   path: string;
@@ -27,14 +28,14 @@ export class PageStatsService {
   /** Record a read and return the new total. Null when the API is unavailable. */
   track(path: string): Observable<PageStat | null> {
     return this.http
-      .post<PageStat>(`${this.api}/page-stats/view`, { path })
+      .post<PageStat>(`${this.api}/page-stats/view`, { path }, { context: silentHttpContext() })
       .pipe(catchError(() => of(null)));
   }
 
   /** The current total without recording a read. */
   get(path: string): Observable<PageStat | null> {
     return this.http
-      .get<PageStat>(`${this.api}/page-stats`, { params: { path } })
+      .get<PageStat>(`${this.api}/page-stats`, { params: { path }, context: silentHttpContext() })
       .pipe(catchError(() => of(null)));
   }
 }

@@ -24,6 +24,21 @@
   &:disabled { opacity: 0.55; cursor: not-allowed; }
 }
 
+.btn-spin {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: cbBtnSpin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes cbBtnSpin {
+  to { transform: rotate(360deg); }
+}
+
 .btn-solid {
   border: 1px solid transparent;
   background: var(--gradient-primary);

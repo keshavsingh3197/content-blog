@@ -11,6 +11,7 @@ import { I18nService } from '../../core/services/i18n.service';
 import { FileNode, TagSummary } from '../../core/models/file-node.model';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../shared/components/breadcrumb/breadcrumb.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
+import { LoadingStateComponent } from '../../shared/components/loading-state/loading-state.component';
 import { parseDocName } from '../../core/utils/doc-name';
 
 /**
@@ -24,7 +25,7 @@ import { parseDocName } from '../../core/utils/doc-name';
   selector: 'app-tags-view',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, RouterModule, BreadcrumbComponent, RevealDirective],
+  imports: [CommonModule, FormsModule, RouterModule, BreadcrumbComponent, RevealDirective, LoadingStateComponent],
   template: `
     <div class="container mt-4">
       <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
@@ -58,8 +59,11 @@ import { parseDocName } from '../../core/utils/doc-name';
         <i class="fas fa-circle-info" aria-hidden="true"></i>{{ i18n.t('blog.tags.noTagMatches') }}
       </p>
 
+      <!-- Loading tags -->
+      <app-loading-state *ngIf="loading" variant="rows" [count]="5" />
+
       <!-- The cloud stays on screen while a tag is selected, so switching tags is one click. -->
-      <div class="tag-cloud" *ngIf="allTags.length">
+      <div class="tag-cloud" *ngIf="!loading && allTags.length">
         <a
           class="tag-chip tag-chip-lg"
           [class.tag-chip-active]="!activeSlug"
@@ -74,12 +78,12 @@ import { parseDocName } from '../../core/utils/doc-name';
         >{{ tag.label }}<span class="tag-count">{{ tag.count }}</span></a>
       </div>
 
-      <div class="alert alert-info" *ngIf="!allTags.length">
-        <i class="fas fa-info-circle me-2"></i>{{ i18n.t('common.state.loading') }}
+      <div class="alert alert-info" *ngIf="!loading && !allTags.length">
+        <i class="fas fa-info-circle me-2" aria-hidden="true"></i>{{ i18n.t('blog.folder.empty') }}
       </div>
 
       <!-- Documents behind the selected tag -->
-      <ng-container *ngIf="activeSlug">
+      <ng-container *ngIf="!loading && activeSlug">
         <h2 class="section-heading mt-4 mb-3">
           <i class="fas fa-file-lines me-2 text-primary"></i>{{ activeLabel }}
           <span class="section-count">{{ matches.length }}</span>
@@ -124,6 +128,7 @@ export class TagsViewComponent implements OnInit {
   activeLabel = '';
   totalDocuments = 0;
   breadcrumbs: BreadcrumbItem[] = [];
+  loading = true;
 
   private readonly route = inject(ActivatedRoute);
   private readonly contentService = inject(ContentService);
@@ -133,9 +138,11 @@ export class TagsViewComponent implements OnInit {
   ngOnInit(): void {
     // Both inputs are needed together: the tag in the URL means nothing until the tree is loaded,
     // and the tree tells us nothing to show until a tag is picked.
+    this.loading = true;
     combineLatest([this.contentService.getStructure(), this.route.queryParams])
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(([nodes, params]) => {
+        this.loading = false;
         this.allTags = this.contentService.buildTagIndex(nodes);
         this.applyTagFilter();
         this.totalDocuments = this.contentService.countFiles(nodes);

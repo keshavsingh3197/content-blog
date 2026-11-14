@@ -12,6 +12,7 @@ import { LibraryService } from '../../core/services/library.service';
 import { FileNode } from '../../core/models/file-node.model';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../shared/components/breadcrumb/breadcrumb.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
+import { LoadingStateComponent } from '../../shared/components/loading-state/loading-state.component';
 import { parseDocName } from '../../core/utils/doc-name';
 import { normalizeFolderPath } from '../../core/content-path';
 
@@ -40,16 +41,18 @@ const FOLDER_COLORS: string[] = [
   selector: 'app-folder-view',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbComponent, RevealDirective],
+  imports: [CommonModule, RouterModule, FormsModule, BreadcrumbComponent, RevealDirective, LoadingStateComponent],
   template: `
     <div class="container mt-4">
       <app-breadcrumb [items]="breadcrumbs"></app-breadcrumb>
 
-      <div *ngIf="!folderNode" class="alert alert-warning">
+      <app-loading-state *ngIf="loading" variant="cards" [count]="6" />
+
+      <div *ngIf="!loading && !folderNode" class="alert alert-warning">
         <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>{{ i18n.t('blog.folder.notFound') }}
       </div>
 
-      <ng-container *ngIf="folderNode">
+      <ng-container *ngIf="!loading && folderNode">
         <header class="folder-head">
           <div class="folder-head-main">
             <h1 class="folder-title">
@@ -172,6 +175,7 @@ export class FolderViewComponent implements OnInit, OnDestroy {
   breadcrumbs: BreadcrumbItem[] = [];
   filter = '';
   totalFiles = 0;
+  loading = true;
 
   /** Path of the containing folder, `''` for the root listing, or null when there is no parent. */
   parentPath: string | null = null;
@@ -184,6 +188,8 @@ export class FolderViewComponent implements OnInit, OnDestroy {
       switchMap(params => {
         // Same trust boundary as the document route: only paths shaped like a node of the content
         // tree get as far as the lookup, so nothing arbitrary reaches the breadcrumbs.
+        this.loading = true;
+        this.cdr.markForCheck();
         const path = normalizeFolderPath(params['path']) ?? '';
         this.buildBreadcrumbs(path);
         return this.contentService.getStructure().pipe(
@@ -204,6 +210,7 @@ export class FolderViewComponent implements OnInit, OnDestroy {
       this.files = this.folderNode?.children?.filter(n => !n.isDirectory) ?? [];
       this.totalFiles = this.folderNode ? this.contentService.countFiles([this.folderNode]) : 0;
       this.filter = '';
+      this.loading = false;
       this.applyFilter();
       this.cdr.markForCheck();
     });

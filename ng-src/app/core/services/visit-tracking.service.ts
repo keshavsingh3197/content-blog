@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { silentHttpContext } from '../interceptors/loading.interceptor';
 import { IDP_BASE } from '../api.config';
 
 interface TrackVisitRequest {
@@ -23,7 +24,7 @@ export class VisitTrackingService {
       referrer: document.referrer || undefined,
     };
 
-    this.http.post<void>(`${this.idpBase}/analytics/visit`, body).subscribe({
+    this.http.post<void>(`${this.idpBase}/analytics/visit`, body, { context: silentHttpContext() }).subscribe({
       error: () => {
         // Analytics must never break browsing; swallow transport/server errors.
       },

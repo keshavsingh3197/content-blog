@@ -13,15 +13,18 @@ import { RuntimeConfigService } from './core/services/runtime-config.service';
 import { I18nService } from './core/services/i18n.service';
 import { AuthService } from './core/services/auth.service';
 import { ReaderPrefsService } from './core/services/reader-prefs.service';
+import { GlobalLoaderComponent } from './shared/components/global-loader/global-loader.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
     CommonModule, RouterOutlet, NavbarComponent, FooterComponent,
-    ReadingProgressComponent, BackToTopComponent, CommandPaletteComponent,
+    ReadingProgressComponent, BackToTopComponent, CommandPaletteComponent, GlobalLoaderComponent,
   ],
   template: `
+    <app-global-loader />
+
     <!-- The admin console renders its own full-screen chrome, so the public
          blog navbar/footer are hidden on /admin routes. -->
     <ng-container *ngIf="!isAdmin()">

@@ -28,17 +28,17 @@ import { ADMIN_APP_URL } from '../../core/api.config';
     <div class="stat-grid">
       <div class="stat-tile a">
         <span class="stat-ico"><i class="fas fa-file-lines"></i></span>
-        <div><span class="stat-value">{{ contentError() ? '—' : contentCount() }}</span><span class="stat-name">Topics</span>
+        <div><span class="stat-value">{{ loading() ? '…' : (contentError() ? '—' : contentCount()) }}</span><span class="stat-name">Topics</span>
           <small class="muted stat-status" *ngIf="contentError()">unavailable</small></div>
       </div>
       <div class="stat-tile b">
         <span class="stat-ico"><i class="fas fa-circle-check"></i></span>
-        <div><span class="stat-value">{{ contentError() ? '—' : publishedCount() }}</span><span class="stat-name">Published</span>
+        <div><span class="stat-value">{{ loading() ? '…' : (contentError() ? '—' : publishedCount()) }}</span><span class="stat-name">Published</span>
           <small class="muted stat-status" *ngIf="contentError()">unavailable</small></div>
       </div>
       <div class="stat-tile c">
         <span class="stat-ico"><i class="fas fa-images"></i></span>
-        <div><span class="stat-value">{{ mediaError() ? '—' : mediaCount() }}</span><span class="stat-name">Media files</span>
+        <div><span class="stat-value">{{ loading() ? '…' : (mediaError() ? '—' : mediaCount()) }}</span><span class="stat-name">Media files</span>
           <small class="muted stat-status" *ngIf="mediaError()">unavailable</small></div>
       </div>
       <!--
@@ -127,6 +127,7 @@ export class DashboardComponent implements OnInit {
   contentCount = signal(0);
   publishedCount = signal(0);
   mediaCount = signal(0);
+  loading = signal(true);
 
   /** A source that failed to load reads as unavailable rather than a plausible 0. */
   readonly contentError = signal(false);
@@ -154,10 +155,16 @@ export class DashboardComponent implements OnInit {
         return of([]);
       })),
     }).pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(({ content, media }) => {
-        this.contentCount.set(content.length);
-        this.publishedCount.set(content.filter(c => c.published).length);
-        this.mediaCount.set(media.length);
+      .subscribe({
+        next: ({ content, media }) => {
+          this.contentCount.set(content.length);
+          this.publishedCount.set(content.filter(c => c.published).length);
+          this.mediaCount.set(media.length);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+        },
       });
   }
 }
