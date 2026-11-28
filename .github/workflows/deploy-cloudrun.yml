@@ -1,0 +1,51 @@
+name: Deploy content-blog-api to Cloud Run
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'server/**'
+      - '.github/workflows/deploy-cloudrun.yml'
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: keshav-ecosystem-cloud
+  REGION: us-central1
+  SERVICE: content-blog-api
+  IMAGE: us-central1-docker.pkg.dev/keshav-ecosystem-cloud/cloud-run-source-deploy/content-blog-api:latest
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push container image
+        working-directory: server
+        env:
+          DOCKER_BUILDKIT: '1'
+          PACKAGES_READ_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN }}
+        run: |
+          docker build --secret id=PACKAGES_READ_TOKEN,env=PACKAGES_READ_TOKEN -t "${{ env.IMAGE }}" .
+          docker push "${{ env.IMAGE }}"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "${{ env.SERVICE }}" \
+            --image "${{ env.IMAGE }}" \
+            --region "${{ env.REGION }}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8080 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --quiet
